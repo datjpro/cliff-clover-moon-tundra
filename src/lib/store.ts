@@ -129,6 +129,8 @@ function emptyPip(): PipState {
     petType: "fox",
     mood: "wander",
     skin: "classic",
+    hat: "none",
+    bodyItem: "backpack",
     happiness: 92,
     energy: 95,
     treatsEaten: 0,

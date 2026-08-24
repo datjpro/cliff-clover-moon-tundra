@@ -7,6 +7,7 @@ import {
   setIgnoreMouseEvents,
 } from "@/lib/desktop-bridge";
 import { useLumen } from "@/lib/store";
+import { BallToy } from "./ball-toy";
 import { Companion } from "./companion";
 import { FloatingTimers } from "./floating-timers";
 import { Hub } from "./hub";
@@ -284,6 +285,7 @@ export function DesktopScene() {
         <StickyNote key={n.id} note={n} />
       ))}
       <FloatingTimers />
+      <BallToy />
       <Companion />
       <ToastStack />
       <Hub />

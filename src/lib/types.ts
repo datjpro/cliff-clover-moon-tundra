@@ -1,9 +1,11 @@
 export type ThemeId = "minimalist" | "glass" | "cyberpunk" | "pastel" | "ink";
 export type LayoutMode = "stickies" | "sidebar" | "tray" | "corner";
 export type NoteTint = "cream" | "mist" | "sage" | "blush" | "neon" | "dark" | "glass";
-export type PipMood = "idle" | "wander" | "fetch" | "deliver" | "nudge" | "sleep" | "dance" | "eating" | "focus" | "sitting";
+export type PipMood = "idle" | "wander" | "fetch" | "deliver" | "nudge" | "sleep" | "dance" | "eating" | "focus" | "sitting" | "chasing_ball";
 export type PetType = "fox" | "cat" | "shiba" | "dragon" | "cyber";
 export type PetSkin = "classic" | "matcha" | "amber" | "cyber" | "obsidian";
+export type PetHat = "none" | "explorer_hat" | "sunglasses" | "wizard_hat" | "party_hat" | "sleep_cap";
+export type PetBodyItem = "backpack" | "cape" | "wings" | "scarf" | "none";
 export type Language = "en" | "vi";
 
 export type CheckItem = {
@@ -57,11 +59,22 @@ export type PawPrint = {
   createdAt: number;
 };
 
+export type BallToy = {
+  active: boolean;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  bounces: number;
+};
+
 export type PipState = {
   enabled: boolean;
   petType: PetType;
   mood: PipMood;
   skin: PetSkin;
+  hat: PetHat;
+  bodyItem: PetBodyItem;
   happiness: number; // 0 - 100
   energy: number; // 0 - 100
   treatsEaten: number;
@@ -72,5 +85,5 @@ export type PipState = {
   carrying: boolean;
   moving: boolean;
   speech: string | null;
-  targetNoteId?: string | null; // when sitting on a note
+  targetNoteId?: string | null;
 };

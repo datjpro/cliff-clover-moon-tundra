@@ -82,6 +82,16 @@ var createLucideIcon = (iconName, iconNode) => {
 * This source code is licensed under the ISC license.
 * See the LICENSE file in the root directory of this source tree.
 */
+var Activity = createLucideIcon("activity", [["path", {
+	d: "M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2",
+	key: "169zse"
+}]]);
+/**
+* @license lucide-react v0.510.0 - ISC
+*
+* This source code is licensed under the ISC license.
+* See the LICENSE file in the root directory of this source tree.
+*/
 var Check = createLucideIcon("check", [["path", {
 	d: "M20 6 9 17l-5-5",
 	key: "1gmf2c"
@@ -615,4 +625,4 @@ var X = createLucideIcon("x", [["path", {
 	key: "d8bk6v"
 }]]);
 //#endregion
-export { Cookie as C, Check as D, ChevronDown as E, Download as S, ChevronUp as T, Heart as _, TriangleAlert as a, EyeOff as b, StickyNote as c, Sparkles as d, Settings as f, LayoutGrid as g, Moon as h, Upload as i, Square as l, Pin as m, VolumeX as n, Trash2 as o, Plus as p, Volume2 as r, Sun as s, X as t, SquareCheckBig as u, Globe as v, Clock as w, Ellipsis as x, Eye as y };
+export { Cookie as C, Check as D, ChevronDown as E, Activity as O, Download as S, ChevronUp as T, Heart as _, TriangleAlert as a, EyeOff as b, StickyNote as c, Sparkles as d, Settings as f, LayoutGrid as g, Moon as h, Upload as i, Square as l, Pin as m, VolumeX as n, Trash2 as o, Plus as p, Volume2 as r, Sun as s, X as t, SquareCheckBig as u, Globe as v, Clock as w, Ellipsis as x, Eye as y };

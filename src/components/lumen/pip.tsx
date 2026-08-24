@@ -1,4 +1,4 @@
-import type { PetSkin, PetType, PipMood } from "@/lib/types";
+import type { PetBodyItem, PetHat, PetSkin, PetType, PipMood } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 type PipProps = {
@@ -9,6 +9,8 @@ type PipProps = {
   mood?: PipMood;
   petType?: PetType;
   skin?: PetSkin;
+  hat?: PetHat;
+  bodyItem?: PetBodyItem;
   className?: string;
 };
 
@@ -19,6 +21,8 @@ export function PipFigure({
   facing = 1,
   mood = "idle",
   petType = "fox",
+  hat = "none",
+  bodyItem = "backpack",
   className,
 }: PipProps) {
   const isDancing = mood === "dance";
@@ -50,6 +54,21 @@ export function PipFigure({
           className={!walking && !isSleeping ? "pip-bob" : undefined}
           style={{ transform: `translateY(${bodyBobY}px)` }}
         >
+          {/* BODY ITEMS / ACCESSORIES (Back Layer) */}
+          {bodyItem === "cape" && (
+            <path
+              d="M26 44 Q 10 52 14 74 Q 28 66 34 50 Z"
+              fill="#dc2626"
+              className={walking ? "animate-pulse" : undefined}
+            />
+          )}
+          {bodyItem === "wings" && (
+            <g transform="translate(14, 34)">
+              <path d="M 0 10 Q 12 -8 24 4 Q 12 18 0 10 Z" fill="#93c5fd" opacity="0.8" />
+              <path d="M 4 14 Q 14 4 22 12 Q 14 22 4 14 Z" fill="#c4b5fd" opacity="0.65" />
+            </g>
+          )}
+
           {/* PET TYPE 1: ADVENTURER FOX (Default matching reference design) */}
           {petType === "fox" && (
             <>
@@ -66,11 +85,13 @@ export function PipFigure({
               </g>
 
               {/* Tiny Adventurer Leather Backpack */}
-              <g transform="translate(18, 42) rotate(-8)">
-                <rect x="0" y="0" width="16" height="18" rx="4" fill="#78350f" />
-                <rect x="2" y="3" width="12" height="6" rx="2" fill="#92400e" />
-                <circle cx="8" cy="11" r="2" fill="#fbbf24" />
-              </g>
+              {bodyItem === "backpack" && (
+                <g transform="translate(18, 42) rotate(-8)">
+                  <rect x="0" y="0" width="16" height="18" rx="4" fill="#78350f" />
+                  <rect x="2" y="3" width="12" height="6" rx="2" fill="#92400e" />
+                  <circle cx="8" cy="11" r="2" fill="#fbbf24" />
+                </g>
+              )}
 
               {/* Back Legs */}
               <ellipse cx="32" cy="72" rx="5" ry="6" fill="#b45309" />
@@ -113,6 +134,11 @@ export function PipFigure({
               >
                 <path d="M24 58 Q 12 40 16 28 Q 20 20 22 28" fill="none" stroke="#ea580c" strokeWidth="6" strokeLinecap="round" />
               </g>
+              {bodyItem === "backpack" && (
+                <g transform="translate(18, 42) rotate(-8)">
+                  <rect x="0" y="0" width="14" height="16" rx="4" fill="#78350f" />
+                </g>
+              )}
               <ellipse cx="44" cy="54" rx="18" ry="16" fill="#fef3c7" />
               <ellipse cx="38" cy="50" rx="8" ry="8" fill="#ea580c" opacity="0.85" />
               <polygon points="26,26 20,8 36,18" fill="#ea580c" />
@@ -181,6 +207,14 @@ export function PipFigure({
             </>
           )}
 
+          {/* SCARF (Front Body Item) */}
+          {bodyItem === "scarf" && (
+            <g transform="translate(34, 44)">
+              <rect x="0" y="0" width="26" height="6" rx="3" fill="#e11d48" />
+              <path d="M 6 6 L 8 16 L 14 16 L 12 6 Z" fill="#be123c" />
+            </g>
+          )}
+
           {/* EYES */}
           {petType !== "cyber" && (
             <>
@@ -223,6 +257,49 @@ export function PipFigure({
                 <ellipse cx="54" cy="74" rx="4.5" ry="5.5" fill="#fffbeb" stroke="#b45309" strokeWidth="1.2" />
               </g>
             </>
+          )}
+
+          {/* HATS & HEAD ACCESSORIES */}
+          {hat === "sunglasses" && (
+            <g transform="translate(32, 28)">
+              <rect x="0" y="0" width="13" height="9" rx="3" fill="#18181b" stroke="#3f3f46" strokeWidth="1" />
+              <rect x="15" y="0" width="13" height="9" rx="3" fill="#18181b" stroke="#3f3f46" strokeWidth="1" />
+              <line x1="13" y1="3" x2="15" y2="3" stroke="#18181b" strokeWidth="2" />
+              <line x1="0" y1="3" x2="-4" y2="1" stroke="#18181b" strokeWidth="1.5" />
+              <line x1="28" y1="3" x2="32" y2="1" stroke="#18181b" strokeWidth="1.5" />
+            </g>
+          )}
+
+          {hat === "explorer_hat" && (
+            <g transform="translate(26, 12)">
+              <ellipse cx="20" cy="12" rx="20" ry="4" fill="#a16207" />
+              <rect x="8" y="2" width="24" height="10" rx="3" fill="#ca8a04" />
+              <rect x="8" y="9" width="24" height="3" fill="#713f12" />
+            </g>
+          )}
+
+          {hat === "wizard_hat" && (
+            <g transform="translate(30, 2)">
+              <polygon points="16,0 4,20 28,20" fill="#6d28d9" />
+              <ellipse cx="16" cy="20" rx="16" ry="3.5" fill="#4c1d95" />
+              <circle cx="16" cy="10" r="1.5" fill="#facc15" />
+            </g>
+          )}
+
+          {hat === "party_hat" && (
+            <g transform="translate(34, 4)">
+              <polygon points="12,0 2,18 22,18" fill="#f43f5e" />
+              <circle cx="12" cy="0" r="2.5" fill="#facc15" />
+              <line x1="4" y1="12" x2="20" y2="12" stroke="#38bdf8" strokeWidth="2" />
+            </g>
+          )}
+
+          {hat === "sleep_cap" && (
+            <g transform="translate(30, 6)">
+              <path d="M 8 18 Q 4 0 26 4 Q 28 14 18 18 Z" fill="#1e3a8a" />
+              <ellipse cx="13" cy="18" rx="10" ry="3" fill="#ffffff" />
+              <circle cx="28" cy="5" r="3" fill="#ffffff" />
+            </g>
           )}
         </g>
 

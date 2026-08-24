@@ -3,11 +3,12 @@ import { Cookie, EyeOff, Heart, Moon, Sparkles, StickyNote as NoteIcon, Sun } fr
 import { useLumen } from "@/lib/store";
 import type { PawPrint } from "@/lib/types";
 import { uid } from "@/lib/utils";
+import { triggerThrowBall } from "./ball-toy";
 import { PawTrail } from "./paw-trail";
 import { PipFigure } from "./pip";
 import { cn } from "@/lib/utils";
 
-const SPEED = 55; // Pixels per second (super smooth and steady)
+const SPEED = 55; // Pixels per second
 
 function dist(ax: number, ay: number, bx: number, by: number) {
   return Math.hypot(ax - bx, ay - by);
@@ -22,6 +23,8 @@ export function Companion() {
   const petType = useLumen((s) => s.pip.petType || "fox");
   const mood = useLumen((s) => s.pip.mood);
   const skin = useLumen((s) => s.pip.skin);
+  const hat = useLumen((s) => s.pip.hat || "none");
+  const bodyItem = useLumen((s) => s.pip.bodyItem || "backpack");
   const carrying = useLumen((s) => s.pip.carrying);
   const startXPercent = useLumen((s) => s.pip.x);
   const startYPercent = useLumen((s) => s.pip.y);
@@ -48,7 +51,7 @@ export function Companion() {
   const target = useRef({
     x: 400,
     y: 300,
-    kind: "idle" as "idle" | "well" | "drop" | "nudge" | "dance",
+    kind: "idle" as "idle" | "well" | "drop" | "nudge" | "dance" | "ball",
   });
   const waitUntil = useRef(0);
   const movingState = useRef(false);
@@ -149,6 +152,19 @@ export function Companion() {
       const scrW = window.innerWidth;
       const scrH = window.innerHeight;
 
+      // Handle ball chasing
+      if (p.mood === "chasing_ball") {
+        const ballEl = document.querySelector(".animate-spin") as HTMLElement | null;
+        if (ballEl) {
+          const ballRect = ballEl.getBoundingClientRect();
+          target.current = {
+            x: ballRect.left,
+            y: ballRect.top,
+            kind: "ball",
+          };
+        }
+      }
+
       // Select next wander destination
       if (
         p.mood === "wander" &&
@@ -167,9 +183,10 @@ export function Companion() {
       const t = target.current;
       const d = dist(pos.current.x, pos.current.y, t.x, t.y);
       const isMovingNow = d > 2 && p.mood !== "sleep" && p.mood !== "eating" && !menuOpen;
+      const currentSpeed = p.mood === "chasing_ball" ? SPEED * 1.8 : SPEED;
 
       if (isMovingNow) {
-        const step = SPEED * dt;
+        const step = currentSpeed * dt;
         const k = Math.min(1, step / d);
         const prevX = pos.current.x;
         const prevY = pos.current.y;
@@ -181,12 +198,10 @@ export function Companion() {
 
         const nextFacing: 1 | -1 = t.x >= pos.current.x ? 1 : -1;
 
-        // GPU Transform Update (ZERO layout recalculation, silky smooth 120 FPS)
         if (elRef.current) {
           elRef.current.style.transform = `translate3d(${pos.current.x}px, ${pos.current.y}px, 0)`;
         }
 
-        // Throttle UI React state updates to 30fps to completely eliminate re-render stutter
         if (now - lastUiSync > 33) {
           lastUiSync = now;
           setStridePhase(walkPhaseAcc.current);
@@ -279,7 +294,6 @@ export function Companion() {
 
   return (
     <>
-      {/* Paw Prints Trail on Screen */}
       <PawTrail prints={pawPrints} />
 
       <div
@@ -305,7 +319,7 @@ export function Companion() {
 
         {/* Floating Pet Interaction Toolbar */}
         {menuOpen ? (
-          <div className="animate-in fade-in zoom-in-95 absolute -top-12 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-surface/95 p-1 backdrop-blur-md shadow-[0_12px_32px_rgba(0,0,0,0.35)] ring-1 ring-border">
+          <div className="animate-in fade-in zoom-in-95 absolute -top-12 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-[#1c1917]/95 p-1 backdrop-blur-md shadow-[0_12px_32px_rgba(0,0,0,0.45)] border border-[#44403c]">
             <button
               type="button"
               onClick={(e) => {
@@ -313,7 +327,7 @@ export function Companion() {
                 petPip();
               }}
               title="Xoa đầu (Pet)"
-              className="action-btn flex size-7 items-center justify-center rounded-full text-rose-400 hover:bg-elevated hover:scale-110 active:scale-95 transition-all cursor-pointer"
+              className="action-btn flex size-7 items-center justify-center rounded-full text-rose-400 hover:bg-white/10 hover:scale-110 active:scale-95 transition-all cursor-pointer"
             >
               <Heart className="size-3.5 fill-rose-400/30" />
             </button>
@@ -324,9 +338,21 @@ export function Companion() {
                 feedPip();
               }}
               title="Cho ăn dâu (Feed)"
-              className="action-btn flex size-7 items-center justify-center rounded-full text-amber-400 hover:bg-elevated hover:scale-110 active:scale-95 transition-all cursor-pointer"
+              className="action-btn flex size-7 items-center justify-center rounded-full text-amber-400 hover:bg-white/10 hover:scale-110 active:scale-95 transition-all cursor-pointer"
             >
               <Cookie className="size-3.5" />
+            </button>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                triggerThrowBall();
+                setMenuOpen(false);
+              }}
+              title="Ném bóng chơi (Throw Ball 🎾)"
+              className="action-btn flex size-7 items-center justify-center rounded-full text-lime-400 hover:bg-white/10 hover:scale-110 active:scale-95 transition-all cursor-pointer text-xs"
+            >
+              🎾
             </button>
             <button
               type="button"
@@ -336,7 +362,7 @@ export function Companion() {
                 setMenuOpen(false);
               }}
               title="Lấy giấy ghi chú (Fetch Note)"
-              className="action-btn flex size-7 items-center justify-center rounded-full text-emerald-400 hover:bg-elevated hover:scale-110 active:scale-95 transition-all cursor-pointer"
+              className="action-btn flex size-7 items-center justify-center rounded-full text-emerald-400 hover:bg-white/10 hover:scale-110 active:scale-95 transition-all cursor-pointer"
             >
               <NoteIcon className="size-3.5" />
             </button>
@@ -347,7 +373,7 @@ export function Companion() {
                 dancePip();
               }}
               title="Nhảy múa (Dance)"
-              className="action-btn flex size-7 items-center justify-center rounded-full text-indigo-400 hover:bg-elevated hover:scale-110 active:scale-95 transition-all cursor-pointer"
+              className="action-btn flex size-7 items-center justify-center rounded-full text-indigo-400 hover:bg-white/10 hover:scale-110 active:scale-95 transition-all cursor-pointer"
             >
               <Sparkles className="size-3.5" />
             </button>
@@ -358,7 +384,7 @@ export function Companion() {
                 setPip({ mood: mood === "sleep" ? "wander" : "sleep" });
               }}
               title={mood === "sleep" ? "Đánh thức" : "Ngủ (Sleep)"}
-              className="action-btn flex size-7 items-center justify-center rounded-full text-blue-400 hover:bg-elevated hover:scale-110 active:scale-95 transition-all cursor-pointer"
+              className="action-btn flex size-7 items-center justify-center rounded-full text-blue-400 hover:bg-white/10 hover:scale-110 active:scale-95 transition-all cursor-pointer"
             >
               {mood === "sleep" ? <Sun className="size-3.5" /> : <Moon className="size-3.5" />}
             </button>
@@ -377,7 +403,7 @@ export function Companion() {
           </div>
         ) : null}
 
-        {/* Pet Avatar Component with Mathematical Stride */}
+        {/* Pet Avatar Component with Mathematical Stride & Accessories */}
         <button
           type="button"
           className="cursor-grab active:cursor-grabbing bg-transparent p-0 transition-transform active:scale-90 hover:scale-105"
@@ -393,6 +419,8 @@ export function Companion() {
             mood={mood}
             petType={petType}
             skin={skin}
+            hat={hat}
+            bodyItem={bodyItem}
           />
         </button>
       </div>
