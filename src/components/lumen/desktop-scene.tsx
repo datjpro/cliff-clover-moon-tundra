@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { isDesktopApp, sendDesktopNotification } from "@/lib/desktop-bridge";
 import { useLumen } from "@/lib/store";
 import { Companion } from "./companion";
 import { Hub } from "./hub";
@@ -15,7 +16,7 @@ function PaperWell() {
     <button
       type="button"
       onClick={request}
-      className="absolute right-[6%] bottom-24 z-[5] hidden w-16 sm:block"
+      className="absolute right-[6%] bottom-24 z-[5] hidden w-16 sm:block cursor-pointer hover:scale-105 transition-transform"
       aria-label="Paper stack — ask Pip to fetch"
       disabled={!enabled}
     >
@@ -44,6 +45,7 @@ export function DesktopScene() {
     void Promise.resolve(useLumen.persist.rehydrate()).then(() => markHydrated());
   }, [markHydrated]);
 
+  // Desktop Global Shortcuts & IPC Event Listeners
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const meta = e.ctrlKey || e.metaKey;
@@ -57,14 +59,34 @@ export function DesktopScene() {
       }
     };
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+
+    // Native Desktop Shell IPC listener
+    let unlisten: (() => void) | null = null;
+    if (isDesktopApp()) {
+      import("@tauri-apps/api/event").then(({ listen }) => {
+        listen("open-quick-capture", () => {
+          setCaptureOpen(true);
+        }).then((un: () => void) => {
+          unlisten = un;
+        });
+      });
+    }
+
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      if (unlisten) unlisten();
+    };
   }, [setCaptureOpen, setHubOpen]);
 
+  // Reminder scheduler with Native OS Notification Bridge
   useEffect(() => {
     const id = window.setInterval(() => {
       const now = Date.now();
       for (const r of useLumen.getState().reminders) {
-        if (!r.done && r.fireAt <= now) fireReminder(r.id);
+        if (!r.done && r.fireAt <= now) {
+          fireReminder(r.id);
+          void sendDesktopNotification("Lumen Reminder", r.title);
+        }
       }
     }, 1000);
     return () => window.clearInterval(id);
@@ -73,7 +95,7 @@ export function DesktopScene() {
   const visibleNotes = layout === "tray" ? [] : notes;
 
   return (
-    <div data-theme={theme} className="h-dvh min-h-dvh bg-bg text-fg">
+    <div data-theme={theme} className="h-dvh min-h-dvh bg-bg text-fg select-none overflow-hidden">
       <div className="wallpaper relative h-full overflow-hidden">
         <div className="pointer-events-none absolute inset-x-[12%] top-[8%] hidden h-[38%] rounded-sm bg-[var(--wall-glow)]/10 sm:block" />
         <PaperWell />
