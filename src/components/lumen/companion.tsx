@@ -43,7 +43,7 @@ export function Companion() {
 
   useEffect(() => {
     pos.current = { x: startX, y: startY };
-  }, [enabled]);
+  }, [enabled, startX, startY]);
 
   useEffect(() => {
     if (!enabled) return;

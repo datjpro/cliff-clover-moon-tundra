@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { sounds } from "./audio";
-import type { LayoutMode, Note, NoteTint, PetSkin, PipMood, PipState, Reminder, ThemeId, ToastItem } from "./types";
+import type { LayoutMode, Note, NoteTint, PetSkin, PipState, Reminder, ThemeId, ToastItem } from "./types";
 import { uid } from "./utils";
 
 const SEED_NOTES: Note[] = [
