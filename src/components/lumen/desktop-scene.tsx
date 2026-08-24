@@ -1,5 +1,6 @@
 import { useEffect, useState, type PointerEvent } from "react";
 import { Eye, EyeOff, LayoutGrid, Plus, Settings, Sparkles, X } from "lucide-react";
+import { sounds } from "@/lib/audio";
 import {
   closeOrQuitDesktopApp,
   isDesktopApp,
@@ -12,27 +13,46 @@ import { Companion } from "./companion";
 import { FloatingTimers } from "./floating-timers";
 import { Hub } from "./hub";
 import { Onboarding } from "./onboarding";
+import { QuickCapture } from "./quick-capture";
 import { StickyNote } from "./sticky-note";
 import { ToastStack } from "./toasts";
 
 function PaperWell() {
   const request = useLumen((s) => s.requestNoteFromPip);
+  const addNote = useLumen((s) => s.addNote);
   const enabled = useLumen((s) => s.pip.enabled);
+
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    sounds.playPop(620);
+    // 1. Immediately spawn a new sticky note
+    addNote({
+      x: Math.max(10, Math.min(80, 50 + (Math.random() - 0.5) * 30)),
+      y: Math.max(10, Math.min(75, 40 + (Math.random() - 0.5) * 25)),
+      body: "",
+      tint: "cream",
+    });
+    // 2. If Pip is enabled, ask Pip to deliver
+    if (enabled) {
+      request();
+    }
+  };
+
   return (
     <button
       type="button"
-      onClick={request}
-      className="interactive-el absolute right-[4%] bottom-20 z-[15] hidden w-16 sm:block cursor-pointer hover:scale-110 transition-transform"
-      aria-label="Paper stack — ask Pip to fetch"
-      disabled={!enabled}
+      onClick={handleClick}
+      className="interactive-el fixed right-[4%] bottom-20 z-[20] w-16 cursor-pointer hover:scale-110 active:scale-95 transition-transform"
+      aria-label="Paper stack — Lấy giấy ghi chú"
+      title="Nhấp để lấy giấy ghi chú mới"
     >
       <span className="relative block h-20">
         <span className="absolute inset-x-1 top-3 h-14 rotate-[-8deg] rounded-sm bg-[#bae6fd] shadow-md" />
         <span className="absolute inset-x-0.5 top-2 h-14 rotate-[4deg] rounded-sm bg-[#bbf7d0] shadow-md" />
-        <span className="absolute inset-x-0 top-0 h-14 rounded-sm bg-[#fef08a] shadow-lg" />
+        <span className="absolute inset-x-0 top-0 h-14 rounded-sm bg-[#fef08a] shadow-lg border border-amber-300" />
       </span>
-      <span className="mt-1 block text-center text-[10px] font-bold tracking-wide text-fg/80 uppercase">
-        Paper
+      <span className="mt-1 block text-center text-[10px] font-bold tracking-wide text-white uppercase bg-black/60 rounded px-1">
+        📝 Paper
       </span>
     </button>
   );
@@ -55,7 +75,7 @@ function FloatingTrayMenu() {
   return (
     <div className="interactive-el fixed right-6 bottom-5 z-[85] flex flex-col items-end gap-2 select-none">
       {open ? (
-        <div className="animate-in fade-in slide-in-from-bottom-2 w-52 rounded-2xl bg-surface/95 text-fg p-2 shadow-[0_20px_45px_rgba(0,0,0,0.45)] border border-border backdrop-blur-xl">
+        <div className="animate-in fade-in slide-in-from-bottom-2 w-52 rounded-2xl bg-[#1c1917]/95 text-[#f5f5f4] p-2 shadow-[0_20px_45px_rgba(0,0,0,0.6)] border border-[#44403c] backdrop-blur-xl">
           <div className="flex flex-col gap-1 text-xs font-semibold">
             {/* + New Note */}
             <button
@@ -64,7 +84,7 @@ function FloatingTrayMenu() {
                 addNote({ body: "", tint: "cream" });
                 setOpen(false);
               }}
-              className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-elevated transition-colors text-left cursor-pointer"
+              className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-white/10 transition-colors text-left cursor-pointer"
             >
               <Plus className="size-4 text-amber-500" />
               <span>{isVi ? "+ Ghi chú mới" : "+ New Note"}</span>
@@ -77,7 +97,7 @@ function FloatingTrayMenu() {
                 setPipEnabled(!pipEnabled);
                 setOpen(false);
               }}
-              className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-elevated transition-colors text-left cursor-pointer"
+              className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-white/10 transition-colors text-left cursor-pointer"
             >
               <Sparkles className="size-4 text-amber-500" />
               <span>{pipEnabled ? (isVi ? "Ẩn Thú cưng 🐾" : "Hide Pet 🐾") : (isVi ? "Hiện Thú cưng 🐾" : "Show Pet 🐾")}</span>
@@ -87,7 +107,7 @@ function FloatingTrayMenu() {
             <button
               type="button"
               onClick={() => setLayout(layout === "tray" ? "stickies" : "tray")}
-              className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-elevated transition-colors text-left cursor-pointer"
+              className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-white/10 transition-colors text-left cursor-pointer"
             >
               {layout === "tray" ? (
                 <>
@@ -109,7 +129,7 @@ function FloatingTrayMenu() {
                 setHubOpen(true);
                 setOpen(false);
               }}
-              className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-elevated transition-colors text-left cursor-pointer"
+              className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-white/10 transition-colors text-left cursor-pointer"
             >
               <Settings className="size-4 text-muted" />
               <span>{isVi ? "Cài đặt" : "Settings"}</span>
@@ -132,7 +152,7 @@ function FloatingTrayMenu() {
             <button
               type="button"
               onClick={() => void closeOrQuitDesktopApp()}
-              className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl hover:bg-red-500/20 text-red-500 transition-colors text-left cursor-pointer text-[11px]"
+              className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl hover:bg-red-500/20 text-red-400 transition-colors text-left cursor-pointer text-[11px]"
             >
               <X className="size-3.5" />
               <span>{isVi ? "Thoát ứng dụng" : "Quit"}</span>
@@ -145,7 +165,7 @@ function FloatingTrayMenu() {
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="flex size-10 items-center justify-center rounded-2xl bg-surface/90 hover:bg-surface text-fg shadow-xl border border-border backdrop-blur-md hover:scale-110 active:scale-95 transition-transform cursor-pointer"
+        className="flex size-10 items-center justify-center rounded-2xl bg-[#1c1917]/90 hover:bg-[#1c1917] text-white shadow-2xl border border-[#44403c] backdrop-blur-md hover:scale-110 active:scale-95 transition-transform cursor-pointer"
         title="Lumen Overlay Menu"
       >
         <span className="text-xl">🦊</span>
@@ -163,6 +183,7 @@ export function DesktopScene() {
   const tidyNotes = useLumen((s) => s.tidyNotes);
   const setPipEnabled = useLumen((s) => s.setPipEnabled);
   const markHydrated = useLumen((s) => s.markHydrated);
+  const setCaptureOpen = useLumen((s) => s.setCaptureOpen);
   const setHubOpen = useLumen((s) => s.setHubOpen);
   const fireReminder = useLumen((s) => s.fireReminder);
 
@@ -195,14 +216,16 @@ export function DesktopScene() {
       const meta = e.ctrlKey || e.metaKey;
       if (meta && e.shiftKey && e.key.toLowerCase() === "n") {
         e.preventDefault();
-        addNote({ body: "", tint: "cream" });
+        setCaptureOpen(true);
       }
       if (e.key === "Escape") {
+        setCaptureOpen(false);
         setHubOpen(false);
       }
     };
     window.addEventListener("keydown", onKey);
 
+    let unlistenCapture: (() => void) | null = null;
     let unlistenAdd: (() => void) | null = null;
     let unlistenArrange: (() => void) | null = null;
     let unlistenToggle: (() => void) | null = null;
@@ -212,6 +235,9 @@ export function DesktopScene() {
 
     if (isDesktopApp()) {
       import("@tauri-apps/api/event").then(({ listen }) => {
+        listen("open-quick-capture", () => setCaptureOpen(true)).then((un) => {
+          unlistenCapture = un;
+        });
         listen("add-new-note", () => addNote({ body: "", tint: "cream" })).then((un) => {
           unlistenAdd = un;
         });
@@ -239,6 +265,7 @@ export function DesktopScene() {
 
     return () => {
       window.removeEventListener("keydown", onKey);
+      if (unlistenCapture) unlistenCapture();
       if (unlistenAdd) unlistenAdd();
       if (unlistenArrange) unlistenArrange();
       if (unlistenToggle) unlistenToggle();
@@ -246,7 +273,7 @@ export function DesktopScene() {
       if (unlistenPet) unlistenPet();
       if (unlistenApp) unlistenApp();
     };
-  }, [setHubOpen, addNote, tidyNotes, setLayout, setPipEnabled]);
+  }, [setCaptureOpen, setHubOpen, addNote, tidyNotes, setLayout, setPipEnabled]);
 
   // Reminder scheduler
   useEffect(() => {
@@ -288,6 +315,7 @@ export function DesktopScene() {
       <BallToy />
       <Companion />
       <ToastStack />
+      <QuickCapture />
       <Hub />
       <Onboarding />
       <FloatingTrayMenu />

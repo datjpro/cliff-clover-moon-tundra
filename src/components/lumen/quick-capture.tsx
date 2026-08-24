@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { DICTIONARY } from "@/lib/i18n";
 import { useLumen } from "@/lib/store";
+import { sounds } from "@/lib/audio";
+import { Sparkles, X } from "lucide-react";
 
 export function QuickCapture() {
   const lang = useLumen((s) => s.lang);
@@ -15,7 +17,8 @@ export function QuickCapture() {
   useEffect(() => {
     if (open) {
       setBody("");
-      const t = window.setTimeout(() => ref.current?.focus(), 40);
+      sounds.playPop(620);
+      const t = window.setTimeout(() => ref.current?.focus(), 50);
       return () => window.clearTimeout(t);
     }
   }, [open]);
@@ -24,26 +27,49 @@ export function QuickCapture() {
 
   const save = () => {
     const text = body.trim();
-    if (text) addNote({ body: text, x: 30 + Math.random() * 20, y: 24, tint: "cream" });
+    if (text) {
+      addNote({
+        body: text,
+        x: 35 + Math.random() * 15,
+        y: 28 + Math.random() * 15,
+        tint: "cream",
+      });
+    }
     setCaptureOpen(false);
   };
 
   return (
-    <div className="absolute inset-0 z-[75] flex items-start justify-center px-4 pt-[18vh] sm:pt-[22vh]">
+    <div className="fixed inset-0 z-[95] flex items-center justify-center p-4">
+      {/* Dimmed backdrop */}
       <button
         type="button"
-        className="absolute inset-0 bg-bg/40 cursor-pointer"
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm cursor-pointer"
         aria-label={dict.close}
         onClick={() => setCaptureOpen(false)}
       />
+
+      {/* Solid Opaque Dialog */}
       <form
-        className="relative w-full max-w-md rounded-xl bg-surface p-4 shadow-[var(--shadow-float)] ring-1 ring-border"
+        className="interactive-el relative z-10 w-full max-w-md rounded-2xl bg-[#1c1917] p-5 shadow-[0_25px_60px_rgba(0,0,0,0.85)] border border-[#44403c] text-white animate-in zoom-in-95 fade-in duration-150"
         onSubmit={(e) => {
           e.preventDefault();
           save();
         }}
       >
-        <p className="mb-2 font-display text-base font-medium">{dict.quickNote}</p>
+        <div className="flex items-center justify-between pb-2 border-b border-[#38332e] mb-3">
+          <p className="font-display text-sm font-bold text-amber-400 flex items-center gap-1.5">
+            <Sparkles className="size-4" />
+            <span>{dict.quickNote} (Ctrl + Shift + N)</span>
+          </p>
+          <button
+            type="button"
+            onClick={() => setCaptureOpen(false)}
+            className="p-1 rounded hover:bg-white/10 text-[#a8a29e] hover:text-white cursor-pointer"
+          >
+            <X className="size-4" />
+          </button>
+        </div>
+
         <textarea
           ref={ref}
           value={body}
@@ -55,22 +81,27 @@ export function QuickCapture() {
             }
           }}
           rows={4}
-          placeholder={dict.typeAndPressEnter}
-          className="w-full resize-none rounded-md bg-elevated px-3 py-2 text-sm text-fg outline-none placeholder:text-subtle focus-visible:ring-2 focus-visible:ring-accent/60"
+          placeholder="Nhập nội dung ghi chú nhanh... (Bấm Enter để lưu)"
+          className="w-full resize-none rounded-xl bg-[#292524] p-3 text-sm text-white outline-none placeholder:text-[#78716c] border border-[#57534e] focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
         />
+
         <div className="mt-3 flex items-center justify-between gap-2">
-          <p className="text-[11px] text-subtle">{dict.shiftEnterHint}</p>
+          <p className="text-[11px] text-[#a8a29e]">Shift + Enter để xuống dòng</p>
           <div className="flex gap-2">
             <Button
               type="button"
               variant="ghost"
               size="sm"
-              className="cursor-pointer"
+              className="cursor-pointer text-[#d6d3d1] hover:bg-white/10"
               onClick={() => setCaptureOpen(false)}
             >
               {dict.cancel}
             </Button>
-            <Button type="submit" size="sm" className="cursor-pointer">
+            <Button
+              type="submit"
+              size="sm"
+              className="cursor-pointer bg-amber-500 text-black hover:bg-amber-400 font-bold px-4"
+            >
               {dict.save}
             </Button>
           </div>

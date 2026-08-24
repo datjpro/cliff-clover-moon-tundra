@@ -44,12 +44,12 @@ function createWindow() {
     }, 1500);
   });
 
-  // Global hotkey Ctrl+Shift+N to create a quick note from background
+  // Global hotkey Ctrl+Shift+N to open quick capture from background
   globalShortcut.register("CommandOrControl+Shift+N", () => {
     if (!mainWindow) return;
     mainWindow.show();
     mainWindow.focus();
-    mainWindow.webContents.send("add-new-note");
+    mainWindow.webContents.send("open-quick-capture");
   });
 
   // IPC channel: Toggle Mouse Click-Through on transparent screen areas
