@@ -1,11 +1,13 @@
 import { useState } from "react";
-import { Cookie, Heart, Music, Sparkles, Volume2, VolumeX, X } from "lucide-react";
+import { Cookie, Globe, Heart, Music, Pin, Sparkles, Volume2, VolumeX, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toggleAlwaysOnTop } from "@/lib/desktop-bridge";
+import { DICTIONARY, type Language } from "@/lib/i18n";
 import { LAYOUTS, THEMES } from "@/lib/themes";
 import { PET_SKINS, useLumen } from "@/lib/store";
 import { PipFigure } from "./pip";
@@ -14,10 +16,14 @@ import { cn } from "@/lib/utils";
 export function Hub() {
   const open = useLumen((s) => s.hubOpen);
   const setHubOpen = useLumen((s) => s.setHubOpen);
+  const lang = useLumen((s) => s.lang);
+  const setLang = useLumen((s) => s.setLang);
   const theme = useLumen((s) => s.theme);
   const setTheme = useLumen((s) => s.setTheme);
   const layout = useLumen((s) => s.layout);
   const setLayout = useLumen((s) => s.setLayout);
+  const alwaysOnTop = useLumen((s) => s.alwaysOnTop);
+  const setAlwaysOnTop = useLumen((s) => s.setAlwaysOnTop);
   const pip = useLumen((s) => s.pip);
   const setPipEnabled = useLumen((s) => s.setPipEnabled);
   const setPipSkin = useLumen((s) => s.setPipSkin);
@@ -34,55 +40,65 @@ export function Hub() {
   const resetDemo = useLumen((s) => s.resetDemo);
   const [title, setTitle] = useState("");
 
+  const dict = DICTIONARY[lang];
+
   if (!open) return null;
+
+  const handleAlwaysOnTopChange = (val: boolean) => {
+    setAlwaysOnTop(val);
+    void toggleAlwaysOnTop(val);
+  };
 
   return (
     <section
       className={cn(
         "absolute z-[70] flex flex-col overflow-hidden bg-surface text-fg shadow-[var(--shadow-float)]",
-        "inset-x-3 bottom-16 top-auto max-h-[min(600px,calc(100%-5.5rem))] rounded-xl sm:inset-auto sm:top-16 sm:left-6 sm:h-[560px] sm:w-[400px]",
+        "inset-x-3 bottom-16 top-auto max-h-[min(600px,calc(100%-5.5rem))] rounded-xl sm:inset-auto sm:top-16 sm:left-6 sm:h-[560px] sm:w-[420px]",
       )}
       role="dialog"
       aria-label="Lumen hub"
     >
+      {/* Hub Header */}
       <header className="flex items-center justify-between px-4 py-3">
         <div>
-          <p className="font-display text-lg font-medium tracking-tight">Lumen Hub</p>
-          <p className="text-xs text-muted">Desk Companion & Spatial Workspace</p>
+          <p className="font-display text-lg font-medium tracking-tight">{dict.appName}</p>
+          <p className="text-xs text-muted">{dict.subtagline}</p>
         </div>
         <button
           type="button"
           onClick={() => setHubOpen(false)}
-          className="flex size-9 items-center justify-center rounded-md hover:bg-elevated"
-          aria-label="Close hub"
+          className="flex size-9 items-center justify-center rounded-md hover:bg-elevated cursor-pointer"
+          aria-label={dict.close}
         >
           <X className="size-4" />
         </button>
       </header>
       <Separator />
+
       <Tabs defaultValue="pip" className="flex min-h-0 flex-1 flex-col">
         <div className="px-3 pt-3">
           <TabsList className="grid grid-cols-4">
-            <TabsTrigger value="pip">Pip</TabsTrigger>
-            <TabsTrigger value="look">Look</TabsTrigger>
-            <TabsTrigger value="remind">Remind</TabsTrigger>
-            <TabsTrigger value="about">About</TabsTrigger>
+            <TabsTrigger value="pip">{dict.tabs.pip}</TabsTrigger>
+            <TabsTrigger value="look">{dict.tabs.look}</TabsTrigger>
+            <TabsTrigger value="remind">{dict.tabs.remind}</TabsTrigger>
+            <TabsTrigger value="about">{dict.tabs.about}</TabsTrigger>
           </TabsList>
         </div>
+
         <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
-          {/* PET COMPANION STUDIO TAB */}
+          {/* TAB 1: PIP COMPANION STUDIO */}
           <TabsContent value="pip" className="space-y-4">
             <div className="flex items-center justify-between gap-3 rounded-lg bg-elevated px-3 py-3 shadow-[var(--shadow-border)]">
               <div>
-                <p className="text-sm font-medium">Enable Companion</p>
-                <p className="text-xs text-muted">Pip roams your desk and fetches notes</p>
+                <p className="text-sm font-medium">{dict.pipStudio.enableCompanion}</p>
+                <p className="text-xs text-muted">{dict.pipStudio.enableDesc}</p>
               </div>
               <Switch checked={pip.enabled} onCheckedChange={setPipEnabled} />
             </div>
 
             {pip.enabled ? (
               <>
-                {/* Pet Status Card & Preview */}
+                {/* Pet Status Card & Live Avatar Preview */}
                 <div className="flex items-center gap-4 rounded-xl bg-elevated/70 p-3 ring-1 ring-border">
                   <div className="flex size-16 items-center justify-center rounded-lg bg-surface shadow-inner">
                     <PipFigure
@@ -96,7 +112,9 @@ export function Hub() {
                   </div>
                   <div className="flex-1 space-y-1.5">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold tracking-wide uppercase text-muted">Happiness</span>
+                      <span className="text-xs font-semibold tracking-wide uppercase text-muted">
+                        {dict.pipStudio.happiness}
+                      </span>
                       <span className="text-xs font-mono text-emerald-400">{pip.happiness}%</span>
                     </div>
                     <div className="h-1.5 w-full overflow-hidden rounded-full bg-surface">
@@ -106,58 +124,66 @@ export function Hub() {
                       />
                     </div>
                     <div className="flex items-center justify-between pt-0.5 text-[11px] text-muted">
-                      <span>Treats Eaten: <b>{pip.treatsEaten}</b></span>
-                      <span>Mood: <b className="capitalize text-fg">{pip.mood}</b></span>
+                      <span>
+                        {dict.pipStudio.treatsEaten}: <b>{pip.treatsEaten}</b>
+                      </span>
+                      <span>
+                        {dict.pipStudio.mood}: <b className="capitalize text-fg">{pip.mood}</b>
+                      </span>
                     </div>
                   </div>
                 </div>
 
-                {/* Pet Quick Actions */}
+                {/* Quick Pet Interactions */}
                 <div>
-                  <p className="mb-2 text-xs font-medium tracking-wide text-muted uppercase">Pet Interactions</p>
+                  <p className="mb-2 text-xs font-medium tracking-wide text-muted uppercase">
+                    {dict.pipStudio.petInteractions}
+                  </p>
                   <div className="grid grid-cols-2 gap-2">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={petPip}
-                      className="flex items-center gap-1.5 justify-center"
+                      className="flex items-center gap-1.5 justify-center cursor-pointer"
                     >
                       <Heart className="size-3.5 text-rose-400 fill-rose-400/30" />
-                      <span>Pet Pip</span>
+                      <span>{dict.pipStudio.petPip}</span>
                     </Button>
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={feedPip}
-                      className="flex items-center gap-1.5 justify-center"
+                      className="flex items-center gap-1.5 justify-center cursor-pointer"
                     >
                       <Cookie className="size-3.5 text-amber-400" />
-                      <span>Feed Snack</span>
+                      <span>{dict.pipStudio.feedSnack}</span>
                     </Button>
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={dancePip}
-                      className="flex items-center gap-1.5 justify-center"
+                      className="flex items-center gap-1.5 justify-center cursor-pointer"
                     >
                       <Sparkles className="size-3.5 text-indigo-400" />
-                      <span>Dance Party</span>
+                      <span>{dict.pipStudio.danceParty}</span>
                     </Button>
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={requestNoteFromPip}
-                      className="flex items-center gap-1.5 justify-center"
+                      className="flex items-center gap-1.5 justify-center cursor-pointer"
                     >
                       <Music className="size-3.5 text-emerald-400" />
-                      <span>Fetch Note</span>
+                      <span>{dict.pipStudio.fetchNote}</span>
                     </Button>
                   </div>
                 </div>
 
-                {/* Pet Skin Selector */}
+                {/* Pet Skins Palette */}
                 <div>
-                  <p className="mb-2 text-xs font-medium tracking-wide text-muted uppercase">Pet Skin & Palette</p>
+                  <p className="mb-2 text-xs font-medium tracking-wide text-muted uppercase">
+                    {dict.pipStudio.skinsAndPalette}
+                  </p>
                   <div className="grid grid-cols-1 gap-1.5">
                     {PET_SKINS.map((s) => (
                       <button
@@ -165,7 +191,7 @@ export function Hub() {
                         type="button"
                         onClick={() => setPipSkin(s.id)}
                         className={cn(
-                          "flex items-center justify-between rounded-lg bg-elevated px-3 py-2 text-left shadow-[var(--shadow-border)] transition-all",
+                          "flex items-center justify-between rounded-lg bg-elevated px-3 py-2 text-left shadow-[var(--shadow-border)] transition-all cursor-pointer",
                           pip.skin === s.id && "ring-2 ring-accent",
                         )}
                       >
@@ -176,21 +202,70 @@ export function Hub() {
                           />
                           <span className="text-xs font-medium">{s.name}</span>
                         </div>
-                        {pip.skin === s.id ? <Badge className="bg-accent/20 text-accent">Active</Badge> : null}
+                        {pip.skin === s.id ? (
+                          <Badge className="bg-accent/20 text-accent">{dict.active}</Badge>
+                        ) : null}
                       </button>
                     ))}
                   </div>
                 </div>
               </>
             ) : (
-              <p className="text-xs text-muted text-center py-6">Enable Pip above to interact with your desktop companion.</p>
+              <p className="text-xs text-muted text-center py-6">{dict.pipStudio.disabledDesc}</p>
             )}
           </TabsContent>
 
-          {/* LOOK & THEME TAB */}
+          {/* TAB 2: LOOK & LANGUAGE & DESKTOP SETTINGS */}
           <TabsContent value="look" className="space-y-5">
+            {/* Language Switcher */}
             <div>
-              <p className="mb-2 text-xs font-medium tracking-wide text-muted uppercase">Theme</p>
+              <p className="mb-2 text-xs font-medium tracking-wide text-muted uppercase flex items-center gap-1.5">
+                <Globe className="size-3.5 text-accent" />
+                <span>{dict.look.language}</span>
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setLang("vi")}
+                  className={cn(
+                    "flex items-center justify-between rounded-lg bg-elevated px-3 py-2.5 text-left shadow-[var(--shadow-border)] transition-all cursor-pointer",
+                    lang === "vi" && "ring-2 ring-accent",
+                  )}
+                >
+                  <span className="text-sm font-medium">🇻🇳 Tiếng Việt</span>
+                  {lang === "vi" ? <Badge className="bg-accent/20 text-accent">Active</Badge> : null}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setLang("en")}
+                  className={cn(
+                    "flex items-center justify-between rounded-lg bg-elevated px-3 py-2.5 text-left shadow-[var(--shadow-border)] transition-all cursor-pointer",
+                    lang === "en" && "ring-2 ring-accent",
+                  )}
+                >
+                  <span className="text-sm font-medium">🇬🇧 English</span>
+                  {lang === "en" ? <Badge className="bg-accent/20 text-accent">Active</Badge> : null}
+                </button>
+              </div>
+            </div>
+
+            {/* Always-on-top Desktop Pin */}
+            <div className="flex items-center justify-between gap-3 rounded-lg bg-elevated px-3 py-3 shadow-[var(--shadow-border)]">
+              <div className="flex items-center gap-2">
+                <Pin className="size-4 text-accent" />
+                <div>
+                  <p className="text-sm font-medium">{dict.look.alwaysOnTop}</p>
+                  <p className="text-xs text-muted">{dict.look.alwaysOnTopDesc}</p>
+                </div>
+              </div>
+              <Switch checked={alwaysOnTop} onCheckedChange={handleAlwaysOnTopChange} />
+            </div>
+
+            {/* Themes */}
+            <div>
+              <p className="mb-2 text-xs font-medium tracking-wide text-muted uppercase">
+                {dict.look.theme}
+              </p>
               <div className="grid grid-cols-2 gap-2">
                 {THEMES.map((t) => (
                   <button
@@ -198,7 +273,7 @@ export function Hub() {
                     type="button"
                     onClick={() => setTheme(t.id)}
                     className={cn(
-                      "rounded-lg bg-elevated px-3 py-3 text-left shadow-[var(--shadow-border)]",
+                      "rounded-lg bg-elevated px-3 py-3 text-left shadow-[var(--shadow-border)] cursor-pointer transition-all",
                       theme === t.id && "ring-2 ring-accent",
                     )}
                   >
@@ -208,8 +283,12 @@ export function Hub() {
                 ))}
               </div>
             </div>
+
+            {/* Layouts */}
             <div>
-              <p className="mb-2 text-xs font-medium tracking-wide text-muted uppercase">Layout</p>
+              <p className="mb-2 text-xs font-medium tracking-wide text-muted uppercase">
+                {dict.look.layout}
+              </p>
               <div className="space-y-2">
                 {LAYOUTS.map((l) => (
                   <button
@@ -217,7 +296,7 @@ export function Hub() {
                     type="button"
                     onClick={() => setLayout(l.id)}
                     className={cn(
-                      "flex w-full items-center justify-between rounded-lg bg-elevated px-3 py-3 text-left shadow-[var(--shadow-border)]",
+                      "flex w-full items-center justify-between rounded-lg bg-elevated px-3 py-3 text-left shadow-[var(--shadow-border)] cursor-pointer transition-all",
                       layout === l.id && "ring-2 ring-accent",
                     )}
                   >
@@ -225,32 +304,34 @@ export function Hub() {
                       <span className="block text-sm font-medium">{l.name}</span>
                       <span className="block text-xs text-muted">{l.line}</span>
                     </span>
-                    {layout === l.id ? <Badge>On</Badge> : null}
+                    {layout === l.id ? <Badge className="bg-accent/20 text-accent">{dict.on}</Badge> : null}
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Audio Effects Switch */}
+            {/* Procedural Audio Switch */}
             <div className="flex items-center justify-between gap-3 rounded-lg bg-elevated px-3 py-3 shadow-[var(--shadow-border)]">
               <div className="flex items-center gap-2">
-                {pip.soundEnabled ? <Volume2 className="size-4 text-accent" /> : <VolumeX className="size-4 text-muted" />}
+                {pip.soundEnabled ? (
+                  <Volume2 className="size-4 text-accent" />
+                ) : (
+                  <VolumeX className="size-4 text-muted" />
+                )}
                 <div>
-                  <p className="text-sm font-medium">Procedural Audio</p>
-                  <p className="text-xs text-muted">Tactile sound effects & pet purrs</p>
+                  <p className="text-sm font-medium">{dict.look.proceduralAudio}</p>
+                  <p className="text-xs text-muted">{dict.look.audioDesc}</p>
                 </div>
               </div>
               <Switch checked={pip.soundEnabled} onCheckedChange={(val) => toggleSound(val)} />
             </div>
 
-            <p className="text-xs text-subtle">{notes.length} notes currently on desk</p>
+            <p className="text-xs text-subtle">{notes.length} {dict.notesOnDesk}</p>
           </TabsContent>
 
-          {/* REMINDERS TAB */}
+          {/* TAB 3: REMINDERS */}
           <TabsContent value="remind" className="space-y-4">
-            <p className="text-xs text-muted">
-              Reminders trigger a toast and ask Pip to gently nudge you.
-            </p>
+            <p className="text-xs text-muted">{dict.remindHint}</p>
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -261,11 +342,13 @@ export function Hub() {
               className="flex gap-2"
             >
               <Input
-                placeholder="In 2 minutes: stretch, hydrate…"
+                placeholder={dict.remindPlaceholder}
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
               />
-              <Button type="submit">Add</Button>
+              <Button type="submit" className="cursor-pointer">
+                {dict.add}
+              </Button>
             </form>
             <div className="space-y-2">
               {reminders.map((r) => {
@@ -278,7 +361,7 @@ export function Hub() {
                     <div>
                       <p className={r.done ? "line-through text-muted" : "font-medium"}>{r.title}</p>
                       <p className="text-xs text-muted">
-                        {r.done ? "Fired" : `in ~${Math.ceil(diff / 60)}m (${diff}s)`}
+                        {r.done ? dict.fired : `${dict.reminderIn} ~${Math.ceil(diff / 60)}m (${diff}s)`}
                       </p>
                     </div>
                     {!r.done ? (
@@ -286,18 +369,20 @@ export function Hub() {
                         size="sm"
                         variant="outline"
                         type="button"
+                        className="cursor-pointer"
                         onClick={() => fireReminder(r.id)}
                       >
-                        Fire now
+                        {dict.fireNow}
                       </Button>
                     ) : (
                       <Button
                         size="sm"
                         variant="ghost"
                         type="button"
+                        className="cursor-pointer"
                         onClick={() => completeReminder(r.id)}
                       >
-                        Dismiss
+                        {dict.dismiss}
                       </Button>
                     )}
                   </div>
@@ -306,18 +391,22 @@ export function Hub() {
             </div>
           </TabsContent>
 
-          {/* ABOUT TAB */}
+          {/* TAB 4: ABOUT & SHORTCUTS */}
           <TabsContent value="about" className="space-y-4 text-sm text-muted">
-            <p className="leading-relaxed">
-              <strong className="text-fg">Lumen</strong> is a desktop spatial workspace built for focus, warmth, and craftmanship. All notes stay strictly on your device.
-            </p>
-            <div className="rounded-lg bg-elevated p-3 text-xs space-y-1">
-              <p>• <b>Ctrl + Shift + N</b>: Quick Capture</p>
-              <p>• <b>Click / Double-click Pip</b>: Pet & Snack Menu</p>
-              <p>• <b>Escape</b>: Close Hub & Overlays</p>
+            <p className="leading-relaxed">{dict.about.desc}</p>
+            <div className="rounded-lg bg-elevated p-3 text-xs space-y-1.5">
+              <p className="font-semibold text-fg mb-1">{dict.about.shortcutsTitle}:</p>
+              <p>• <b>Ctrl + Shift + N</b>: {dict.about.shortcutCapture}</p>
+              <p>• <b>Click / Double-click Pip</b>: {dict.about.shortcutPet}</p>
+              <p>• <b>Escape</b>: {dict.about.shortcutEsc}</p>
             </div>
-            <Button variant="outline" className="w-full" type="button" onClick={resetDemo}>
-              Reset Demo to Seed Notes
+            <Button
+              variant="outline"
+              className="w-full cursor-pointer"
+              type="button"
+              onClick={resetDemo}
+            >
+              {dict.about.resetButton}
             </Button>
           </TabsContent>
         </div>

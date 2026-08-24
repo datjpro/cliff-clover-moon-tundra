@@ -1,8 +1,9 @@
 export type ThemeId = "ink" | "paper" | "glass" | "moss";
-export type LayoutMode = "stickies" | "sidebar" | "tray";
+export type LayoutMode = "stickies" | "sidebar" | "tray" | "corner";
 export type NoteTint = "cream" | "mist" | "sage" | "blush";
 export type PipMood = "idle" | "wander" | "fetch" | "deliver" | "nudge" | "sleep" | "dance" | "eating" | "focus";
 export type PetSkin = "classic" | "matcha" | "amber" | "cyber" | "obsidian";
+export type Language = "en" | "vi";
 
 export type Note = {
   id: string;
@@ -14,6 +15,7 @@ export type Note = {
   z: number;
   createdAt: number;
   pinned?: boolean;
+  collapsed?: boolean;
 };
 
 export type Reminder = {

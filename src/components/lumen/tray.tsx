@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Bell, PenLine, Settings2 } from "lucide-react";
+import { DICTIONARY } from "@/lib/i18n";
 import { useLumen } from "@/lib/store";
 import { PipFigure } from "./pip";
 
@@ -21,6 +22,8 @@ function Clock() {
 }
 
 export function Tray() {
+  const lang = useLumen((s) => s.lang);
+  const dict = DICTIONARY[lang];
   const setHubOpen = useLumen((s) => s.setHubOpen);
   const hubOpen = useLumen((s) => s.hubOpen);
   const setCaptureOpen = useLumen((s) => s.setCaptureOpen);
@@ -42,13 +45,14 @@ export function Tray() {
           <span className="grid size-6 place-items-center rounded-sm bg-accent/20">
             <span className="block size-2.5 rounded-full bg-accent" />
           </span>
-          <span className="hidden font-display text-sm font-medium sm:inline">Lumen</span>
+          <span className="hidden font-display text-sm font-medium sm:inline">{dict.appName}</span>
         </button>
         <button
           type="button"
           onClick={() => setCaptureOpen(true)}
           className="flex size-9 items-center justify-center rounded-md hover:bg-white/5 cursor-pointer"
-          aria-label="Quick note"
+          aria-label={dict.quickNote}
+          title={dict.quickNote}
         >
           <PenLine className="size-4" />
         </button>
@@ -56,7 +60,8 @@ export function Tray() {
           type="button"
           onClick={() => setHubOpen(true)}
           className="relative flex size-9 items-center justify-center rounded-md hover:bg-white/5 cursor-pointer"
-          aria-label="Reminders"
+          aria-label={dict.reminders}
+          title={dict.reminders}
         >
           <Bell className="size-4" />
           {pending > 0 ? (
@@ -69,7 +74,8 @@ export function Tray() {
           type="button"
           onClick={() => (pipEnabled ? requestNoteFromPip() : setPipEnabled(true))}
           className="hidden h-9 items-center gap-1 rounded-md px-1.5 hover:bg-white/5 sm:flex cursor-pointer"
-          aria-label={pipEnabled ? "Ask Pip for a note" : "Show Pip"}
+          aria-label={pipEnabled ? dict.pipStudio.fetchNote : dict.pipStudio.enableCompanion}
+          title={pipEnabled ? dict.pipStudio.fetchNote : dict.pipStudio.enableCompanion}
         >
           <span className="block h-8 w-8 scale-75">
             <PipFigure walking={false} carrying={false} facing={-1} skin={pipSkin} />
@@ -79,7 +85,8 @@ export function Tray() {
           type="button"
           onClick={() => setHubOpen(true)}
           className="flex size-9 items-center justify-center rounded-md hover:bg-white/5 cursor-pointer"
-          aria-label="Settings"
+          aria-label={dict.settings}
+          title={dict.settings}
         >
           <Settings2 className="size-4" />
         </button>

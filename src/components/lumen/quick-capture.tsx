@@ -1,8 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { DICTIONARY } from "@/lib/i18n";
 import { useLumen } from "@/lib/store";
 
 export function QuickCapture() {
+  const lang = useLumen((s) => s.lang);
+  const dict = DICTIONARY[lang];
   const open = useLumen((s) => s.captureOpen);
   const setCaptureOpen = useLumen((s) => s.setCaptureOpen);
   const addNote = useLumen((s) => s.addNote);
@@ -29,18 +32,18 @@ export function QuickCapture() {
     <div className="absolute inset-0 z-[75] flex items-start justify-center px-4 pt-[18vh] sm:pt-[22vh]">
       <button
         type="button"
-        className="absolute inset-0 bg-bg/40"
-        aria-label="Dismiss capture"
+        className="absolute inset-0 bg-bg/40 cursor-pointer"
+        aria-label={dict.close}
         onClick={() => setCaptureOpen(false)}
       />
       <form
-        className="relative w-full max-w-md rounded-xl bg-surface p-4 shadow-[var(--shadow-float)]"
+        className="relative w-full max-w-md rounded-xl bg-surface p-4 shadow-[var(--shadow-float)] ring-1 ring-border"
         onSubmit={(e) => {
           e.preventDefault();
           save();
         }}
       >
-        <p className="mb-2 font-display text-base font-medium">Quick note</p>
+        <p className="mb-2 font-display text-base font-medium">{dict.quickNote}</p>
         <textarea
           ref={ref}
           value={body}
@@ -52,17 +55,23 @@ export function QuickCapture() {
             }
           }}
           rows={4}
-          placeholder="Type and press Enter"
+          placeholder={dict.typeAndPressEnter}
           className="w-full resize-none rounded-md bg-elevated px-3 py-2 text-sm text-fg outline-none placeholder:text-subtle focus-visible:ring-2 focus-visible:ring-accent/60"
         />
         <div className="mt-3 flex items-center justify-between gap-2">
-          <p className="text-[11px] text-subtle">Shift + Enter for a new line</p>
+          <p className="text-[11px] text-subtle">{dict.shiftEnterHint}</p>
           <div className="flex gap-2">
-            <Button type="button" variant="ghost" size="sm" onClick={() => setCaptureOpen(false)}>
-              Cancel
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="cursor-pointer"
+              onClick={() => setCaptureOpen(false)}
+            >
+              {dict.cancel}
             </Button>
-            <Button type="submit" size="sm">
-              Save
+            <Button type="submit" size="sm" className="cursor-pointer">
+              {dict.save}
             </Button>
           </div>
         </div>

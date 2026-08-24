@@ -14,6 +14,7 @@ function createWindow() {
     frame: false,
     hasShadow: false,
     alwaysOnTop: true,
+    skipTaskbar: false,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
@@ -21,13 +22,17 @@ function createWindow() {
     },
   });
 
+  // Keep window floating above normal windows
+  mainWindow.setAlwaysOnTop(true, "screen-saver");
+
   const devUrl = "http://localhost:8080";
   mainWindow.loadURL(devUrl).catch(() => {
-    // If dev server not yet ready, retry shortly
-    setTimeout(() => mainWindow.loadURL(devUrl), 1500);
+    setTimeout(() => {
+      if (mainWindow) mainWindow.loadURL(devUrl);
+    }, 1500);
   });
 
-  // Global hotkey Ctrl+Shift+N
+  // Global hotkey Ctrl+Shift+N (Command+Shift+N on macOS)
   globalShortcut.register("CommandOrControl+Shift+N", () => {
     if (!mainWindow) return;
     mainWindow.show();
@@ -35,14 +40,30 @@ function createWindow() {
     mainWindow.webContents.send("open-quick-capture");
   });
 
-  // System Tray
+  // IPC channel to toggle always-on-top from UI
+  ipcMain.on("set-always-on-top", (event, flag) => {
+    if (mainWindow) {
+      mainWindow.setAlwaysOnTop(Boolean(flag), "screen-saver");
+    }
+  });
+
+  ipcMain.on("minimize-window", () => {
+    if (mainWindow) mainWindow.minimize();
+  });
+
+  ipcMain.on("hide-window", () => {
+    if (mainWindow) mainWindow.hide();
+  });
+
+  // System Tray Menu
   try {
     const iconPath = path.join(__dirname, "../src-tauri/icons/32x32.png");
     tray = new Tray(iconPath);
     const contextMenu = Menu.buildFromTemplate([
       {
-        label: "Show / Hide Lumen",
+        label: "Hiển thị / Thu gọn Lumen",
         click: () => {
+          if (!mainWindow) return;
           if (mainWindow.isVisible()) mainWindow.hide();
           else {
             mainWindow.show();
@@ -51,19 +72,21 @@ function createWindow() {
         },
       },
       {
-        label: "Quick Note (Ctrl+Shift+N)",
+        label: "Ghi chú nhanh (Ctrl+Shift+N)",
         click: () => {
+          if (!mainWindow) return;
           mainWindow.show();
           mainWindow.focus();
           mainWindow.webContents.send("open-quick-capture");
         },
       },
       { type: "separator" },
-      { label: "Quit Lumen", click: () => app.quit() },
+      { label: "Thoát ứng dụng (Quit)", click: () => app.quit() },
     ]);
     tray.setToolTip("Lumen — Desktop Spatial Workspace");
     tray.setContextMenu(contextMenu);
     tray.on("click", () => {
+      if (!mainWindow) return;
       if (mainWindow.isVisible()) mainWindow.hide();
       else {
         mainWindow.show();
@@ -71,7 +94,7 @@ function createWindow() {
       }
     });
   } catch (err) {
-    console.debug("[Electron] Tray creation skipped:", err?.message);
+    console.debug("[Electron] Tray initialization note:", err?.message);
   }
 
   mainWindow.on("closed", () => {

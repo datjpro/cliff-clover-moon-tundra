@@ -1,46 +1,52 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { sounds } from "./audio";
-import type { LayoutMode, Note, NoteTint, PetSkin, PipState, Reminder, ThemeId, ToastItem } from "./types";
+import { DICTIONARY } from "./i18n";
+import type { Language, LayoutMode, Note, NoteTint, PetSkin, PipState, Reminder, ThemeId, ToastItem } from "./types";
 import { uid } from "./utils";
 
 const SEED_NOTES: Note[] = [
   {
     id: "seed-1",
-    body: "🐾 Meet Pip! Click the companion to pet, feed snacks, or ask for a fresh note.",
+    body: "🐾 Gặp gỡ Pip! Nhấp vào thú cưng để xoa đầu, cho ăn dâu tây hoặc nhờ lấy giấy ghi chú mới.",
     x: 12,
     y: 18,
     rot: -2.4,
     tint: "cream",
     z: 2,
     createdAt: 1,
+    collapsed: false,
   },
   {
     id: "seed-2",
-    body: "🎨 Switch themes & pet skins in the Hub (Ink, Paper, Glass, Moss).\nTry Cyber or Matcha Pip!",
+    body: "🎨 Đổi chủ đề màu & trang phục Pip trong Hub (Ink, Paper, Glass, Moss).\nThử skin Cyber hoặc Matcha nhé!",
     x: 38,
     y: 42,
     rot: 1.8,
     tint: "mist",
     z: 1,
     createdAt: 2,
+    collapsed: false,
   },
   {
     id: "seed-3",
-    body: "⚡ Quick capture: Ctrl + Shift + N\n(or click the paper stack)",
+    body: "⚡ Ghi chú nhanh: Ctrl + Shift + N\n(hoặc ấn vào xấp giấy góc màn hình)",
     x: 62,
     y: 16,
     rot: -1.1,
     tint: "sage",
     z: 3,
     createdAt: 3,
+    collapsed: false,
   },
 ];
 
 type LumenState = {
   hydrated: boolean;
+  lang: Language;
   theme: ThemeId;
   layout: LayoutMode;
+  alwaysOnTop: boolean;
   hubOpen: boolean;
   captureOpen: boolean;
   onboarding: boolean;
@@ -50,13 +56,17 @@ type LumenState = {
   pip: PipState;
   maxZ: number;
   markHydrated: () => void;
+  setLang: (lang: Language) => void;
   setTheme: (theme: ThemeId) => void;
   setLayout: (layout: LayoutMode) => void;
+  setAlwaysOnTop: (val: boolean) => void;
   setHubOpen: (open: boolean) => void;
   setCaptureOpen: (open: boolean) => void;
   dismissOnboarding: () => void;
   addNote: (partial?: Partial<Note>) => string;
   updateNote: (id: string, patch: Partial<Note>) => void;
+  toggleNoteCollapse: (id: string) => void;
+  toggleNotePin: (id: string) => void;
   removeNote: (id: string) => void;
   bringNote: (id: string) => void;
   addReminder: (title: string, delayMs: number) => void;
@@ -80,8 +90,8 @@ function emptyPip(): PipState {
     enabled: true,
     mood: "wander",
     skin: "classic",
-    happiness: 88,
-    energy: 92,
+    happiness: 90,
+    energy: 95,
     treatsEaten: 0,
     soundEnabled: true,
     x: 72,
@@ -97,8 +107,10 @@ export const useLumen = create<LumenState>()(
   persist(
     (set, get) => ({
       hydrated: false,
+      lang: "vi",
       theme: "ink",
       layout: "stickies",
+      alwaysOnTop: true,
       hubOpen: false,
       captureOpen: false,
       onboarding: true,
@@ -108,6 +120,10 @@ export const useLumen = create<LumenState>()(
       pip: emptyPip(),
       maxZ: 4,
       markHydrated: () => set({ hydrated: true }),
+      setLang: (lang) => {
+        sounds.playPop(560);
+        set({ lang });
+      },
       setTheme: (theme) => {
         sounds.playPop(600);
         set({ theme });
@@ -115,6 +131,10 @@ export const useLumen = create<LumenState>()(
       setLayout: (layout) => {
         sounds.playPop(520);
         set({ layout });
+      },
+      setAlwaysOnTop: (alwaysOnTop) => {
+        sounds.playPop(500);
+        set({ alwaysOnTop });
       },
       setHubOpen: (hubOpen) => {
         sounds.playPop(480);
@@ -137,6 +157,8 @@ export const useLumen = create<LumenState>()(
           tint: partial?.tint ?? "cream",
           z: partial?.z ?? z,
           createdAt: Date.now(),
+          collapsed: false,
+          pinned: false,
         };
         sounds.playPop(640);
         set({ notes: [...get().notes, note], maxZ: z });
@@ -144,6 +166,18 @@ export const useLumen = create<LumenState>()(
       },
       updateNote: (id, patch) =>
         set({ notes: get().notes.map((n) => (n.id === id ? { ...n, ...patch } : n)) }),
+      toggleNoteCollapse: (id) => {
+        sounds.playPop(580);
+        set({
+          notes: get().notes.map((n) => (n.id === id ? { ...n, collapsed: !n.collapsed } : n)),
+        });
+      },
+      toggleNotePin: (id) => {
+        sounds.playPop(600);
+        set({
+          notes: get().notes.map((n) => (n.id === id ? { ...n, pinned: !n.pinned } : n)),
+        });
+      },
       removeNote: (id) => {
         sounds.playPop(380);
         set({ notes: get().notes.filter((n) => n.id !== id) });
@@ -177,7 +211,9 @@ export const useLumen = create<LumenState>()(
           reminders: get().reminders.map((x) => (x.id === id ? { ...x, done: true } : x)),
         });
         sounds.playChime();
-        get().pushToast("Reminder", r.title);
+        const currentLang = get().lang;
+        const dict = DICTIONARY[currentLang];
+        get().pushToast(dict.toasts.reminderTitle, r.title);
         if (get().pip.enabled) {
           get().setPip({ mood: "nudge", speech: `⏰ ${r.title}` });
         }
@@ -194,7 +230,7 @@ export const useLumen = create<LumenState>()(
             ...get().pip,
             enabled,
             mood: enabled ? "wander" : "idle",
-            speech: enabled ? "Hello!" : null,
+            speech: enabled ? (get().lang === "vi" ? "Xin chào bạn!" : "Hello!") : null,
             carrying: false,
             moving: false,
           },
@@ -206,6 +242,7 @@ export const useLumen = create<LumenState>()(
       feedPip: () => {
         const p = get().pip;
         sounds.playSnack();
+        const dict = DICTIONARY[get().lang];
         set({
           pip: {
             ...p,
@@ -213,31 +250,33 @@ export const useLumen = create<LumenState>()(
             happiness: Math.min(100, p.happiness + 8),
             energy: Math.min(100, p.energy + 10),
             treatsEaten: p.treatsEaten + 1,
-            speech: "Nom nom! Delicious berry 🍓",
+            speech: dict.toasts.berrySpeech,
           },
         });
       },
       petPip: () => {
         const p = get().pip;
         sounds.playPurr();
+        const dict = DICTIONARY[get().lang];
         set({
           pip: {
             ...p,
             mood: "dance",
             happiness: Math.min(100, p.happiness + 5),
-            speech: "Purrrr~ ❤️ (*happy purrs*)",
+            speech: dict.toasts.purrSpeech,
           },
         });
       },
       dancePip: () => {
         const p = get().pip;
         sounds.playChime();
+        const dict = DICTIONARY[get().lang];
         set({
           pip: {
             ...p,
             mood: "dance",
             happiness: 100,
-            speech: "✨ Wheee! (*spins joyfully*)",
+            speech: dict.toasts.danceSpeech,
           },
         });
       },
@@ -254,12 +293,15 @@ export const useLumen = create<LumenState>()(
         }
         if (pip.mood === "fetch" || pip.mood === "deliver") return;
         sounds.playPop(500);
-        get().setPip({ mood: "fetch", speech: "Fetching a fresh note for you!", carrying: false });
+        const dict = DICTIONARY[get().lang];
+        get().setPip({ mood: "fetch", speech: dict.toasts.onIt, carrying: false });
       },
       resetDemo: () =>
         set({
+          lang: "vi",
           theme: "ink",
           layout: "stickies",
+          alwaysOnTop: true,
           hubOpen: false,
           captureOpen: false,
           onboarding: true,
@@ -267,7 +309,7 @@ export const useLumen = create<LumenState>()(
           reminders: [
             {
               id: uid(),
-              title: "Stand up and stretch",
+              title: "Đứng dậy vươn vai và uống nước",
               fireAt: Date.now() + 8 * 60 * 1000,
               done: false,
             },
@@ -281,8 +323,10 @@ export const useLumen = create<LumenState>()(
       name: "lumen-demo-v1",
       skipHydration: true,
       partialize: (s) => ({
+        lang: s.lang,
         theme: s.theme,
         layout: s.layout,
+        alwaysOnTop: s.alwaysOnTop,
         onboarding: s.onboarding,
         notes: s.notes,
         reminders: s.reminders,
