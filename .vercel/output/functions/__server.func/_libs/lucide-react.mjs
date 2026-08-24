@@ -294,76 +294,6 @@ var LayoutGrid = createLucideIcon("layout-grid", [
 * This source code is licensed under the ISC license.
 * See the LICENSE file in the root directory of this source tree.
 */
-var Maximize2 = createLucideIcon("maximize-2", [
-	["polyline", {
-		points: "15 3 21 3 21 9",
-		key: "mznyad"
-	}],
-	["polyline", {
-		points: "9 21 3 21 3 15",
-		key: "1avn1i"
-	}],
-	["line", {
-		x1: "21",
-		x2: "14",
-		y1: "3",
-		y2: "10",
-		key: "ota7mn"
-	}],
-	["line", {
-		x1: "3",
-		x2: "10",
-		y1: "21",
-		y2: "14",
-		key: "1atl0r"
-	}]
-]);
-/**
-* @license lucide-react v0.510.0 - ISC
-*
-* This source code is licensed under the ISC license.
-* See the LICENSE file in the root directory of this source tree.
-*/
-var Minimize2 = createLucideIcon("minimize-2", [
-	["polyline", {
-		points: "4 14 10 14 10 20",
-		key: "11kfnr"
-	}],
-	["polyline", {
-		points: "20 10 14 10 14 4",
-		key: "rlmsce"
-	}],
-	["line", {
-		x1: "14",
-		x2: "21",
-		y1: "10",
-		y2: "3",
-		key: "o5lafz"
-	}],
-	["line", {
-		x1: "3",
-		x2: "10",
-		y1: "21",
-		y2: "14",
-		key: "1atl0r"
-	}]
-]);
-/**
-* @license lucide-react v0.510.0 - ISC
-*
-* This source code is licensed under the ISC license.
-* See the LICENSE file in the root directory of this source tree.
-*/
-var Minus = createLucideIcon("minus", [["path", {
-	d: "M5 12h14",
-	key: "1ays0h"
-}]]);
-/**
-* @license lucide-react v0.510.0 - ISC
-*
-* This source code is licensed under the ISC license.
-* See the LICENSE file in the root directory of this source tree.
-*/
 var Moon = createLucideIcon("moon", [["path", {
 	d: "M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z",
 	key: "a7tn18"
@@ -660,4 +590,4 @@ var X = createLucideIcon("x", [["path", {
 	key: "d8bk6v"
 }]]);
 //#endregion
-export { EyeOff as C, ChevronUp as D, Cookie as E, ChevronDown as O, Eye as S, Download as T, Minimize2 as _, TriangleAlert as a, Heart as b, StickyNote as c, Sparkles as d, Settings as f, Minus as g, Moon as h, Upload as i, Square as l, Pin as m, VolumeX as n, Trash2 as o, Plus as p, Volume2 as r, Sun as s, X as t, SquareCheckBig as u, Maximize2 as v, Ellipsis as w, Globe as x, LayoutGrid as y };
+export { Cookie as C, Download as S, ChevronDown as T, Heart as _, TriangleAlert as a, EyeOff as b, StickyNote as c, Sparkles as d, Settings as f, LayoutGrid as g, Moon as h, Upload as i, Square as l, Pin as m, VolumeX as n, Trash2 as o, Plus as p, Volume2 as r, Sun as s, X as t, SquareCheckBig as u, Globe as v, ChevronUp as w, Ellipsis as x, Eye as y };

@@ -4,6 +4,11 @@ const path = require("path");
 let mainWindow = null;
 let tray = null;
 
+// Hide app icon from macOS Dock if on Darwin, making it a pure background daemon
+if (process.platform === "darwin" && app.dock) {
+  app.dock.hide();
+}
+
 function createWindow() {
   const primaryDisplay = screen.getPrimaryDisplay();
   const { width, height } = primaryDisplay.bounds;
@@ -13,13 +18,13 @@ function createWindow() {
     y: 0,
     width: width,
     height: height,
-    minWidth: 320,
-    minHeight: 380,
     transparent: true,
     frame: false,
     hasShadow: false,
     alwaysOnTop: true,
-    skipTaskbar: false,
+    skipTaskbar: true, // Pure background daemon: does not show as a window on the taskbar
+    focusable: true,
+    fullscreenable: false,
     backgroundColor: "#00000000",
     webPreferences: {
       preload: path.join(__dirname, "preload.cjs"),
@@ -29,7 +34,7 @@ function createWindow() {
     },
   });
 
-  // Keep window floating above normal windows
+  // Keep window floating above normal desktop apps
   mainWindow.setAlwaysOnTop(true, "screen-saver");
 
   const devUrl = "http://localhost:8080";
@@ -39,12 +44,12 @@ function createWindow() {
     }, 1500);
   });
 
-  // Global hotkey Ctrl+Shift+N (Command+Shift+N on macOS)
+  // Global hotkey Ctrl+Shift+N to create a quick note from background
   globalShortcut.register("CommandOrControl+Shift+N", () => {
     if (!mainWindow) return;
     mainWindow.show();
     mainWindow.focus();
-    mainWindow.webContents.send("open-quick-capture");
+    mainWindow.webContents.send("add-new-note");
   });
 
   // IPC channel: Toggle Mouse Click-Through on transparent screen areas
@@ -61,64 +66,12 @@ function createWindow() {
     }
   });
 
-  // IPC channel: Minimize Window to taskbar
-  ipcMain.on("minimize-window", () => {
-    if (mainWindow && !mainWindow.isDestroyed()) mainWindow.minimize();
-  });
-
-  // IPC channel: Hide Window to tray
-  ipcMain.on("hide-window", () => {
-    if (mainWindow && !mainWindow.isDestroyed()) mainWindow.hide();
-  });
-
   // IPC channel: Quit App
   ipcMain.on("quit-app", () => {
     app.quit();
   });
 
-  // IPC channel: Switch to Mini Corner Widget Mode
-  ipcMain.on("switch-to-corner-mode", () => {
-    if (!mainWindow || mainWindow.isDestroyed()) return;
-    const { width: scrW, height: scrH } = screen.getPrimaryDisplay().workAreaSize;
-    const widgetWidth = 340;
-    const widgetHeight = 440;
-    mainWindow.setIgnoreMouseEvents(false);
-    mainWindow.setBounds({
-      x: scrW - widgetWidth - 16,
-      y: scrH - widgetHeight - 16,
-      width: widgetWidth,
-      height: widgetHeight,
-    });
-    mainWindow.setAlwaysOnTop(true, "screen-saver");
-  });
-
-  // IPC channel: Switch to Fullscreen Transparent Desktop Overlay Mode
-  ipcMain.on("switch-to-transparent-screen-mode", () => {
-    if (!mainWindow || mainWindow.isDestroyed()) return;
-    const { width: scrW, height: scrH } = screen.getPrimaryDisplay().bounds;
-    mainWindow.setBounds({
-      x: 0,
-      y: 0,
-      width: scrW,
-      height: scrH,
-    });
-    mainWindow.setAlwaysOnTop(true, "screen-saver");
-  });
-
-  // IPC channel: Switch to Full Centered Window Mode
-  ipcMain.on("switch-to-full-mode", () => {
-    if (!mainWindow || mainWindow.isDestroyed()) return;
-    const { width: scrW, height: scrH } = screen.getPrimaryDisplay().bounds;
-    mainWindow.setBounds({
-      x: 0,
-      y: 0,
-      width: scrW,
-      height: scrH,
-    });
-    mainWindow.setAlwaysOnTop(true, "screen-saver");
-  });
-
-  // System Tray Menu (Matching user specification)
+  // Create System Tray Icon (Pure Background Daemon)
   try {
     const iconPath = path.join(__dirname, "../src-tauri/icons/32x32.png");
     tray = new Tray(iconPath);
@@ -163,17 +116,14 @@ function createWindow() {
         },
       },
       { type: "separator" },
-      { label: "✕ Quit Lumen (Thoát ứng dụng)", click: () => app.quit() },
+      { label: "✕ Quit Lumen (Thoát hoàn toàn)", click: () => app.quit() },
     ]);
-    tray.setToolTip("Lumen — Desktop Spatial Companion & Sticky Notes");
+
+    tray.setToolTip("Lumen — Background Desktop Companion & Sticky Notes");
     tray.setContextMenu(contextMenu);
     tray.on("click", () => {
       if (!mainWindow) return;
-      if (mainWindow.isVisible()) mainWindow.hide();
-      else {
-        mainWindow.show();
-        mainWindow.focus();
-      }
+      mainWindow.webContents.send("add-new-note");
     });
   } catch (err) {
     console.debug("[Electron] Tray initialization note:", err?.message);
