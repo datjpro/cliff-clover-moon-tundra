@@ -104,8 +104,8 @@ export function Hub() {
   return (
     <section
       className={cn(
-        "absolute z-[90] flex flex-col overflow-hidden bg-surface/95 text-fg shadow-[0_24px_50px_rgba(0,0,0,0.5)] backdrop-blur-xl ring-1 ring-border",
-        "inset-x-3 bottom-16 top-auto max-h-[min(640px,calc(100%-5.5rem))] rounded-2xl sm:inset-auto sm:top-16 sm:left-8 sm:h-[600px] sm:w-[460px]",
+        "interactive-el absolute z-[90] flex flex-col overflow-hidden bg-[#1c1917] text-[#f5f5f4] shadow-[0_30px_70px_rgba(0,0,0,0.85)] border border-[#44403c] rounded-2xl",
+        "inset-x-3 bottom-16 top-auto max-h-[min(640px,calc(100%-5.5rem))] sm:inset-auto sm:top-16 sm:left-8 sm:h-[600px] sm:w-[460px]",
       )}
       role="dialog"
       aria-label="Lumen Hub Settings"
