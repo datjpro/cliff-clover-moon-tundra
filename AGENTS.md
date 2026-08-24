@@ -2,7 +2,7 @@
 
 > **Target Platform:** High-Performance Cross-Platform Desktop & Web Workspace  
 > **Core Identity:** Senior Desktop & Systems Engineering Team (10+ Years Experience in Desktop App Development: Electron, Tauri/Rust, Native Win32/macOS/Linux)  
-> **Primary Language:** English  
+> **Primary Language:** English & Vietnamese  
 
 ---
 
@@ -125,14 +125,61 @@ When collaborating in multi-agent environments, agents must assume clear, specia
 
 ### Pre-Commit Checklist:
 1. `npm run typecheck` passes with zero errors.
-2. `npm run lint` passes without style or import violations.
+2. `npm test` passes 100% of test suites.
 3. Verify keyboard navigation: `Escape` closes modal hubs, `Ctrl+Shift+N` opens Quick Capture.
 4. Verify accessibility: All interactive elements have descriptive `aria-label` tags and focus rings.
 5. Verify clean console: No unhandled Promise rejections, key collision warnings, or hydration errors.
 
 ---
 
-## 6. Safety & Operating Constraints
+## 6. 🌿 Mandatory Task-Based Git Branching Protocol (Bắt Buộc Chia Nhánh)
+
+> [!IMPORTANT]
+> **QUY TẮC BẮT BUỘC:** Tuyệt đối **KHÔNG ĐƯỢC COMMIT TRỰC TIẾP** vào `main` hoặc `develop` mà không qua nhánh nhiệm vụ. Mọi tính năng, sửa lỗi hoặc tối ưu **BẮT BUỘC PHẢI TẠO NHÁNH RIÊNG THEO CHỨC NĂNG/NHIỆM VỤ CỤ THỂ**.
+
+```
+                           ┌────────────────────────────┐
+                           │   develop (Integration)    │
+                           └──────────────┬─────────────┘
+                                          │
+                  ┌───────────────────────┼───────────────────────┐
+                  ▼                       ▼                       ▼
+         ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+         │ feat/<task-name>│     │ fix/<task-name> │     │ perf/<module>   │
+         │ Feature Branch  │     │ Bugfix Branch   │     │ Optimization    │
+         └────────┬────────┘     └────────┬────────┘     └────────┬────────┘
+                  │                       │                       │
+                  └───────────────────────┼───────────────────────┘
+                                          │ (Tested & Verified)
+                                          ▼
+                           ┌────────────────────────────┐
+                           │     main (Production)      │
+                           └────────────────────────────┘
+```
+
+### 6.1 Quy Chuẩn Đặt Tên Nhánh (Branch Naming Convention):
+- **Tính năng mới (Feature):** `feat/<ten-chuc-nang>` hoặc `feature/phase-<N>-<ten-nhiem-vu>`  
+  *(Ví dụ: `feat/smart-timers-coc`, `feature/phase-4-pet-wardrobe`)*
+- **Sửa lỗi (Bugfix):** `fix/<ten-loi-hoac-chuc-nang>`  
+  *(Ví dụ: `fix/paper-well-quick-capture`, `fix/pet-motion-jitter`)*
+- **Tối ưu hiệu năng (Performance/Refactor):** `perf/<module-name>` hoặc `refactor/<module-name>`  
+  *(Ví dụ: `perf/gpu-translate3d-motion`)*
+- **Tài liệu & Báo cáo (Documentation):** `docs/<ten-tai-lieu>`  
+  *(Ví dụ: `docs/evaluation-report-phase5`)*
+
+### 6.2 Quy Trình Bắt Buộc 4 Bước (4-Step Git Workflow):
+1. **Bước 1 — Tạo Nhánh Nhiệm Vụ:**
+   `git checkout develop && git checkout -b <prefix>/<task-name>`
+2. **Bước 2 — Hiện Thực & Kiểm Thử:**
+   Viết code, chạy `npm run typecheck` và `npm test` đảm bảo 100% PASS.
+3. **Bước 3 — Commit Chuẩn Conventional:**
+   `git commit -m "<type>(<scope>): <mo-ta-ngan-gon>"`
+4. **Bước 4 — Hợp Nhất & Đồng Bộ:**
+   `git checkout develop && git merge <branch-name> && git checkout main && git merge develop`
+
+---
+
+## 7. Safety & Operating Constraints
 
 - **Preserve Existing Architecture:** Do not rip out pre-configured database adapters (`lib/db.ts`) or auth stubs unless explicitly scheduled for migration.
 - **Never Hardcode Absolute Paths:** All assets and storage paths must resolve dynamically relative to app root or OS user-data directories.
