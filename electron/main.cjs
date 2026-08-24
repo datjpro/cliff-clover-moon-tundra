@@ -1,6 +1,11 @@
 const { app, BrowserWindow, globalShortcut, Tray, Menu, ipcMain, screen } = require("electron");
 const path = require("path");
 
+// Prevent Windows DWM & Chromium from occluding and pausing background video players (YouTube, media players)
+app.commandLine.appendSwitch("disable-backgrounding-occluded-windows", "true");
+app.commandLine.appendSwitch("disable-renderer-backgrounding", "true");
+app.commandLine.appendSwitch("disable-features", "CalculateNativeWinOcclusion");
+
 let mainWindow = null;
 let tray = null;
 
@@ -26,18 +31,21 @@ function createWindow() {
     focusable: true,
     fullscreenable: false,
     backgroundColor: "#00000000",
+    type: "toolbar", // Informs Windows DWM that this is an overlay tool, preventing background app occlusion/freeze
     webPreferences: {
       preload: path.join(__dirname, "preload.cjs"),
       nodeIntegration: false,
       contextIsolation: true,
       webSecurity: false,
+      backgroundThrottling: false, // Ensure zero lag or suspension
     },
   });
 
-  // Keep window floating above normal desktop apps
-  mainWindow.setAlwaysOnTop(true, "screen-saver");
+  // Keep window floating without using "screen-saver" level which suspends media playback
+  mainWindow.setAlwaysOnTop(true, "status");
+  mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
 
-  // Initialize mouse click-through so desktop wallpaper and background apps work 100%
+  // Initialize mouse click-through so desktop wallpaper, videos, and background apps work 100%
   mainWindow.setIgnoreMouseEvents(true, { forward: true });
 
   const devUrl = "http://localhost:8080";
@@ -77,7 +85,7 @@ function createWindow() {
   // IPC channel: Toggle Always on Top
   ipcMain.on("set-always-on-top", (event, flag) => {
     if (mainWindow && !mainWindow.isDestroyed()) {
-      mainWindow.setAlwaysOnTop(Boolean(flag), "screen-saver");
+      mainWindow.setAlwaysOnTop(Boolean(flag), "status");
     }
   });
 
@@ -90,77 +98,100 @@ function createWindow() {
   try {
     const iconPath = path.join(__dirname, "../src-tauri/icons/32x32.png");
     tray = new Tray(iconPath);
+
     const contextMenu = Menu.buildFromTemplate([
       {
-        label: "+ New Note (+ Ghi chú mới)",
+        label: "🦊 Lumen Workspace",
+        enabled: false,
+      },
+      { type: "separator" },
+      {
+        label: "📝 + Thêm Ghi Chú Mới (Ctrl+Shift+N)",
         click: () => {
-          if (!mainWindow) return;
-          mainWindow.show();
-          mainWindow.webContents.send("add-new-note");
+          if (mainWindow) {
+            mainWindow.webContents.send("open-quick-capture");
+          }
         },
       },
       {
-        label: "🪟 Arrange Notes (Sắp xếp ghi chú)",
+        label: "⏰ + Đặt Giờ Nhanh (Ctrl+Shift+T)",
         click: () => {
-          if (!mainWindow) return;
-          mainWindow.webContents.send("arrange-notes");
+          if (mainWindow) {
+            mainWindow.webContents.send("open-quick-timer");
+          }
         },
       },
       {
-        label: "👁️ Show / Hide All (Ẩn / Hiện tất cả)",
+        label: "🪟 Sắp Xếp Ghi Chú Gọn Gàng",
         click: () => {
-          if (!mainWindow) return;
-          mainWindow.webContents.send("toggle-show-hide-all");
+          if (mainWindow) {
+            mainWindow.webContents.send("arrange-notes");
+          }
+        },
+      },
+      {
+        label: "👁️ Ẩn / Hiện Tất Cả Ghi Chú",
+        click: () => {
+          if (mainWindow) {
+            mainWindow.webContents.send("toggle-show-hide-all");
+          }
         },
       },
       { type: "separator" },
       {
-        label: "🐾 Pet Settings (Cài đặt Thú cưng)",
+        label: "🐾 Bật / Tắt Thú Cưng",
         click: () => {
-          if (!mainWindow) return;
-          mainWindow.show();
-          mainWindow.webContents.send("open-pet-settings");
+          if (mainWindow) {
+            mainWindow.webContents.send("toggle-pet");
+          }
         },
       },
       {
-        label: "⚙️ App Settings (Cài đặt Chung)",
+        label: "⚙️ Cài Đặt Hệ Thống",
         click: () => {
-          if (!mainWindow) return;
-          mainWindow.show();
-          mainWindow.webContents.send("open-app-settings");
+          if (mainWindow) {
+            mainWindow.webContents.send("open-app-settings");
+          }
         },
       },
       { type: "separator" },
-      { label: "✕ Quit Lumen (Thoát hoàn toàn)", click: () => app.quit() },
+      {
+        label: "✕ Thoát Ứng Dụng (Quit)",
+        click: () => {
+          app.quit();
+        },
+      },
     ]);
 
-    tray.setToolTip("Lumen — Background Desktop Companion & Sticky Notes");
+    tray.setToolTip("Lumen — Transparent Desktop Sticky Notes & Companion");
     tray.setContextMenu(contextMenu);
+
     tray.on("click", () => {
-      if (!mainWindow) return;
-      mainWindow.webContents.send("add-new-note");
+      if (mainWindow) {
+        mainWindow.webContents.send("open-quick-capture");
+      }
     });
   } catch (err) {
-    console.debug("[Electron] Tray initialization note:", err?.message);
+    console.debug("[Tray] System tray initialization fallback:", err);
   }
-
-  mainWindow.on("closed", () => {
-    mainWindow = null;
-  });
 }
 
 app.whenReady().then(() => {
   createWindow();
 
   app.on("activate", () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow();
+    if (BrowserWindow.getAllWindows().length === 0) {
+      createWindow();
+    }
   });
-});
-
-app.on("window-all-closed", () => {
-  if (process.platform !== "darwin") app.quit();
 });
 
 app.on("will-quit", () => {
   globalShortcut.unregisterAll();
+});
+
+app.on("window-all-closed", () => {
+  if (process.platform !== "darwin") {
+    app.quit();
+  }
 });
