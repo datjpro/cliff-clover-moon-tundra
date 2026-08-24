@@ -82,6 +82,16 @@ var createLucideIcon = (iconName, iconNode) => {
 * This source code is licensed under the ISC license.
 * See the LICENSE file in the root directory of this source tree.
 */
+var Check = createLucideIcon("check", [["path", {
+	d: "M20 6 9 17l-5-5",
+	key: "1gmf2c"
+}]]);
+/**
+* @license lucide-react v0.510.0 - ISC
+*
+* This source code is licensed under the ISC license.
+* See the LICENSE file in the root directory of this source tree.
+*/
 var ChevronDown = createLucideIcon("chevron-down", [["path", {
 	d: "m6 9 6 6 6-6",
 	key: "qrunsl"
@@ -95,6 +105,21 @@ var ChevronDown = createLucideIcon("chevron-down", [["path", {
 var ChevronUp = createLucideIcon("chevron-up", [["path", {
 	d: "m18 15-6-6-6 6",
 	key: "153udz"
+}]]);
+/**
+* @license lucide-react v0.510.0 - ISC
+*
+* This source code is licensed under the ISC license.
+* See the LICENSE file in the root directory of this source tree.
+*/
+var Clock = createLucideIcon("clock", [["circle", {
+	cx: "12",
+	cy: "12",
+	r: "10",
+	key: "1mglay"
+}], ["polyline", {
+	points: "12 6 12 12 16 14",
+	key: "68esgv"
 }]]);
 /**
 * @license lucide-react v0.510.0 - ISC
@@ -590,4 +615,4 @@ var X = createLucideIcon("x", [["path", {
 	key: "d8bk6v"
 }]]);
 //#endregion
-export { Cookie as C, Download as S, ChevronDown as T, Heart as _, TriangleAlert as a, EyeOff as b, StickyNote as c, Sparkles as d, Settings as f, LayoutGrid as g, Moon as h, Upload as i, Square as l, Pin as m, VolumeX as n, Trash2 as o, Plus as p, Volume2 as r, Sun as s, X as t, SquareCheckBig as u, Globe as v, ChevronUp as w, Ellipsis as x, Eye as y };
+export { Cookie as C, Check as D, ChevronDown as E, Download as S, ChevronUp as T, Heart as _, TriangleAlert as a, EyeOff as b, StickyNote as c, Sparkles as d, Settings as f, LayoutGrid as g, Moon as h, Upload as i, Square as l, Pin as m, VolumeX as n, Trash2 as o, Plus as p, Volume2 as r, Sun as s, X as t, SquareCheckBig as u, Globe as v, Clock as w, Ellipsis as x, Eye as y };

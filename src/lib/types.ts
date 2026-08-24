@@ -35,8 +35,10 @@ export type Note = {
 export type Reminder = {
   id: string;
   title: string;
+  durationMs?: number;
   fireAt: number;
   done: boolean;
+  pinToScreen?: boolean;
 };
 
 export type ToastItem = {

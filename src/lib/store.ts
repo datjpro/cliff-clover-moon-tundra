@@ -63,6 +63,17 @@ const SEED_NOTES: Note[] = [
   },
 ];
 
+const SEED_TIMERS: Reminder[] = [
+  {
+    id: "timer-1",
+    title: "Xây nhà trong COC (Clash of Clans)",
+    durationMs: 2 * 3600 * 1000 + 14 * 60 * 1000,
+    fireAt: Date.now() + (2 * 3600 * 1000 + 14 * 60 * 1000),
+    done: false,
+    pinToScreen: true,
+  },
+];
+
 type LumenState = {
   hydrated: boolean;
   lang: Language;
@@ -94,7 +105,9 @@ type LumenState = {
   tidyNotes: () => void;
   removeNote: (id: string) => void;
   bringNote: (id: string) => void;
-  addReminder: (title: string, delayMs: number) => void;
+  addReminder: (title: string, delayMs: number, pinToScreen?: boolean) => void;
+  removeReminder: (id: string) => void;
+  togglePinReminder: (id: string) => void;
   completeReminder: (id: string) => void;
   fireReminder: (id: string) => void;
   pushToast: (title: string, body: string) => void;
@@ -142,10 +155,10 @@ export const useLumen = create<LumenState>()(
       captureOpen: false,
       onboarding: true,
       notes: SEED_NOTES,
-      reminders: [],
+      reminders: SEED_TIMERS,
       toasts: [],
       pip: emptyPip(),
-      maxZ: 4,
+      maxZ: 5,
       markHydrated: () => set({ hydrated: true }),
       setLang: (lang) => {
         sounds.playPop(560);
@@ -241,13 +254,35 @@ export const useLumen = create<LumenState>()(
           maxZ: z,
         });
       },
-      addReminder: (title, delayMs) => {
+      addReminder: (title, delayMs, pinToScreen = false) => {
         sounds.playChime();
+        const item: Reminder = {
+          id: uid(),
+          title,
+          durationMs: delayMs,
+          fireAt: Date.now() + delayMs,
+          done: false,
+          pinToScreen,
+        };
         set({
-          reminders: [
-            ...get().reminders,
-            { id: uid(), title, fireAt: Date.now() + delayMs, done: false },
-          ],
+          reminders: [...get().reminders, item],
+        });
+        const isVi = get().lang === "vi";
+        get().pushToast(
+          isVi ? "Đã đặt hẹn giờ" : "Timer Set",
+          `⏰ ${title} (${Math.round(delayMs / 60000)}m)`,
+        );
+      },
+      removeReminder: (id) => {
+        sounds.playPop(380);
+        set({ reminders: get().reminders.filter((r) => r.id !== id) });
+      },
+      togglePinReminder: (id) => {
+        sounds.playPop(520);
+        set({
+          reminders: get().reminders.map((r) =>
+            r.id === id ? { ...r, pinToScreen: !r.pinToScreen } : r,
+          ),
         });
       },
       completeReminder: (id) => {
@@ -262,12 +297,15 @@ export const useLumen = create<LumenState>()(
         set({
           reminders: get().reminders.map((x) => (x.id === id ? { ...x, done: true } : x)),
         });
-        sounds.playChime();
+        sounds.playAlarmRing();
         const currentLang = get().lang;
-        const dict = DICTIONARY[currentLang];
-        get().pushToast(dict.toasts.reminderTitle, r.title);
+        get().pushToast("⏰ " + r.title, currentLang === "vi" ? "Đã hết giờ! Hoàn thành mục tiêu." : "Timer finished!");
         if (get().pip.enabled) {
-          get().setPip({ mood: "nudge", speech: `⏰ ${r.title}` });
+          get().setPip({
+            mood: "dance",
+            happiness: 100,
+            speech: `⏰ ${r.title} ${currentLang === "vi" ? "đã xong rồi nè!" : "is finished!"}`,
+          });
         }
       },
       pushToast: (title, body) => {
@@ -359,17 +397,10 @@ export const useLumen = create<LumenState>()(
           captureOpen: false,
           onboarding: true,
           notes: SEED_NOTES,
-          reminders: [
-            {
-              id: uid(),
-              title: "Đứng dậy vươn vai và uống nước",
-              fireAt: Date.now() + 8 * 60 * 1000,
-              done: false,
-            },
-          ],
+          reminders: SEED_TIMERS,
           toasts: [],
           pip: emptyPip(),
-          maxZ: 4,
+          maxZ: 5,
         }),
     }),
     {
@@ -402,6 +433,9 @@ export const NOTE_TINTS: { id: NoteTint; label: string }[] = [
   { id: "mist", label: "Mist" },
   { id: "sage", label: "Sage" },
   { id: "blush", label: "Blush" },
+  { id: "neon", label: "Neon" },
+  { id: "dark", label: "Dark" },
+  { id: "glass", label: "Glass" },
 ];
 
 export const PET_SKINS: { id: PetSkin; name: string; bodyColor: string; shadeColor: string; eyeColor: string }[] = [

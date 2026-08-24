@@ -8,6 +8,7 @@ import {
 } from "@/lib/desktop-bridge";
 import { useLumen } from "@/lib/store";
 import { Companion } from "./companion";
+import { FloatingTimers } from "./floating-timers";
 import { Hub } from "./hub";
 import { Onboarding } from "./onboarding";
 import { StickyNote } from "./sticky-note";
@@ -282,6 +283,7 @@ export function DesktopScene() {
       {visibleNotes.map((n) => (
         <StickyNote key={n.id} note={n} />
       ))}
+      <FloatingTimers />
       <Companion />
       <ToastStack />
       <Hub />
