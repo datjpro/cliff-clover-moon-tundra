@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   Activity,
   Bell,
@@ -32,7 +32,7 @@ import { DICTIONARY } from "@/lib/i18n";
 import { sounds } from "@/lib/audio";
 import { THEMES } from "@/lib/themes";
 import { useLumen } from "@/lib/store";
-import type { PetBodyItem, PetHat, PetType } from "@/lib/types";
+import type { PetBodyItem, PetHat, PetType, Reminder } from "@/lib/types";
 import { triggerThrowBall } from "./ball-toy";
 import { PipFigure } from "./pip";
 import { cn } from "@/lib/utils";
@@ -117,6 +117,88 @@ function formatCountdown(ms: number) {
   const pad = (n: number) => n.toString().padStart(2, "0");
   if (h > 0) return `${pad(h)}:${pad(m)}:${pad(s)}`;
   return `${pad(m)}:${pad(s)}`;
+}
+
+function HubTimerRow({
+  reminder: r,
+  onPin,
+  onFire,
+  onComplete,
+  onRemove,
+}: {
+  reminder: Reminder;
+  onPin: (id: string) => void;
+  onFire: (id: string) => void;
+  onComplete: (id: string) => void;
+  onRemove: (id: string) => void;
+}) {
+  const [diff, setDiff] = useState(Math.max(0, r.fireAt - Date.now()));
+
+  // Real-time ticking interval without needing to close/reopen modal
+  useEffect(() => {
+    if (r.done) return;
+    const interval = setInterval(() => {
+      setDiff(Math.max(0, r.fireAt - Date.now()));
+    }, 500);
+    return () => clearInterval(interval);
+  }, [r.fireAt, r.done]);
+
+  return (
+    <div
+      className={cn(
+        "flex items-center justify-between rounded-xl p-3 text-xs border transition-all",
+        r.done
+          ? "bg-[#292524]/60 border-[#332f2b] text-[#78716c]"
+          : "bg-[#292524] border-[#44403c] text-white shadow-sm",
+      )}
+    >
+      <div className="min-w-0 flex-1 space-y-0.5">
+        <div className="flex items-center gap-1.5">
+          <p className={cn("font-bold truncate", r.done && "line-through text-[#78716c]")}>
+            {r.title}
+          </p>
+          {r.pinToScreen && !r.done ? (
+            <Badge className="bg-amber-500/20 text-amber-400 text-[9px] px-1 py-0 border-none">
+              Ghim
+            </Badge>
+          ) : null}
+        </div>
+        <p className="font-mono text-xs font-bold text-amber-400">
+          {r.done ? "Đã xong (Chuông đã reo)" : `⏳ Còn lại: ${formatCountdown(diff)}`}
+        </p>
+      </div>
+
+      <div className="flex items-center gap-1.5 shrink-0 ml-2">
+        {!r.done ? (
+          <>
+            <button
+              type="button"
+              onClick={() => onPin(r.id)}
+              title={r.pinToScreen ? "Bỏ ghim Desktop" : "Ghim ra Desktop"}
+              className="p-1 rounded hover:bg-white/10 text-[#d6d3d1] cursor-pointer"
+            >
+              <Pin className={cn("size-3.5", r.pinToScreen && "fill-amber-400 text-amber-400")} />
+            </button>
+            <Button size="sm" variant="outline" type="button" onClick={() => onFire(r.id)} className="text-[10px] h-7 px-2 border-[#57534e]">
+              Báo ngay
+            </Button>
+          </>
+        ) : (
+          <Button size="sm" variant="ghost" type="button" onClick={() => onComplete(r.id)} className="text-[10px] h-7 px-2">
+            Xong
+          </Button>
+        )}
+        <button
+          type="button"
+          onClick={() => onRemove(r.id)}
+          title="Xóa"
+          className="p-1 rounded hover:bg-red-500/20 text-red-400 cursor-pointer"
+        >
+          <Trash2 className="size-3.5" />
+        </button>
+      </div>
+    </div>
+  );
 }
 
 export function Hub() {
@@ -315,66 +397,16 @@ export function Hub() {
               {reminders.length === 0 ? (
                 <p className="text-xs text-[#78716c] italic py-2 text-center">Chưa có hẹn giờ nào.</p>
               ) : (
-                reminders.map((r) => {
-                  const diff = Math.max(0, r.fireAt - Date.now());
-                  return (
-                    <div
-                      key={r.id}
-                      className={cn(
-                        "flex items-center justify-between rounded-xl p-3 text-xs border transition-all",
-                        r.done
-                          ? "bg-[#292524]/60 border-[#332f2b] text-[#78716c]"
-                          : "bg-[#292524] border-[#44403c] text-white shadow-sm",
-                      )}
-                    >
-                      <div className="min-w-0 flex-1 space-y-0.5">
-                        <div className="flex items-center gap-1.5">
-                          <p className={cn("font-bold truncate", r.done && "line-through text-[#78716c]")}>
-                            {r.title}
-                          </p>
-                          {r.pinToScreen && !r.done ? (
-                            <Badge className="bg-amber-500/20 text-amber-400 text-[9px] px-1 py-0 border-none">
-                              Ghim
-                            </Badge>
-                          ) : null}
-                        </div>
-                        <p className="font-mono text-xs font-bold text-amber-400">
-                          {r.done ? "Đã xong (Chuông đã reo)" : `⏳ Còn lại: ${formatCountdown(diff)}`}
-                        </p>
-                      </div>
-
-                      <div className="flex items-center gap-1.5 shrink-0 ml-2">
-                        {!r.done ? (
-                          <>
-                            <button
-                              type="button"
-                              onClick={() => togglePinReminder(r.id)}
-                              title={r.pinToScreen ? "Bỏ ghim Desktop" : "Ghim ra Desktop"}
-                              className="p-1 rounded hover:bg-white/10 text-[#d6d3d1] cursor-pointer"
-                            >
-                              <Pin className={cn("size-3.5", r.pinToScreen && "fill-amber-400 text-amber-400")} />
-                            </button>
-                            <Button size="sm" variant="outline" type="button" onClick={() => fireReminder(r.id)} className="text-[10px] h-7 px-2 border-[#57534e]">
-                              Báo ngay
-                            </Button>
-                          </>
-                        ) : (
-                          <Button size="sm" variant="ghost" type="button" onClick={() => completeReminder(r.id)} className="text-[10px] h-7 px-2">
-                            Xong
-                          </Button>
-                        )}
-                        <button
-                          type="button"
-                          onClick={() => removeReminder(r.id)}
-                          title="Xóa"
-                          className="p-1 rounded hover:bg-red-500/20 text-red-400 cursor-pointer"
-                        >
-                          <Trash2 className="size-3.5" />
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })
+                reminders.map((r) => (
+                  <HubTimerRow
+                    key={r.id}
+                    reminder={r}
+                    onPin={togglePinReminder}
+                    onFire={fireReminder}
+                    onComplete={completeReminder}
+                    onRemove={removeReminder}
+                  />
+                ))
               )}
             </div>
           </TabsContent>
@@ -673,6 +705,7 @@ export function Hub() {
             <div className="rounded-xl bg-[#292524] p-3 space-y-1.5 border border-[#44403c]">
               <p className="font-bold text-white mb-1">{dict.about.shortcutsTitle}:</p>
               <p>• <b>Ctrl + Shift + N</b>: {dict.about.shortcutCapture}</p>
+              <p>• <b>Ctrl + Shift + T</b>: Đặt giờ nhanh (Ví dụ: COC, nấu ăn...)</p>
               <p>• <b>Nhấp đúp chuột vào màn hình</b>: Tạo nhanh ghi chú mới</p>
               <p>• <b>Kéo thả chú Cáo / Note / Đồng hồ</b>: Tự do di chuyển trên màn hình</p>
               <p>• <b>Escape</b>: {dict.about.shortcutEsc}</p>

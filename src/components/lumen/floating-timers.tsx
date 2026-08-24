@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef, type PointerEvent } from "react";
-import { Check, Clock, Download, Pin, X } from "lucide-react";
+import { Check, Clock, Eye, EyeOff, Pin, Plus, X } from "lucide-react";
 import { useLumen } from "@/lib/store";
 import type { Reminder } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -25,7 +25,7 @@ function FloatingTimerCard({ timer }: { timer: Reminder }) {
   const lang = useLumen((s) => s.lang);
 
   const [remaining, setRemaining] = useState(Math.max(0, timer.fireAt - Date.now()));
-  const [showConfirm, setShowConfirm] = useState(false);
+  const [minimal, setMinimal] = useState(false);
   const [pos, setPos] = useState({ x: 24, y: 80 });
   const isDragging = useRef(false);
   const dragOffset = useRef({ dx: 0, dy: 0 });
@@ -60,24 +60,57 @@ function FloatingTimerCard({ timer }: { timer: Reminder }) {
     isDragging.current = false;
   };
 
-  const handleExportTxtAndDelete = () => {
-    let content = `=== BẢNG LƯU HẸN GIỜ LUMEN ===\nTiêu đề: ${timer.title}\nThời lượng: ${Math.round((timer.durationMs || 0) / 60000)} phút\nThời gian kết thúc: ${new Date(timer.fireAt).toLocaleString()}\nTrạng thái: ${remaining <= 0 ? "Đã hoàn thành" : "Chưa hoàn thành"}\n`;
-
-    const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `hen-gio-${new Date().toISOString().slice(0, 10)}.txt`;
-    a.click();
-    URL.revokeObjectURL(url);
-
-    removeReminder(timer.id);
-  };
-
   const total = timer.durationMs || 1;
   const progress = Math.max(0, Math.min(100, ((total - remaining) / total) * 100));
   const isFinished = remaining <= 0;
 
+  // 1. MINIMAL TRANSPARENT MODE (Chỉ hiện nội dung + Time, nền trong suốt)
+  if (minimal) {
+    return (
+      <div
+        className={cn(
+          "interactive-el fixed z-[85] flex items-center gap-2 rounded-xl px-2.5 py-1.5 select-none cursor-grab active:cursor-grabbing",
+          "bg-black/35 hover:bg-black/60 text-white backdrop-blur-[2px] transition-all duration-150 group",
+          isFinished && "bg-red-500/80 animate-pulse",
+        )}
+        style={{ left: `${pos.x}px`, top: `${pos.y}px` }}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerCancel={onPointerUp}
+      >
+        <Clock className={cn("size-3.5 shrink-0 drop-shadow", isFinished ? "text-white" : "text-amber-400")} />
+        <span className="text-xs font-bold truncate max-w-[120px] drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+          {timer.title}
+        </span>
+        <span className="font-mono text-sm font-extrabold tracking-wider text-amber-300 drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]">
+          {isFinished ? "00:00 🔔" : formatDuration(remaining)}
+        </span>
+
+        {/* Hover Action Controls */}
+        <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity ml-1">
+          <button
+            type="button"
+            onClick={() => setMinimal(false)}
+            title="Mở rộng đầy đủ"
+            className="p-0.5 rounded hover:bg-white/20 text-white/80 cursor-pointer"
+          >
+            <Eye className="size-3" />
+          </button>
+          <button
+            type="button"
+            onClick={() => removeReminder(timer.id)}
+            title="Đóng / Xóa"
+            className="p-0.5 rounded hover:bg-red-500/30 text-white/80 cursor-pointer"
+          >
+            <X className="size-3" />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // 2. STANDARD FLOATING CARD MODE (Đầy đủ điều khiển)
   return (
     <div
       className={cn(
@@ -99,6 +132,15 @@ function FloatingTimerCard({ timer }: { timer: Reminder }) {
           <p className="text-xs font-bold truncate leading-tight">{timer.title}</p>
         </div>
         <div className="flex items-center gap-0.5 shrink-0">
+          {/* Toggle Minimal Transparent Mode */}
+          <button
+            type="button"
+            onClick={() => setMinimal(true)}
+            title="Thu gọn trong suốt (Chỉ hiện chữ & giờ)"
+            className="flex size-5 items-center justify-center rounded hover:bg-white/20 transition-colors cursor-pointer opacity-75 hover:opacity-100"
+          >
+            <EyeOff className="size-3 text-[#d6d3d1]" />
+          </button>
           <button
             type="button"
             onClick={() => togglePinReminder(timer.id)}
@@ -109,90 +151,57 @@ function FloatingTimerCard({ timer }: { timer: Reminder }) {
           </button>
           <button
             type="button"
-            onClick={() => setShowConfirm(true)}
+            onClick={() => removeReminder(timer.id)}
             title="Xóa hẹn giờ"
-            className="flex size-5 items-center justify-center rounded hover:bg-red-500/30 transition-colors cursor-pointer opacity-75 hover:opacity-100"
+            className="flex size-5 items-center justify-center rounded hover:bg-red-500/30 transition-colors cursor-pointer opacity-75 hover:opacity-100 text-red-400"
           >
             <X className="size-3" />
           </button>
         </div>
       </div>
 
-      {/* Confirmation & .txt Export Card */}
-      {showConfirm ? (
-        <div className="my-1 flex flex-col gap-1.5 rounded-xl bg-black/90 p-2 text-xs border border-white/20 animate-in zoom-in-95">
-          <p className="font-bold text-amber-400 text-[11px]">Xác nhận xóa hẹn giờ này?</p>
+      {/* Big Digital Countdown */}
+      <div className="flex items-baseline justify-between pt-0.5">
+        <span className="font-mono text-xl font-extrabold tracking-wider text-amber-400">
+          {isFinished ? (lang === "vi" ? "ĐÃ HẾT GIỜ! 🔔" : "TIME UP! 🔔") : formatDuration(remaining)}
+        </span>
+        {isFinished ? (
           <button
             type="button"
-            onClick={handleExportTxtAndDelete}
-            className="flex items-center justify-center gap-1 py-1 px-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-[10px] cursor-pointer"
+            onClick={() => completeReminder(timer.id)}
+            className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-white text-black font-bold text-xs shadow-md cursor-pointer hover:bg-slate-100"
           >
-            <Download className="size-3" />
-            <span>Lưu .txt & Xóa</span>
+            <Check className="size-3" />
+            <span>Tắt chuông</span>
           </button>
-          <div className="flex gap-1">
-            <button
-              type="button"
-              onClick={() => removeReminder(timer.id)}
-              className="flex-1 py-0.5 px-2 rounded bg-red-600/80 hover:bg-red-600 text-white text-[10px] font-semibold cursor-pointer"
-            >
-              Xóa luôn
-            </button>
-            <button
-              type="button"
-              onClick={() => setShowConfirm(false)}
-              className="flex-1 py-0.5 px-2 rounded bg-white/20 hover:bg-white/30 text-white text-[10px] cursor-pointer"
-            >
-              Hủy
-            </button>
-          </div>
-        </div>
-      ) : (
-        <>
-          {/* Big Digital Countdown */}
-          <div className="flex items-baseline justify-between pt-0.5">
-            <span className="font-mono text-xl font-extrabold tracking-wider text-amber-400">
-              {isFinished ? (lang === "vi" ? "ĐÃ HẾT GIỜ! 🔔" : "TIME UP! 🔔") : formatDuration(remaining)}
-            </span>
-            {isFinished ? (
-              <button
-                type="button"
-                onClick={() => completeReminder(timer.id)}
-                className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-white text-black font-bold text-xs shadow-md cursor-pointer hover:bg-slate-100"
-              >
-                <Check className="size-3" />
-                <span>Tắt chuông</span>
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={() => {
-                  const newFireAt = timer.fireAt + 5 * 60 * 1000;
-                  useLumen.setState({
-                    reminders: useLumen.getState().reminders.map((r) =>
-                      r.id === timer.id ? { ...r, fireAt: newFireAt, durationMs: (r.durationMs || 0) + 5 * 60 * 1000 } : r,
-                    ),
-                  });
-                }}
-                className="text-[10px] px-1.5 py-0.5 rounded bg-white/10 hover:bg-white/20 transition-colors cursor-pointer text-muted"
-              >
-                +5p
-              </button>
-            )}
-          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => {
+              const newFireAt = timer.fireAt + 5 * 60 * 1000;
+              useLumen.setState({
+                reminders: useLumen.getState().reminders.map((r) =>
+                  r.id === timer.id ? { ...r, fireAt: newFireAt, durationMs: (r.durationMs || 0) + 5 * 60 * 1000 } : r,
+                ),
+              });
+            }}
+            className="text-[10px] px-1.5 py-0.5 rounded bg-white/10 hover:bg-white/20 transition-colors cursor-pointer text-muted"
+          >
+            +5p
+          </button>
+        )}
+      </div>
 
-          {/* Progress Bar */}
-          <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/10">
-            <div
-              className={cn(
-                "h-full transition-all duration-500",
-                isFinished ? "bg-white" : "bg-amber-400",
-              )}
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-        </>
-      )}
+      {/* Progress Bar */}
+      <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/10">
+        <div
+          className={cn(
+            "h-full transition-all duration-500",
+            isFinished ? "bg-white" : "bg-amber-400",
+          )}
+          style={{ width: `${progress}%` }}
+        />
+      </div>
     </div>
   );
 }
