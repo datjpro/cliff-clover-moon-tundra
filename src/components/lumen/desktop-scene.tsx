@@ -1,5 +1,5 @@
 import { useEffect, useState, type PointerEvent } from "react";
-import { Eye, EyeOff, LayoutGrid, Plus, Settings, X } from "lucide-react";
+import { Eye, EyeOff, LayoutGrid, Plus, Settings, Sparkles, X } from "lucide-react";
 import {
   closeOrQuitDesktopApp,
   isDesktopApp,
@@ -45,13 +45,15 @@ function FloatingTrayMenu() {
   const addNote = useLumen((s) => s.addNote);
   const setHubOpen = useLumen((s) => s.setHubOpen);
   const tidyNotes = useLumen((s) => s.tidyNotes);
+  const pipEnabled = useLumen((s) => s.pip.enabled);
+  const setPipEnabled = useLumen((s) => s.setPipEnabled);
 
   const isVi = lang === "vi";
 
   return (
     <div className="interactive-el fixed right-6 bottom-5 z-[85] flex flex-col items-end gap-2 select-none">
       {open ? (
-        <div className="animate-in fade-in slide-in-from-bottom-2 w-48 rounded-2xl bg-surface/95 text-fg p-2 shadow-[0_20px_45px_rgba(0,0,0,0.45)] border border-border backdrop-blur-xl">
+        <div className="animate-in fade-in slide-in-from-bottom-2 w-52 rounded-2xl bg-surface/95 text-fg p-2 shadow-[0_20px_45px_rgba(0,0,0,0.45)] border border-border backdrop-blur-xl">
           <div className="flex flex-col gap-1 text-xs font-semibold">
             {/* + New Note */}
             <button
@@ -66,7 +68,20 @@ function FloatingTrayMenu() {
               <span>{isVi ? "+ Ghi chú mới" : "+ New Note"}</span>
             </button>
 
-            {/* Hide All / Show All */}
+            {/* Toggle Pet Hide/Show */}
+            <button
+              type="button"
+              onClick={() => {
+                setPipEnabled(!pipEnabled);
+                setOpen(false);
+              }}
+              className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-elevated transition-colors text-left cursor-pointer"
+            >
+              <Sparkles className="size-4 text-amber-500" />
+              <span>{pipEnabled ? (isVi ? "Ẩn Thú cưng 🐾" : "Hide Pet 🐾") : (isVi ? "Hiện Thú cưng 🐾" : "Show Pet 🐾")}</span>
+            </button>
+
+            {/* Hide All / Show All Notes */}
             <button
               type="button"
               onClick={() => setLayout(layout === "tray" ? "stickies" : "tray")}
@@ -75,12 +90,12 @@ function FloatingTrayMenu() {
               {layout === "tray" ? (
                 <>
                   <Eye className="size-4 text-muted" />
-                  <span>{isVi ? "Hiện tất cả" : "Show All"}</span>
+                  <span>{isVi ? "Hiện tất cả note" : "Show All Notes"}</span>
                 </>
               ) : (
                 <>
                   <EyeOff className="size-4 text-muted" />
-                  <span>{isVi ? "Ẩn tất cả" : "Hide All"}</span>
+                  <span>{isVi ? "Ẩn tất cả note" : "Hide All Notes"}</span>
                 </>
               )}
             </button>
@@ -144,6 +159,7 @@ export function DesktopScene() {
   const notes = useLumen((s) => s.notes);
   const addNote = useLumen((s) => s.addNote);
   const tidyNotes = useLumen((s) => s.tidyNotes);
+  const setPipEnabled = useLumen((s) => s.setPipEnabled);
   const markHydrated = useLumen((s) => s.markHydrated);
   const setHubOpen = useLumen((s) => s.setHubOpen);
   const fireReminder = useLumen((s) => s.fireReminder);
@@ -152,7 +168,7 @@ export function DesktopScene() {
     void Promise.resolve(useLumen.persist.rehydrate()).then(() => markHydrated());
   }, [markHydrated]);
 
-  // Click-Through Mouse Event Controller (Allows mouse clicks on transparent background to fall through to OS)
+  // Click-Through Mouse Event Controller
   useEffect(() => {
     if (!isDesktopApp()) return;
 
@@ -188,6 +204,7 @@ export function DesktopScene() {
     let unlistenAdd: (() => void) | null = null;
     let unlistenArrange: (() => void) | null = null;
     let unlistenToggle: (() => void) | null = null;
+    let unlistenTogglePet: (() => void) | null = null;
     let unlistenPet: (() => void) | null = null;
     let unlistenApp: (() => void) | null = null;
 
@@ -204,6 +221,11 @@ export function DesktopScene() {
         }).then((un) => {
           unlistenToggle = un;
         });
+        listen("toggle-pet", () => {
+          setPipEnabled(!useLumen.getState().pip.enabled);
+        }).then((un) => {
+          unlistenTogglePet = un;
+        });
         listen("open-pet-settings", () => setHubOpen(true)).then((un) => {
           unlistenPet = un;
         });
@@ -218,10 +240,11 @@ export function DesktopScene() {
       if (unlistenAdd) unlistenAdd();
       if (unlistenArrange) unlistenArrange();
       if (unlistenToggle) unlistenToggle();
+      if (unlistenTogglePet) unlistenTogglePet();
       if (unlistenPet) unlistenPet();
       if (unlistenApp) unlistenApp();
     };
-  }, [setHubOpen, addNote, tidyNotes, setLayout]);
+  }, [setHubOpen, addNote, tidyNotes, setLayout, setPipEnabled]);
 
   // Reminder scheduler
   useEffect(() => {
@@ -237,7 +260,7 @@ export function DesktopScene() {
     return () => window.clearInterval(id);
   }, [fireReminder]);
 
-  // Double click anywhere on transparent desktop screen creates a new sticky note at cursor position!
+  // Double click anywhere on desktop creates a new sticky note
   const onDoubleClickBackground = (e: PointerEvent<HTMLDivElement>) => {
     if ((e.target as HTMLElement).closest("article, .interactive-el, section[role='dialog'], form, .group")) return;
     const parent = document.body.getBoundingClientRect();

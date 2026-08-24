@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type PointerEvent } from "react";
-import { Cookie, Heart, Moon, Sparkles, StickyNote as NoteIcon, Sun } from "lucide-react";
+import { Cookie, EyeOff, Heart, Moon, Sparkles, StickyNote as NoteIcon, Sun } from "lucide-react";
 import { useLumen } from "@/lib/store";
 import type { PawPrint } from "@/lib/types";
 import { uid } from "@/lib/utils";
@@ -8,7 +8,7 @@ import { PipFigure } from "./pip";
 import { cn } from "@/lib/utils";
 
 const WELL = { x: 90, y: 70 };
-const SPEED = 38;
+const SPEED = 28; // Smooth, gentle walking speed
 
 function dist(ax: number, ay: number, bx: number, by: number) {
   return Math.hypot(ax - bx, ay - by);
@@ -24,9 +24,6 @@ export function Companion() {
   const mood = useLumen((s) => s.pip.mood);
   const skin = useLumen((s) => s.pip.skin);
   const carrying = useLumen((s) => s.pip.carrying);
-  const facing = useLumen((s) => s.pip.facing);
-  const moving = useLumen((s) => s.pip.moving);
-  const speech = useLumen((s) => s.pip.speech);
   const startX = useLumen((s) => s.pip.x);
   const startY = useLumen((s) => s.pip.y);
   const layout = useLumen((s) => s.layout);
@@ -36,9 +33,13 @@ export function Companion() {
   const petPip = useLumen((s) => s.petPip);
   const dancePip = useLumen((s) => s.dancePip);
   const setPip = useLumen((s) => s.setPip);
+  const setPipEnabled = useLumen((s) => s.setPipEnabled);
 
   const [menuOpen, setMenuOpen] = useState(false);
+  const [isWalking, setIsWalking] = useState(false);
+  const [facingDir, setFacingDir] = useState<1 | -1>(-1);
   const [pawPrints, setPawPrints] = useState<PawPrint[]>([]);
+
   const elRef = useRef<HTMLDivElement>(null);
   const pos = useRef({ x: startX, y: startY });
   const lastStepPos = useRef({ x: startX, y: startY });
@@ -47,10 +48,12 @@ export function Companion() {
   const target = useRef({
     x: startX,
     y: startY,
-    kind: "idle" as "idle" | "well" | "drop" | "nudge" | "dance" | "sitting",
+    kind: "idle" as "idle" | "well" | "drop" | "nudge" | "dance",
   });
   const waitUntil = useRef(0);
-  const lastMood = useRef(mood);
+  const movingState = useRef(false);
+  const facingState = useRef<1 | -1>(-1);
+  const speechRef = useLumen((s) => s.pip.speech);
 
   useEffect(() => {
     pos.current = { x: startX, y: startY };
@@ -66,13 +69,13 @@ export function Companion() {
             ...p,
             opacity: Math.max(0, p.opacity - 0.08),
           }))
-          .filter((p) => p.opacity > 0.05 && now - p.createdAt < 12000),
+          .filter((p) => p.opacity > 0.05 && now - p.createdAt < 10000),
       );
-    }, 800);
+    }, 600);
     return () => clearInterval(timer);
   }, []);
 
-  // Click outside to dismiss pet quick action menu
+  // Click outside to dismiss pet menu
   useEffect(() => {
     if (!menuOpen) return;
     const onClickOutside = (e: MouseEvent) => {
@@ -84,7 +87,7 @@ export function Companion() {
     return () => window.removeEventListener("pointerdown", onClickOutside);
   }, [menuOpen]);
 
-  // Drag Pet around Desktop
+  // Drag pet
   const onPointerDown = (e: PointerEvent<HTMLDivElement>) => {
     if ((e.target as HTMLElement).closest("button.action-btn")) return;
     isDragging.current = true;
@@ -116,6 +119,7 @@ export function Companion() {
     }
   };
 
+  // High-performance 60fps decoupled animation tick
   useEffect(() => {
     if (!enabled) return;
     let raf = 0;
@@ -130,35 +134,17 @@ export function Companion() {
     };
 
     const tick = (now: number) => {
-      const dt = Math.min(0.05, (now - last) / 1000);
+      const dt = Math.min(0.04, (now - last) / 1000);
       last = now;
       const state = useLumen.getState();
       const p = state.pip;
-      if (!p.enabled) {
+
+      if (!p.enabled || isDragging.current) {
         raf = requestAnimationFrame(tick);
         return;
       }
 
-      if (isDragging.current) {
-        raf = requestAnimationFrame(tick);
-        return;
-      }
-
-      if (p.mood !== lastMood.current) {
-        lastMood.current = p.mood;
-        if (p.mood === "fetch") target.current = { ...WELL, kind: "well" };
-        if (p.mood === "nudge") target.current = { x: 78, y: 14, kind: "nudge" };
-        if (p.mood === "dance" || p.mood === "eating") {
-          waitUntil.current = now + 3000;
-          setTimeout(() => {
-            if (useLumen.getState().pip.mood === p.mood) {
-              useLumen.getState().setPip({ mood: "wander", speech: null });
-            }
-          }, 3200);
-        }
-      }
-
-      // Full screen wandering coordinates (across the entire monitor screen)
+      // Wander waypoint selection
       if (
         p.mood === "wander" &&
         now > waitUntil.current &&
@@ -166,8 +152,8 @@ export function Companion() {
         !menuOpen
       ) {
         target.current = {
-          x: 4 + Math.random() * 88,
-          y: 8 + Math.random() * 78,
+          x: 6 + Math.random() * 84,
+          y: 10 + Math.random() * 74,
           kind: "idle",
         };
         if (p.speech) state.setPip({ speech: null });
@@ -175,9 +161,9 @@ export function Companion() {
 
       const t = target.current;
       const d = dist(pos.current.x, pos.current.y, t.x, t.y);
-      const isMoving = d > 1.15 && p.mood !== "sleep" && p.mood !== "eating" && !menuOpen;
+      const isMovingNow = d > 0.8 && p.mood !== "sleep" && p.mood !== "eating" && !menuOpen;
 
-      if (isMoving) {
+      if (isMovingNow) {
         const step = SPEED * dt;
         const k = Math.min(1, step / d);
         pos.current.x += (t.x - pos.current.x) * k;
@@ -185,9 +171,18 @@ export function Companion() {
         const nextFacing: 1 | -1 = t.x >= pos.current.x ? 1 : -1;
         applyDom(pos.current.x, pos.current.y);
 
-        // Leave Paw Prints Trail behind pet
+        if (!movingState.current) {
+          movingState.current = true;
+          setIsWalking(true);
+        }
+        if (facingState.current !== nextFacing) {
+          facingState.current = nextFacing;
+          setFacingDir(nextFacing);
+        }
+
+        // Leave Paw Prints Trail
         const stepDist = dist(pos.current.x, pos.current.y, lastStepPos.current.x, lastStepPos.current.y);
-        if (stepDist > 2.8) {
+        if (stepDist > 3.2) {
           lastStepPos.current = { x: pos.current.x, y: pos.current.y };
           const rot = (Math.atan2(t.y - pos.current.y, t.x - pos.current.x) * 180) / Math.PI + 90;
           setPawPrints((prev) => [
@@ -195,23 +190,25 @@ export function Companion() {
             {
               id: uid(),
               x: pos.current.x,
-              y: pos.current.y + 3.5,
+              y: pos.current.y + 3.8,
               rot,
               opacity: 0.65,
               createdAt: Date.now(),
             },
           ]);
         }
-
-        if (!p.moving || p.facing !== nextFacing) {
-          state.setPip({ moving: true, facing: nextFacing });
-        }
       } else {
         applyDom(pos.current.x, pos.current.y);
+
+        if (movingState.current) {
+          movingState.current = false;
+          setIsWalking(false);
+        }
+
         if (p.mood === "fetch" && t.kind === "well") {
           const drop = {
-            x: layout === "sidebar" ? 58 : 10 + Math.random() * 72,
-            y: 12 + Math.random() * 64,
+            x: layout === "sidebar" ? 58 : 12 + Math.random() * 68,
+            y: 14 + Math.random() * 60,
           };
           target.current = { ...drop, kind: "drop" };
           state.setPip({
@@ -240,21 +237,10 @@ export function Companion() {
             x: pos.current.x,
             y: pos.current.y,
           });
-        } else if (p.mood === "nudge" && t.kind === "nudge") {
-          waitUntil.current = now + 2200;
-          target.current = { x: pos.current.x, y: pos.current.y, kind: "idle" };
-          state.setPip({
-            mood: "wander",
-            moving: false,
-            speech: null,
-            x: pos.current.x,
-            y: pos.current.y,
-          });
         } else {
-          if (p.moving) {
-            waitUntil.current = now + 1600 + Math.random() * 2600;
+          if (!isMovingNow && waitUntil.current <= now) {
+            waitUntil.current = now + 2000 + Math.random() * 3000;
             target.current = { x: pos.current.x, y: pos.current.y, kind: "idle" };
-            state.setPip({ moving: false, x: pos.current.x, y: pos.current.y });
           }
         }
       }
@@ -276,7 +262,7 @@ export function Companion() {
 
       <div
         ref={elRef}
-        className="group absolute z-50 -translate-x-1/2 -translate-y-1/2 p-0 select-none cursor-grab active:cursor-grabbing"
+        className="interactive-el group absolute z-50 -translate-x-1/2 -translate-y-1/2 p-0 select-none cursor-grab active:cursor-grabbing will-change-transform"
         style={{ left: `${startX}%`, top: `${startY}%` }}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
@@ -284,14 +270,14 @@ export function Companion() {
         onPointerCancel={onPointerUp}
       >
         {/* Speech Bubble */}
-        {speech ? (
+        {speechRef ? (
           <span
             className={cn(
               "animate-in fade-in zoom-in-90 absolute left-1/2 z-20 -translate-x-1/2 whitespace-nowrap rounded-full bg-elevated/95 px-3.5 py-1 text-[11px] font-semibold text-fg shadow-[0_8px_24px_rgba(0,0,0,0.35)] ring-1 ring-border transition-all duration-200 pointer-events-none",
               menuOpen ? "-top-24" : "-top-11",
             )}
           >
-            {speech}
+            {speechRef}
             <span className="absolute -bottom-1 left-1/2 size-2 -translate-x-1/2 rotate-45 bg-elevated" />
           </span>
         ) : null}
@@ -355,6 +341,18 @@ export function Companion() {
             >
               {mood === "sleep" ? <Sun className="size-3.5" /> : <Moon className="size-3.5" />}
             </button>
+            {/* Hide Pet Button */}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setPipEnabled(false);
+              }}
+              title="Ẩn thú cưng (Hide Pet)"
+              className="action-btn flex size-7 items-center justify-center rounded-full text-muted hover:bg-red-500/20 hover:text-red-500 hover:scale-110 active:scale-95 transition-all cursor-pointer"
+            >
+              <EyeOff className="size-3.5" />
+            </button>
           </div>
         ) : null}
 
@@ -367,9 +365,9 @@ export function Companion() {
           aria-label="Pet companion"
         >
           <PipFigure
-            walking={moving}
+            walking={isWalking}
             carrying={carrying}
-            facing={facing}
+            facing={facingDir}
             mood={mood}
             petType={petType}
             skin={skin}

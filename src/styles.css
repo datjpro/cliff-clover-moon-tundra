@@ -169,25 +169,65 @@
   font-family: var(--font-handwriting);
 }
 
-/* Pet Animations */
-@keyframes pipBob {
+/* Procedural Pet Animations */
+@keyframes petIdleBob {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-3px); }
 }
 
-@keyframes pipTailWag {
+@keyframes petTailWag {
   0%, 100% { transform: rotate(0deg); }
   50% { transform: rotate(18deg); }
 }
 
+@keyframes petWalkBody {
+  0% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-4px) rotate(2deg); }
+  50% { transform: translateY(0) rotate(0deg); }
+  75% { transform: translateY(-4px) rotate(-2deg); }
+  100% { transform: translateY(0) rotate(0deg); }
+}
+
+@keyframes petLegL {
+  0% { transform: rotate(20deg); }
+  50% { transform: rotate(-20deg); }
+  100% { transform: rotate(20deg); }
+}
+
+@keyframes petLegR {
+  0% { transform: rotate(-20deg); }
+  50% { transform: rotate(20deg); }
+  100% { transform: rotate(-20deg); }
+}
+
+@keyframes petTailWalk {
+  0%, 100% { transform: rotate(-6deg); }
+  50% { transform: rotate(22deg); }
+}
+
 .pip-bob {
-  animation: pipBob 2.4s ease-in-out infinite;
+  animation: petIdleBob 2.4s ease-in-out infinite;
 }
 
 .pip-tail {
-  animation: pipTailWag 1.8s ease-in-out infinite;
+  animation: petTailWag 1.8s ease-in-out infinite;
 }
 
 .pip-walk-body {
-  animation: pipBob 0.35s ease-in-out infinite;
+  animation: petWalkBody 0.38s ease-in-out infinite;
+}
+
+.pip-leg-l {
+  animation: petLegL 0.38s ease-in-out infinite;
+  transform-origin: 38px 65px;
+}
+
+.pip-leg-r {
+  animation: petLegR 0.38s ease-in-out infinite;
+  transform-origin: 54px 65px;
+}
+
+.pip-tail-walk {
+  animation: petTailWalk 0.35s ease-in-out infinite;
+  transform-origin: 24px 58px;
 }
