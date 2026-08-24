@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { useLumen } from "@/lib/store";
+import { X } from "lucide-react";
 
 export function Onboarding() {
   const open = useLumen((s) => s.onboarding);
@@ -13,53 +14,87 @@ export function Onboarding() {
   const isVi = lang === "vi";
 
   return (
-    <div className="absolute inset-0 z-[85] flex items-center justify-center bg-bg/50 px-4 select-none">
-      <div className="w-full max-w-md rounded-xl bg-surface p-6 shadow-[var(--shadow-float)] ring-1 ring-border">
-        <p className="font-display text-2xl font-medium tracking-tight text-fg">Lumen</p>
-        <p className="mt-2 text-sm leading-relaxed text-muted">
+    <div className="fixed inset-0 z-[95] flex items-center justify-center p-4 select-none">
+      {/* Dimmed backdrop */}
+      <button
+        type="button"
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm cursor-pointer"
+        aria-label="Đóng"
+        onClick={dismiss}
+      />
+
+      {/* Solid Opaque Dialog Card (Nền đặc không trong suốt) */}
+      <div className="interactive-el relative z-10 w-full max-w-md rounded-2xl bg-[#1c1917] p-6 shadow-[0_25px_60px_rgba(0,0,0,0.85)] border border-[#44403c] text-[#f5f5f4] animate-in zoom-in-95 fade-in duration-150">
+        <div className="flex items-center justify-between pb-2 border-b border-[#38332e] mb-3">
+          <p className="font-display text-base font-bold text-amber-400 flex items-center gap-1.5">
+            <span>🦊</span>
+            <span>Chào mừng đến với Lumen Desktop</span>
+          </p>
+          <button
+            type="button"
+            onClick={dismiss}
+            className="p-1 rounded hover:bg-white/10 text-[#a8a29e] hover:text-white cursor-pointer"
+          >
+            <X className="size-4" />
+          </button>
+        </div>
+
+        <p className="text-xs leading-relaxed text-[#d6d3d1]">
           {isVi
-            ? "Bàn làm việc không gian yên tĩnh. Ghi chú có thể ghim, thu nhỏ góc màn hình. Người bạn nhỏ Pip sẽ mang giấy đến mỗi khi bạn cần."
-            : "A quiet desk. Notes you can pin and minimize. A small companion who will walk over with paper when you ask."}
+            ? "Lớp phủ màn hình trong suốt, tự do ghim giấy note 3D, đặt giờ thông minh (như xây nhà trong COC) và nuôi thú cưng dạo bước trên Desktop."
+            : "A transparent desktop overlay workspace with 3D sticky notes, smart countdown timers, and roaming virtual pet companions."}
         </p>
-        <ol className="mt-5 space-y-3 text-sm text-fg">
-          <li className="flex gap-3">
-            <span className="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full bg-elevated text-xs font-medium tabular-nums">
+
+        <ol className="mt-4 space-y-2.5 text-xs text-[#f5f5f4]">
+          <li className="flex gap-2.5 items-start">
+            <span className="grid size-5 shrink-0 place-items-center rounded-full bg-amber-500/20 text-amber-400 text-[11px] font-bold">
               1
             </span>
-            {isVi
-              ? "Kéo thả giấy ghi chú. Đổi màu hoặc bấm nút thu nhỏ để ghim góc màn hình."
-              : "Drag a sticky note. Change tint or click minimize to pin in screen corner."}
+            <span>
+              {isVi
+                ? "Nhấp đúp chuột vào màn hình (hoặc Ctrl+Shift+N) để tạo nhanh ghi chú dán."
+                : "Double-click desktop wallpaper (or Ctrl+Shift+N) to spawn sticky notes."}
+            </span>
           </li>
-          <li className="flex gap-3">
-            <span className="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full bg-elevated text-xs font-medium tabular-nums">
+          <li className="flex gap-2.5 items-start">
+            <span className="grid size-5 shrink-0 place-items-center rounded-full bg-amber-500/20 text-amber-400 text-[11px] font-bold">
               2
             </span>
-            {isVi
-              ? "Mở Hub cài đặt: Đổi tiếng Việt / Tiếng Anh, bật Luôn trên cùng (Always on top), đổi 4 bộ giao diện."
-              : "Open the hub from the tray: Switch languages, enable Always-on-top, customize themes."}
+            <span>
+              {isVi
+                ? "Đặt giờ thông minh: Bấm Ctrl+Shift+T (ví dụ: xây nhà trong COC : 2g14p) để đếm ngược nổi."
+                : "Smart timers: Press Ctrl+Shift+T to start game countdown timers with alarm bell."}
+            </span>
           </li>
-          <li className="flex gap-3">
-            <span className="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full bg-elevated text-xs font-medium tabular-nums">
+          <li className="flex gap-2.5 items-start">
+            <span className="grid size-5 shrink-0 place-items-center rounded-full bg-amber-500/20 text-amber-400 text-[11px] font-bold">
               3
             </span>
-            {isVi
-              ? "Nhấp vào Pip: Cho ăn bánh dâu, xoa đầu và nhờ Pip lấy giấy note mới."
-              : "Click Pip: Feed berries, pet, dance party, or ask Pip to fetch a fresh note."}
+            <span>
+              {isVi
+                ? "Tương tác với Thú cưng: Nhấp vào chú Cáo để cho ăn, xoa đầu, đổi mũ hoặc ném bóng 🎾."
+                : "Interact with Pip: Pet, feed snacks, customize hats, or throw a toy ball 🎾."}
+            </span>
           </li>
         </ol>
-        <div className="mt-6 flex flex-col gap-2 sm:flex-row">
+
+        <div className="mt-5 flex flex-col gap-2 sm:flex-row">
           <Button
-            className="flex-1 cursor-pointer"
+            className="flex-1 cursor-pointer bg-amber-500 text-black hover:bg-amber-400 font-bold text-xs"
             onClick={() => {
               setPipEnabled(true);
               dismiss();
               window.setTimeout(() => requestNoteFromPip(), 400);
             }}
           >
-            {isVi ? "Nhờ Pip mang giấy note" : "Let Pip bring a note"}
+            {isVi ? "Bắt đầu cùng chú Cáo 🦊" : "Start with Pip"}
           </Button>
-          <Button variant="secondary" className="flex-1 cursor-pointer" onClick={dismiss}>
-            {isVi ? "Tôi tự khám phá" : "I will look around"}
+          <Button
+            variant="outline"
+            className="flex-1 cursor-pointer border-[#57534e] text-xs text-[#d6d3d1] hover:bg-white/10"
+            onClick={dismiss}
+          >
+            {isVi ? "Tôi tự khám phá ✨" : "I will explore"}
           </Button>
         </div>
       </div>

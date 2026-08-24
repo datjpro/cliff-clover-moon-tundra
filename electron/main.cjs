@@ -52,6 +52,14 @@ function createWindow() {
     mainWindow.webContents.send("open-quick-capture");
   });
 
+  // Global hotkey Ctrl+Shift+T to open quick timer from background
+  globalShortcut.register("CommandOrControl+Shift+T", () => {
+    if (!mainWindow) return;
+    mainWindow.show();
+    mainWindow.focus();
+    mainWindow.webContents.send("open-quick-timer");
+  });
+
   // IPC channel: Toggle Mouse Click-Through on transparent screen areas
   ipcMain.on("set-ignore-mouse-events", (event, ignore) => {
     if (mainWindow && !mainWindow.isDestroyed()) {

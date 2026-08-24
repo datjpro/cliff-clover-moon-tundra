@@ -1,5 +1,5 @@
 import { useRef, useState, type PointerEvent } from "react";
-import { CheckSquare, ChevronDown, ChevronUp, MoreHorizontal, Pin, Plus, Square, Trash2, Type } from "lucide-react";
+import { CheckSquare, ChevronDown, ChevronUp, Download, MoreHorizontal, Pin, Plus, Square, Trash2, X } from "lucide-react";
 import { sounds } from "@/lib/audio";
 import { DICTIONARY } from "@/lib/i18n";
 import { NOTE_TINTS, useLumen } from "@/lib/store";
@@ -46,6 +46,7 @@ export function StickyNote({ note, stacked }: Props) {
   const drag = useRef<{ dx: number; dy: number } | null>(null);
 
   const [showOptions, setShowOptions] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [newCheckText, setNewCheckText] = useState("");
 
   const onPointerDown = (e: PointerEvent<HTMLElement>) => {
@@ -97,6 +98,38 @@ export function StickyNote({ note, stacked }: Props) {
     updateNote(note.id, { checkItems: items });
   };
 
+  const handleDeleteClick = () => {
+    const hasContent = note.body.trim().length > 0 || (note.checkItems && note.checkItems.length > 0);
+    if (!hasContent) {
+      removeNote(note.id);
+    } else {
+      setShowDeleteConfirm(true);
+    }
+  };
+
+  const handleExportTxtAndDelete = () => {
+    let content = `=== GHI CHÚ LUMEN ===\nNgày tạo: ${new Date(note.createdAt).toLocaleString()}\n\n`;
+    if (note.body.trim()) {
+      content += `Nội dung:\n${note.body.trim()}\n\n`;
+    }
+    if (note.checkItems && note.checkItems.length > 0) {
+      content += "Danh sách công việc (Checklist):\n";
+      note.checkItems.forEach((item) => {
+        content += `${item.done ? "[x]" : "[ ]"} ${item.text}\n`;
+      });
+    }
+
+    const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `ghichu-${new Date().toISOString().slice(0, 10)}-${note.id.slice(0, 5)}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    removeNote(note.id);
+  };
+
   const style = stacked
     ? undefined
     : {
@@ -141,7 +174,6 @@ export function StickyNote({ note, stacked }: Props) {
     );
   }
 
-  // Full Expanded Realistic Sticky Note (matching reference image)
   return (
     <article
       className={cn(
@@ -218,7 +250,7 @@ export function StickyNote({ note, stacked }: Props) {
           <button
             type="button"
             title={dict.delete}
-            onClick={() => removeNote(note.id)}
+            onClick={handleDeleteClick}
             className="flex size-5 items-center justify-center rounded opacity-40 hover:opacity-100 hover:text-red-600 transition-opacity cursor-pointer"
           >
             <Trash2 className="size-3" />
@@ -226,8 +258,46 @@ export function StickyNote({ note, stacked }: Props) {
         </div>
       </header>
 
+      {/* Delete Confirmation Card with .txt Export Option */}
+      {showDeleteConfirm && (
+        <div className="no-drag mb-2 flex flex-col gap-2 rounded-xl bg-black/90 text-white p-2.5 text-xs shadow-2xl animate-in zoom-in-95 duration-150">
+          <p className="font-bold text-amber-400 leading-tight">
+            Xác nhận xóa ghi chú này?
+          </p>
+          <p className="text-[11px] text-slate-300">
+            Bạn có muốn lưu nội dung thành file .txt trước khi xóa không?
+          </p>
+          <div className="flex flex-col gap-1 pt-1">
+            <button
+              type="button"
+              onClick={handleExportTxtAndDelete}
+              className="flex items-center justify-center gap-1.5 py-1 px-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-[11px] cursor-pointer"
+            >
+              <Download className="size-3" />
+              <span>Lưu thành .txt & Xóa</span>
+            </button>
+            <div className="flex gap-1">
+              <button
+                type="button"
+                onClick={() => removeNote(note.id)}
+                className="flex-1 py-1 px-2 rounded-lg bg-red-600/80 hover:bg-red-600 text-white text-[11px] font-semibold cursor-pointer"
+              >
+                Xóa luôn
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowDeleteConfirm(false)}
+                className="flex-1 py-1 px-2 rounded-lg bg-white/20 hover:bg-white/30 text-white text-[11px] cursor-pointer"
+              >
+                Hủy
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Note Customization Drawer */}
-      {showOptions && (
+      {showOptions && !showDeleteConfirm && (
         <div className="no-drag mb-2 flex flex-col gap-1.5 rounded-lg bg-black/10 p-2 text-xs">
           <div className="flex items-center justify-between">
             <span className="font-semibold text-[10px] uppercase opacity-70">Độ mờ (Opacity)</span>

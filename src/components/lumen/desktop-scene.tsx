@@ -1,5 +1,5 @@
 import { useEffect, useState, type PointerEvent } from "react";
-import { Eye, EyeOff, LayoutGrid, Plus, Settings, Sparkles, X } from "lucide-react";
+import { Clock, Eye, EyeOff, LayoutGrid, Plus, Settings, Sparkles, X } from "lucide-react";
 import { sounds } from "@/lib/audio";
 import {
   closeOrQuitDesktopApp,
@@ -14,6 +14,7 @@ import { FloatingTimers } from "./floating-timers";
 import { Hub } from "./hub";
 import { Onboarding } from "./onboarding";
 import { QuickCapture } from "./quick-capture";
+import { QuickTimer, triggerOpenQuickTimer } from "./quick-timer";
 import { StickyNote } from "./sticky-note";
 import { ToastStack } from "./toasts";
 
@@ -88,6 +89,19 @@ function FloatingTrayMenu() {
             >
               <Plus className="size-4 text-amber-500" />
               <span>{isVi ? "+ Ghi chú mới" : "+ New Note"}</span>
+            </button>
+
+            {/* + Quick Timer */}
+            <button
+              type="button"
+              onClick={() => {
+                triggerOpenQuickTimer();
+                setOpen(false);
+              }}
+              className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-white/10 transition-colors text-left cursor-pointer"
+            >
+              <Clock className="size-4 text-amber-400" />
+              <span>{isVi ? "⏰ + Đặt giờ nhanh" : "⏰ + Quick Timer"}</span>
             </button>
 
             {/* Toggle Pet Hide/Show */}
@@ -226,6 +240,7 @@ export function DesktopScene() {
     window.addEventListener("keydown", onKey);
 
     let unlistenCapture: (() => void) | null = null;
+    let unlistenTimer: (() => void) | null = null;
     let unlistenAdd: (() => void) | null = null;
     let unlistenArrange: (() => void) | null = null;
     let unlistenToggle: (() => void) | null = null;
@@ -237,6 +252,9 @@ export function DesktopScene() {
       import("@tauri-apps/api/event").then(({ listen }) => {
         listen("open-quick-capture", () => setCaptureOpen(true)).then((un) => {
           unlistenCapture = un;
+        });
+        listen("open-quick-timer", () => triggerOpenQuickTimer()).then((un) => {
+          unlistenTimer = un;
         });
         listen("add-new-note", () => addNote({ body: "", tint: "cream" })).then((un) => {
           unlistenAdd = un;
@@ -266,6 +284,7 @@ export function DesktopScene() {
     return () => {
       window.removeEventListener("keydown", onKey);
       if (unlistenCapture) unlistenCapture();
+      if (unlistenTimer) unlistenTimer();
       if (unlistenAdd) unlistenAdd();
       if (unlistenArrange) unlistenArrange();
       if (unlistenToggle) unlistenToggle();
@@ -316,6 +335,7 @@ export function DesktopScene() {
       <Companion />
       <ToastStack />
       <QuickCapture />
+      <QuickTimer />
       <Hub />
       <Onboarding />
       <FloatingTrayMenu />
