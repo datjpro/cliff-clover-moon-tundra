@@ -1,17 +1,31 @@
-export type ThemeId = "ink" | "paper" | "glass" | "moss";
+export type ThemeId = "minimalist" | "glass" | "cyberpunk" | "pastel" | "ink";
 export type LayoutMode = "stickies" | "sidebar" | "tray" | "corner";
-export type NoteTint = "cream" | "mist" | "sage" | "blush";
-export type PipMood = "idle" | "wander" | "fetch" | "deliver" | "nudge" | "sleep" | "dance" | "eating" | "focus";
+export type NoteTint = "cream" | "mist" | "sage" | "blush" | "neon" | "dark" | "glass";
+export type PipMood = "idle" | "wander" | "fetch" | "deliver" | "nudge" | "sleep" | "dance" | "eating" | "focus" | "sitting";
+export type PetType = "fox" | "cat" | "shiba" | "dragon" | "cyber";
 export type PetSkin = "classic" | "matcha" | "amber" | "cyber" | "obsidian";
 export type Language = "en" | "vi";
 
+export type CheckItem = {
+  id: string;
+  text: string;
+  done: boolean;
+};
+
 export type Note = {
   id: string;
+  title?: string;
   body: string;
-  x: number;
-  y: number;
+  x: number; // percentage of screen (0 - 100)
+  y: number; // percentage of screen (0 - 100)
+  width?: number; // optional width in px
+  height?: number; // optional height in px
   rot: number;
   tint: NoteTint;
+  opacity?: number; // 0.3 to 1.0
+  fontFamily?: "sans" | "handwriting" | "mono";
+  fontSize?: "sm" | "base" | "lg";
+  checkItems?: CheckItem[];
   z: number;
   createdAt: number;
   pinned?: boolean;
@@ -32,8 +46,18 @@ export type ToastItem = {
   createdAt: number;
 };
 
+export type PawPrint = {
+  id: string;
+  x: number;
+  y: number;
+  rot: number;
+  opacity: number;
+  createdAt: number;
+};
+
 export type PipState = {
   enabled: boolean;
+  petType: PetType;
   mood: PipMood;
   skin: PetSkin;
   happiness: number; // 0 - 100
@@ -46,4 +70,5 @@ export type PipState = {
   carrying: boolean;
   moving: boolean;
   speech: string | null;
+  targetNoteId?: string | null; // when sitting on a note
 };

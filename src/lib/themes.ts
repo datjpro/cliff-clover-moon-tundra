@@ -5,10 +5,11 @@ export const THEMES: {
   name: string;
   line: string;
 }[] = [
-  { id: "ink", name: "Ink", line: "Dusk desk, cream paper" },
-  { id: "paper", name: "Paper", line: "Daylight linen" },
-  { id: "glass", name: "Glass", line: "Cool night steel" },
-  { id: "moss", name: "Moss", line: "Forest shade" },
+  { id: "glass", name: "Glassmorphism", line: "Frosted acrylic glass with blurred backdrop" },
+  { id: "pastel", name: "Pastel Dream", line: "Soft warm colors, calm paper notes" },
+  { id: "cyberpunk", name: "Cyberpunk Neon", line: "Vibrant neon glow & futuristic dark glass" },
+  { id: "minimalist", name: "Minimalist", line: "Ultra-clean monochrome typography" },
+  { id: "ink", name: "Ink & Wood", line: "Classic dark obsidian desk theme" },
 ];
 
 export const LAYOUTS: {
@@ -16,7 +17,7 @@ export const LAYOUTS: {
   name: string;
   line: string;
 }[] = [
-  { id: "stickies", name: "Stickies", line: "Notes float on the desk" },
-  { id: "sidebar", name: "Sidebar", line: "A quiet column on the right" },
-  { id: "tray", name: "Tray only", line: "Hidden until you ask" },
+  { id: "stickies", name: "Stickies Freeform", line: "Notes float anywhere on your screen" },
+  { id: "sidebar", name: "Sidebar Dock", line: "Neat column docked to the right edge" },
+  { id: "tray", name: "Tray Hidden", line: "Notes minimized to system tray" },
 ];

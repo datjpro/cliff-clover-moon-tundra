@@ -28,13 +28,14 @@ export function Tray() {
   const hubOpen = useLumen((s) => s.hubOpen);
   const setCaptureOpen = useLumen((s) => s.setCaptureOpen);
   const pipEnabled = useLumen((s) => s.pip.enabled);
+  const petType = useLumen((s) => s.pip.petType);
   const pipSkin = useLumen((s) => s.pip.skin);
   const setPipEnabled = useLumen((s) => s.setPipEnabled);
   const requestNoteFromPip = useLumen((s) => s.requestNoteFromPip);
   const pending = useLumen((s) => s.reminders.filter((r) => !r.done).length);
 
   return (
-    <footer className="absolute inset-x-0 bottom-0 z-[80] flex h-12 items-center justify-between gap-2 border-t border-white/5 bg-tray px-3 text-tray-fg select-none">
+    <footer className="interactive-el absolute inset-x-0 bottom-0 z-[80] flex h-12 items-center justify-between gap-2 border-t border-white/5 bg-tray/80 backdrop-blur-md px-3 text-tray-fg select-none">
       <div className="flex items-center gap-1.5">
         <button
           type="button"
@@ -42,8 +43,8 @@ export function Tray() {
           className="flex h-9 items-center gap-2 rounded-md px-2.5 hover:bg-white/5 cursor-pointer"
           aria-pressed={hubOpen}
         >
-          <span className="grid size-6 place-items-center rounded-sm bg-accent/20">
-            <span className="block size-2.5 rounded-full bg-accent" />
+          <span className="grid size-6 place-items-center rounded-sm bg-amber-500/20">
+            <span className="block size-2.5 rounded-full bg-amber-500" />
           </span>
           <span className="hidden font-display text-sm font-medium sm:inline">{dict.appName}</span>
         </button>
@@ -65,7 +66,7 @@ export function Tray() {
         >
           <Bell className="size-4" />
           {pending > 0 ? (
-            <span className="absolute top-1.5 right-1.5 size-1.5 rounded-full bg-accent animate-pulse" />
+            <span className="absolute top-1.5 right-1.5 size-1.5 rounded-full bg-amber-500 animate-pulse" />
           ) : null}
         </button>
       </div>
@@ -78,7 +79,7 @@ export function Tray() {
           title={pipEnabled ? dict.pipStudio.fetchNote : dict.pipStudio.enableCompanion}
         >
           <span className="block h-8 w-8 scale-75">
-            <PipFigure walking={false} carrying={false} facing={-1} skin={pipSkin} />
+            <PipFigure walking={false} carrying={false} facing={-1} petType={petType} skin={pipSkin} />
           </span>
         </button>
         <button

@@ -10,8 +10,10 @@ declare global {
       hide: () => void;
       quit: () => void;
       setAlwaysOnTop: (flag: boolean) => void;
+      setIgnoreMouseEvents: (ignore: boolean) => void;
       switchToCornerMode: () => void;
       switchToFullMode: () => void;
+      switchToTransparentScreenMode: () => void;
     };
     __TAURI_INTERNALS__?: unknown;
     __TAURI__?: unknown;
@@ -22,6 +24,28 @@ declare global {
 export function isDesktopApp(): boolean {
   if (typeof window === "undefined") return false;
   return Boolean(window.desktopAPI || window.__TAURI_INTERNALS__ || window.__TAURI__);
+}
+
+/**
+ * Toggle native mouse click-through for transparent overlays.
+ * When enabled (ignore = true), clicks pass straight through to OS apps underneath.
+ * When disabled (ignore = false), clicks interact with notes, pet, and controls.
+ */
+export function setIgnoreMouseEvents(ignore: boolean): void {
+  if (typeof window !== "undefined" && window.desktopAPI) {
+    window.desktopAPI.setIgnoreMouseEvents(ignore);
+    return;
+  }
+  if (typeof window !== "undefined" && (window.__TAURI_INTERNALS__ || window.__TAURI__)) {
+    void (async () => {
+      try {
+        const { invoke } = await import("@tauri-apps/api/core");
+        await invoke("set_ignore_cursor_events", { ignore });
+      } catch (err) {
+        console.debug("[DesktopBridge] tauri click-through:", err);
+      }
+    })();
+  }
 }
 
 /**
@@ -103,20 +127,6 @@ export async function closeOrQuitDesktopApp(): Promise<void> {
       await getCurrentWindow().close();
     } catch (err) {
       console.debug("[DesktopBridge] quit:", err);
-    }
-  }
-}
-
-/**
- * Toggle native mouse click-through for transparent overlays.
- */
-export async function setNativeClickThrough(ignore: boolean): Promise<void> {
-  if (typeof window !== "undefined" && (window.__TAURI_INTERNALS__ || window.__TAURI__)) {
-    try {
-      const { invoke } = await import("@tauri-apps/api/core");
-      await invoke("set_ignore_cursor_events", { ignore });
-    } catch (err) {
-      console.debug("[DesktopBridge] setNativeClickThrough:", err);
     }
   }
 }

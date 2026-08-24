@@ -113,6 +113,7 @@ type LumenState = {
 function emptyPip(): PipState {
   return {
     enabled: true,
+    petType: "fox",
     mood: "wander",
     skin: "classic",
     happiness: 92,

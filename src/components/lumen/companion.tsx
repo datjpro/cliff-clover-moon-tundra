@@ -1,11 +1,14 @@
-import { useEffect, useRef, useState } from "react";
-import { Cookie, Heart, Sparkles, StickyNote as NoteIcon } from "lucide-react";
+import { useEffect, useRef, useState, type PointerEvent } from "react";
+import { Cookie, Heart, Moon, Sparkles, StickyNote as NoteIcon, Sun } from "lucide-react";
 import { useLumen } from "@/lib/store";
+import type { PawPrint } from "@/lib/types";
+import { uid } from "@/lib/utils";
+import { PawTrail } from "./paw-trail";
 import { PipFigure } from "./pip";
 import { cn } from "@/lib/utils";
 
 const WELL = { x: 90, y: 70 };
-const SPEED = 42;
+const SPEED = 38;
 
 function dist(ax: number, ay: number, bx: number, by: number) {
   return Math.hypot(ax - bx, ay - by);
@@ -17,6 +20,7 @@ function clamp(n: number, min: number, max: number) {
 
 export function Companion() {
   const enabled = useLumen((s) => s.pip.enabled);
+  const petType = useLumen((s) => s.pip.petType || "fox");
   const mood = useLumen((s) => s.pip.mood);
   const skin = useLumen((s) => s.pip.skin);
   const carrying = useLumen((s) => s.pip.carrying);
@@ -31,14 +35,19 @@ export function Companion() {
   const feedPip = useLumen((s) => s.feedPip);
   const petPip = useLumen((s) => s.petPip);
   const dancePip = useLumen((s) => s.dancePip);
+  const setPip = useLumen((s) => s.setPip);
 
   const [menuOpen, setMenuOpen] = useState(false);
+  const [pawPrints, setPawPrints] = useState<PawPrint[]>([]);
   const elRef = useRef<HTMLDivElement>(null);
   const pos = useRef({ x: startX, y: startY });
+  const lastStepPos = useRef({ x: startX, y: startY });
+  const isDragging = useRef(false);
+  const dragOffset = useRef({ dx: 0, dy: 0 });
   const target = useRef({
     x: startX,
     y: startY,
-    kind: "idle" as "idle" | "well" | "drop" | "nudge" | "dance",
+    kind: "idle" as "idle" | "well" | "drop" | "nudge" | "dance" | "sitting",
   });
   const waitUntil = useRef(0);
   const lastMood = useRef(mood);
@@ -46,6 +55,22 @@ export function Companion() {
   useEffect(() => {
     pos.current = { x: startX, y: startY };
   }, [enabled, startX, startY]);
+
+  // Paw prints fade timer
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const now = Date.now();
+      setPawPrints((prev) =>
+        prev
+          .map((p) => ({
+            ...p,
+            opacity: Math.max(0, p.opacity - 0.08),
+          }))
+          .filter((p) => p.opacity > 0.05 && now - p.createdAt < 12000),
+      );
+    }, 800);
+    return () => clearInterval(timer);
+  }, []);
 
   // Click outside to dismiss pet quick action menu
   useEffect(() => {
@@ -59,11 +84,42 @@ export function Companion() {
     return () => window.removeEventListener("pointerdown", onClickOutside);
   }, [menuOpen]);
 
+  // Drag Pet around Desktop
+  const onPointerDown = (e: PointerEvent<HTMLDivElement>) => {
+    if ((e.target as HTMLElement).closest("button.action-btn")) return;
+    isDragging.current = true;
+    const parent = document.body.getBoundingClientRect();
+    dragOffset.current = {
+      dx: (e.clientX / parent.width) * 100 - pos.current.x,
+      dy: (e.clientY / parent.height) * 100 - pos.current.y,
+    };
+    e.currentTarget.setPointerCapture(e.pointerId);
+  };
+
+  const onPointerMove = (e: PointerEvent<HTMLDivElement>) => {
+    if (!isDragging.current) return;
+    const parent = document.body.getBoundingClientRect();
+    const x = clamp((e.clientX / parent.width) * 100 - dragOffset.current.dx, 2, 96);
+    const y = clamp((e.clientY / parent.height) * 100 - dragOffset.current.dy, 4, 92);
+    pos.current = { x, y };
+    target.current = { x, y, kind: "idle" };
+    if (elRef.current) {
+      elRef.current.style.left = `${x}%`;
+      elRef.current.style.top = `${y}%`;
+    }
+  };
+
+  const onPointerUp = () => {
+    if (isDragging.current) {
+      isDragging.current = false;
+      setPip({ x: pos.current.x, y: pos.current.y, moving: false });
+    }
+  };
+
   useEffect(() => {
     if (!enabled) return;
     let raf = 0;
     let last = performance.now();
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     const applyDom = (x: number, y: number) => {
       const el = elRef.current;
@@ -83,6 +139,11 @@ export function Companion() {
         return;
       }
 
+      if (isDragging.current) {
+        raf = requestAnimationFrame(tick);
+        return;
+      }
+
       if (p.mood !== lastMood.current) {
         lastMood.current = p.mood;
         if (p.mood === "fetch") target.current = { ...WELL, kind: "well" };
@@ -97,29 +158,7 @@ export function Companion() {
         }
       }
 
-      if (reduced) {
-        if (p.mood === "fetch" || p.mood === "deliver") {
-          state.addNote({
-            x: clamp(pos.current.x - 8, 4, 85),
-            y: clamp(pos.current.y - 10, 6, 80),
-            tint: "cream",
-            rot: (Math.random() - 0.5) * 3,
-            body: lang === "vi" ? "Từ Pip — ghi chú mới ✨" : "From Pip — write here.",
-          });
-          state.setPip({
-            mood: "idle",
-            carrying: false,
-            moving: false,
-            speech: lang === "vi" ? "Gửi bạn nhé." : "Here.",
-            x: pos.current.x,
-            y: pos.current.y,
-          });
-        }
-        raf = requestAnimationFrame(tick);
-        return;
-      }
-
-      // Full screen wandering coordinates (across the entire monitor display)
+      // Full screen wandering coordinates (across the entire monitor screen)
       if (
         p.mood === "wander" &&
         now > waitUntil.current &&
@@ -145,6 +184,25 @@ export function Companion() {
         pos.current.y += (t.y - pos.current.y) * k;
         const nextFacing: 1 | -1 = t.x >= pos.current.x ? 1 : -1;
         applyDom(pos.current.x, pos.current.y);
+
+        // Leave Paw Prints Trail behind pet
+        const stepDist = dist(pos.current.x, pos.current.y, lastStepPos.current.x, lastStepPos.current.y);
+        if (stepDist > 2.8) {
+          lastStepPos.current = { x: pos.current.x, y: pos.current.y };
+          const rot = (Math.atan2(t.y - pos.current.y, t.x - pos.current.x) * 180) / Math.PI + 90;
+          setPawPrints((prev) => [
+            ...prev.slice(-24),
+            {
+              id: uid(),
+              x: pos.current.x,
+              y: pos.current.y + 3.5,
+              rot,
+              opacity: 0.65,
+              createdAt: Date.now(),
+            },
+          ]);
+        }
+
         if (!p.moving || p.facing !== nextFacing) {
           state.setPip({ moving: true, facing: nextFacing });
         }
@@ -212,92 +270,112 @@ export function Companion() {
   if (!enabled) return null;
 
   return (
-    <div
-      ref={elRef}
-      className="group absolute z-50 -translate-x-1/2 -translate-y-1/2 p-0 select-none"
-      style={{ left: `${startX}%`, top: `${startY}%` }}
-    >
-      {/* Speech Bubble — Automatically stacks above toolbar if menu is open */}
-      {speech ? (
-        <span
-          className={cn(
-            "animate-in fade-in zoom-in-90 absolute left-1/2 z-20 -translate-x-1/2 whitespace-nowrap rounded-full bg-elevated/95 px-3 py-1 text-[11px] font-medium text-fg shadow-[var(--shadow-float)] ring-1 ring-fg/10 transition-all duration-200",
-            menuOpen ? "-top-24" : "-top-10",
-          )}
-        >
-          {speech}
-          {/* Pointer notch */}
-          <span className="absolute -bottom-1 left-1/2 size-2 -translate-x-1/2 rotate-45 bg-elevated" />
-        </span>
-      ) : null}
+    <>
+      {/* Paw Prints Trail on Screen */}
+      <PawTrail prints={pawPrints} />
 
-      {/* Floating Pet Interaction Quick Toolbar */}
-      {menuOpen ? (
-        <div className="animate-in fade-in zoom-in-95 absolute -top-12 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 rounded-full bg-surface/95 p-1 backdrop-blur-md shadow-[var(--shadow-float)] ring-1 ring-border">
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              petPip();
-            }}
-            title="Xoa đầu Pip (Pet)"
-            className="flex size-7 items-center justify-center rounded-full text-rose-400 hover:bg-elevated hover:scale-110 active:scale-95 transition-all cursor-pointer"
-          >
-            <Heart className="size-3.5 fill-rose-400/30" />
-          </button>
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              feedPip();
-            }}
-            title="Cho Pip ăn dâu (Feed)"
-            className="flex size-7 items-center justify-center rounded-full text-amber-400 hover:bg-elevated hover:scale-110 active:scale-95 transition-all cursor-pointer"
-          >
-            <Cookie className="size-3.5" />
-          </button>
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              requestNoteFromPip();
-              setMenuOpen(false);
-            }}
-            title="Nhờ Pip lấy giấy (Fetch Note)"
-            className="flex size-7 items-center justify-center rounded-full text-emerald-400 hover:bg-elevated hover:scale-110 active:scale-95 transition-all cursor-pointer"
-          >
-            <NoteIcon className="size-3.5" />
-          </button>
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              dancePip();
-            }}
-            title="Nhảy múa (Dance)"
-            className="flex size-7 items-center justify-center rounded-full text-indigo-400 hover:bg-elevated hover:scale-110 active:scale-95 transition-all cursor-pointer"
-          >
-            <Sparkles className="size-3.5" />
-          </button>
-        </div>
-      ) : null}
-
-      {/* Pip Main Interactive Trigger */}
-      <button
-        type="button"
-        className="cursor-pointer bg-transparent p-0 transition-transform active:scale-90 hover:scale-105"
-        onClick={() => setMenuOpen(!menuOpen)}
-        onDoubleClick={() => petPip()}
-        aria-label="Pip companion, click to interact or double click to pet"
+      <div
+        ref={elRef}
+        className="group absolute z-50 -translate-x-1/2 -translate-y-1/2 p-0 select-none cursor-grab active:cursor-grabbing"
+        style={{ left: `${startX}%`, top: `${startY}%` }}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerCancel={onPointerUp}
       >
-        <PipFigure
-          walking={moving}
-          carrying={carrying}
-          facing={facing}
-          mood={mood}
-          skin={skin}
-        />
-      </button>
-    </div>
+        {/* Speech Bubble */}
+        {speech ? (
+          <span
+            className={cn(
+              "animate-in fade-in zoom-in-90 absolute left-1/2 z-20 -translate-x-1/2 whitespace-nowrap rounded-full bg-elevated/95 px-3.5 py-1 text-[11px] font-semibold text-fg shadow-[0_8px_24px_rgba(0,0,0,0.35)] ring-1 ring-border transition-all duration-200 pointer-events-none",
+              menuOpen ? "-top-24" : "-top-11",
+            )}
+          >
+            {speech}
+            <span className="absolute -bottom-1 left-1/2 size-2 -translate-x-1/2 rotate-45 bg-elevated" />
+          </span>
+        ) : null}
+
+        {/* Floating Pet Interaction Quick Toolbar */}
+        {menuOpen ? (
+          <div className="animate-in fade-in zoom-in-95 absolute -top-12 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-surface/95 p-1 backdrop-blur-md shadow-[0_12px_32px_rgba(0,0,0,0.35)] ring-1 ring-border">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                petPip();
+              }}
+              title="Xoa đầu (Pet)"
+              className="action-btn flex size-7 items-center justify-center rounded-full text-rose-400 hover:bg-elevated hover:scale-110 active:scale-95 transition-all cursor-pointer"
+            >
+              <Heart className="size-3.5 fill-rose-400/30" />
+            </button>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                feedPip();
+              }}
+              title="Cho ăn dâu (Feed)"
+              className="action-btn flex size-7 items-center justify-center rounded-full text-amber-400 hover:bg-elevated hover:scale-110 active:scale-95 transition-all cursor-pointer"
+            >
+              <Cookie className="size-3.5" />
+            </button>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                requestNoteFromPip();
+                setMenuOpen(false);
+              }}
+              title="Lấy giấy ghi chú (Fetch Note)"
+              className="action-btn flex size-7 items-center justify-center rounded-full text-emerald-400 hover:bg-elevated hover:scale-110 active:scale-95 transition-all cursor-pointer"
+            >
+              <NoteIcon className="size-3.5" />
+            </button>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                dancePip();
+              }}
+              title="Nhảy múa (Dance)"
+              className="action-btn flex size-7 items-center justify-center rounded-full text-indigo-400 hover:bg-elevated hover:scale-110 active:scale-95 transition-all cursor-pointer"
+            >
+              <Sparkles className="size-3.5" />
+            </button>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setPip({ mood: mood === "sleep" ? "wander" : "sleep" });
+              }}
+              title={mood === "sleep" ? "Đánh thức" : "Ngủ (Sleep)"}
+              className="action-btn flex size-7 items-center justify-center rounded-full text-blue-400 hover:bg-elevated hover:scale-110 active:scale-95 transition-all cursor-pointer"
+            >
+              {mood === "sleep" ? <Sun className="size-3.5" /> : <Moon className="size-3.5" />}
+            </button>
+          </div>
+        ) : null}
+
+        {/* Pet Avatar Component */}
+        <button
+          type="button"
+          className="cursor-grab active:cursor-grabbing bg-transparent p-0 transition-transform active:scale-90 hover:scale-105"
+          onClick={() => setMenuOpen(!menuOpen)}
+          onDoubleClick={() => petPip()}
+          aria-label="Pet companion"
+        >
+          <PipFigure
+            walking={moving}
+            carrying={carrying}
+            facing={facing}
+            mood={mood}
+            petType={petType}
+            skin={skin}
+          />
+        </button>
+      </div>
+    </>
   );
 }

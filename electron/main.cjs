@@ -20,6 +20,7 @@ function createWindow() {
     hasShadow: false,
     alwaysOnTop: true,
     skipTaskbar: false,
+    backgroundColor: "#00000000",
     webPreferences: {
       preload: path.join(__dirname, "preload.cjs"),
       nodeIntegration: false,
@@ -75,7 +76,7 @@ function createWindow() {
     app.quit();
   });
 
-  // IPC channel: Switch to Mini Corner Widget Mode (Bottom-Right of Computer Screen)
+  // IPC channel: Switch to Mini Corner Widget Mode
   ipcMain.on("switch-to-corner-mode", () => {
     if (!mainWindow || mainWindow.isDestroyed()) return;
     const { width: scrW, height: scrH } = screen.getPrimaryDisplay().workAreaSize;
@@ -117,58 +118,54 @@ function createWindow() {
     mainWindow.setAlwaysOnTop(true, "screen-saver");
   });
 
-  // System Tray Menu
+  // System Tray Menu (Matching user specification)
   try {
     const iconPath = path.join(__dirname, "../src-tauri/icons/32x32.png");
     tray = new Tray(iconPath);
     const contextMenu = Menu.buildFromTemplate([
       {
-        label: "Hiển thị / Thu gọn Lumen",
-        click: () => {
-          if (!mainWindow) return;
-          if (mainWindow.isVisible()) mainWindow.hide();
-          else {
-            mainWindow.show();
-            mainWindow.focus();
-          }
-        },
-      },
-      {
-        label: "Ghi chú nhanh (Ctrl+Shift+N)",
+        label: "+ New Note (+ Ghi chú mới)",
         click: () => {
           if (!mainWindow) return;
           mainWindow.show();
-          mainWindow.focus();
-          mainWindow.webContents.send("open-quick-capture");
+          mainWindow.webContents.send("add-new-note");
         },
       },
       {
-        label: "Phủ toàn màn hình trong suốt (Full Desktop Overlay)",
+        label: "🪟 Arrange Notes (Sắp xếp ghi chú)",
         click: () => {
           if (!mainWindow) return;
-          mainWindow.show();
-          const { width: scrW, height: scrH } = screen.getPrimaryDisplay().bounds;
-          mainWindow.setBounds({ x: 0, y: 0, width: scrW, height: scrH });
+          mainWindow.webContents.send("arrange-notes");
         },
       },
       {
-        label: "Thu nhỏ về góc màn hình máy tính",
+        label: "👁️ Show / Hide All (Ẩn / Hiện tất cả)",
         click: () => {
           if (!mainWindow) return;
-          mainWindow.show();
-          const { width: scrW, height: scrH } = screen.getPrimaryDisplay().workAreaSize;
-          mainWindow.setBounds({
-            x: scrW - 356,
-            y: scrH - 456,
-            width: 340,
-            height: 440,
-          });
+          mainWindow.webContents.send("toggle-show-hide-all");
         },
       },
       { type: "separator" },
-      { label: "Thoát ứng dụng (Quit)", click: () => app.quit() },
+      {
+        label: "🐾 Pet Settings (Cài đặt Thú cưng)",
+        click: () => {
+          if (!mainWindow) return;
+          mainWindow.show();
+          mainWindow.webContents.send("open-pet-settings");
+        },
+      },
+      {
+        label: "⚙️ App Settings (Cài đặt Chung)",
+        click: () => {
+          if (!mainWindow) return;
+          mainWindow.show();
+          mainWindow.webContents.send("open-app-settings");
+        },
+      },
+      { type: "separator" },
+      { label: "✕ Quit Lumen (Thoát ứng dụng)", click: () => app.quit() },
     ]);
-    tray.setToolTip("Lumen — Desktop Spatial Workspace");
+    tray.setToolTip("Lumen — Desktop Spatial Companion & Sticky Notes");
     tray.setContextMenu(contextMenu);
     tray.on("click", () => {
       if (!mainWindow) return;
