@@ -147,6 +147,45 @@ var Cookie = createLucideIcon("cookie", [
 * This source code is licensed under the ISC license.
 * See the LICENSE file in the root directory of this source tree.
 */
+var EyeOff = createLucideIcon("eye-off", [
+	["path", {
+		d: "M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49",
+		key: "ct8e1f"
+	}],
+	["path", {
+		d: "M14.084 14.158a3 3 0 0 1-4.242-4.242",
+		key: "151rxh"
+	}],
+	["path", {
+		d: "M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143",
+		key: "13bj9a"
+	}],
+	["path", {
+		d: "m2 2 20 20",
+		key: "1ooewy"
+	}]
+]);
+/**
+* @license lucide-react v0.510.0 - ISC
+*
+* This source code is licensed under the ISC license.
+* See the LICENSE file in the root directory of this source tree.
+*/
+var Eye = createLucideIcon("eye", [["path", {
+	d: "M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0",
+	key: "1nclc0"
+}], ["circle", {
+	cx: "12",
+	cy: "12",
+	r: "3",
+	key: "1v7zrd"
+}]]);
+/**
+* @license lucide-react v0.510.0 - ISC
+*
+* This source code is licensed under the ISC license.
+* See the LICENSE file in the root directory of this source tree.
+*/
 var Globe = createLucideIcon("globe", [
 	["circle", {
 		cx: "12",
@@ -173,6 +212,46 @@ var Heart = createLucideIcon("heart", [["path", {
 	d: "M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z",
 	key: "c3ymky"
 }]]);
+/**
+* @license lucide-react v0.510.0 - ISC
+*
+* This source code is licensed under the ISC license.
+* See the LICENSE file in the root directory of this source tree.
+*/
+var LayoutGrid = createLucideIcon("layout-grid", [
+	["rect", {
+		width: "7",
+		height: "7",
+		x: "3",
+		y: "3",
+		rx: "1",
+		key: "1g98yp"
+	}],
+	["rect", {
+		width: "7",
+		height: "7",
+		x: "14",
+		y: "3",
+		rx: "1",
+		key: "6d4xhi"
+	}],
+	["rect", {
+		width: "7",
+		height: "7",
+		x: "14",
+		y: "14",
+		rx: "1",
+		key: "nxv5o0"
+	}],
+	["rect", {
+		width: "7",
+		height: "7",
+		x: "3",
+		y: "14",
+		rx: "1",
+		key: "1bb6yr"
+	}]
+]);
 /**
 * @license lucide-react v0.510.0 - ISC
 *
@@ -476,4 +555,4 @@ var X = createLucideIcon("x", [["path", {
 	key: "d8bk6v"
 }]]);
 //#endregion
-export { Cookie as _, Trash2 as a, Bell as b, Settings2 as c, Music as d, Minus as f, Globe as g, Heart as h, TriangleAlert as i, Pin as l, Maximize2 as m, VolumeX as n, StickyNote as o, Minimize2 as p, Volume2 as r, Sparkles as s, X as t, PenLine as u, ChevronUp as v, ChevronDown as y };
+export { Bell as C, ChevronDown as S, Globe as _, Trash2 as a, Cookie as b, Settings2 as c, Music as d, Minus as f, Heart as g, LayoutGrid as h, TriangleAlert as i, Pin as l, Maximize2 as m, VolumeX as n, StickyNote as o, Minimize2 as p, Volume2 as r, Sparkles as s, X as t, PenLine as u, Eye as v, ChevronUp as x, EyeOff as y };

@@ -8,9 +8,9 @@ import { uid } from "./utils";
 const SEED_NOTES: Note[] = [
   {
     id: "seed-1",
-    body: "🐾 Gặp gỡ Pip! Nhấp vào thú cưng để xoa đầu, cho ăn dâu tây hoặc nhờ lấy giấy ghi chú mới.",
-    x: 12,
-    y: 18,
+    body: "🐾 Gặp gỡ Pip! Pip có thể đi dạo khắp toàn màn hình máy tính của bạn.",
+    x: 8,
+    y: 14,
     rot: -2.4,
     tint: "cream",
     z: 2,
@@ -19,9 +19,9 @@ const SEED_NOTES: Note[] = [
   },
   {
     id: "seed-2",
-    body: "🎨 Đổi chủ đề màu & trang phục Pip trong Hub (Ink, Paper, Glass, Moss).\nThử skin Cyber hoặc Matcha nhé!",
-    x: 38,
-    y: 42,
+    body: "🎨 Bàn làm việc trong suốt: Bạn có thể kéo thả giấy ghi chú đặt ở BẤT KỲ ĐÂU trên màn hình!",
+    x: 34,
+    y: 36,
     rot: 1.8,
     tint: "mist",
     z: 1,
@@ -30,8 +30,8 @@ const SEED_NOTES: Note[] = [
   },
   {
     id: "seed-3",
-    body: "⚡ Ghi chú nhanh: Ctrl + Shift + N\n(hoặc ấn vào xấp giấy góc màn hình)",
-    x: 62,
+    body: "🧹 Nút 'Sắp xếp ghi chú': Bấm vào nút quét dọn trên thanh tiêu đề để thu gọn các note lại ngay ngắn.",
+    x: 64,
     y: 16,
     rot: -1.1,
     tint: "sage",
@@ -47,6 +47,7 @@ type LumenState = {
   theme: ThemeId;
   layout: LayoutMode;
   alwaysOnTop: boolean;
+  transparentOverlay: boolean;
   hubOpen: boolean;
   captureOpen: boolean;
   onboarding: boolean;
@@ -60,6 +61,7 @@ type LumenState = {
   setTheme: (theme: ThemeId) => void;
   setLayout: (layout: LayoutMode) => void;
   setAlwaysOnTop: (val: boolean) => void;
+  setTransparentOverlay: (val: boolean) => void;
   setHubOpen: (open: boolean) => void;
   setCaptureOpen: (open: boolean) => void;
   dismissOnboarding: () => void;
@@ -67,6 +69,7 @@ type LumenState = {
   updateNote: (id: string, patch: Partial<Note>) => void;
   toggleNoteCollapse: (id: string) => void;
   toggleNotePin: (id: string) => void;
+  tidyNotes: () => void;
   removeNote: (id: string) => void;
   bringNote: (id: string) => void;
   addReminder: (title: string, delayMs: number) => void;
@@ -90,12 +93,12 @@ function emptyPip(): PipState {
     enabled: true,
     mood: "wander",
     skin: "classic",
-    happiness: 90,
+    happiness: 92,
     energy: 95,
     treatsEaten: 0,
     soundEnabled: true,
-    x: 72,
-    y: 58,
+    x: 50,
+    y: 50,
     facing: -1,
     carrying: false,
     moving: false,
@@ -111,6 +114,7 @@ export const useLumen = create<LumenState>()(
       theme: "ink",
       layout: "stickies",
       alwaysOnTop: true,
+      transparentOverlay: true,
       hubOpen: false,
       captureOpen: false,
       onboarding: true,
@@ -136,6 +140,10 @@ export const useLumen = create<LumenState>()(
         sounds.playPop(500);
         set({ alwaysOnTop });
       },
+      setTransparentOverlay: (transparentOverlay) => {
+        sounds.playPop(520);
+        set({ transparentOverlay });
+      },
       setHubOpen: (hubOpen) => {
         sounds.playPop(480);
         set({ hubOpen, captureOpen: hubOpen ? false : get().captureOpen });
@@ -151,8 +159,8 @@ export const useLumen = create<LumenState>()(
         const note: Note = {
           id,
           body: partial?.body ?? "",
-          x: partial?.x ?? 28 + Math.random() * 24,
-          y: partial?.y ?? 22 + Math.random() * 18,
+          x: partial?.x ?? 20 + Math.random() * 50,
+          y: partial?.y ?? 15 + Math.random() * 45,
           rot: partial?.rot ?? (Math.random() - 0.5) * 4,
           tint: partial?.tint ?? "cream",
           z: partial?.z ?? z,
@@ -177,6 +185,27 @@ export const useLumen = create<LumenState>()(
         set({
           notes: get().notes.map((n) => (n.id === id ? { ...n, pinned: !n.pinned } : n)),
         });
+      },
+      tidyNotes: () => {
+        sounds.playChime();
+        const notes = get().notes;
+        const updated = notes.map((n, i) => {
+          const col = i % 3;
+          const row = Math.floor(i / 3);
+          return {
+            ...n,
+            x: 60 + col * 12,
+            y: 12 + row * 22,
+            rot: 0,
+            collapsed: false,
+          };
+        });
+        set({ notes: updated });
+        const isVi = get().lang === "vi";
+        get().pushToast(
+          isVi ? "Đã sắp xếp ghi chú" : "Notes Organized",
+          isVi ? "Tất cả ghi chú đã được gom lại ngay ngắn" : "All notes gathered neatly",
+        );
       },
       removeNote: (id) => {
         sounds.playPop(380);
@@ -302,6 +331,7 @@ export const useLumen = create<LumenState>()(
           theme: "ink",
           layout: "stickies",
           alwaysOnTop: true,
+          transparentOverlay: true,
           hubOpen: false,
           captureOpen: false,
           onboarding: true,
@@ -327,6 +357,7 @@ export const useLumen = create<LumenState>()(
         theme: s.theme,
         layout: s.layout,
         alwaysOnTop: s.alwaysOnTop,
+        transparentOverlay: s.transparentOverlay,
         onboarding: s.onboarding,
         notes: s.notes,
         reminders: s.reminders,

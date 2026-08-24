@@ -4,8 +4,8 @@ import { useLumen } from "@/lib/store";
 import { PipFigure } from "./pip";
 import { cn } from "@/lib/utils";
 
-const WELL = { x: 86, y: 62 };
-const SPEED = 38;
+const WELL = { x: 90, y: 70 };
+const SPEED = 42;
 
 function dist(ax: number, ay: number, bx: number, by: number) {
   return Math.hypot(ax - bx, ay - by);
@@ -26,6 +26,7 @@ export function Companion() {
   const startX = useLumen((s) => s.pip.x);
   const startY = useLumen((s) => s.pip.y);
   const layout = useLumen((s) => s.layout);
+  const lang = useLumen((s) => s.lang);
   const requestNoteFromPip = useLumen((s) => s.requestNoteFromPip);
   const feedPip = useLumen((s) => s.feedPip);
   const petPip = useLumen((s) => s.petPip);
@@ -99,17 +100,17 @@ export function Companion() {
       if (reduced) {
         if (p.mood === "fetch" || p.mood === "deliver") {
           state.addNote({
-            x: clamp(pos.current.x - 8, 6, 70),
-            y: clamp(pos.current.y - 10, 8, 55),
+            x: clamp(pos.current.x - 8, 4, 85),
+            y: clamp(pos.current.y - 10, 6, 80),
             tint: "cream",
             rot: (Math.random() - 0.5) * 3,
-            body: "From Pip — write here.",
+            body: lang === "vi" ? "Từ Pip — ghi chú mới ✨" : "From Pip — write here.",
           });
           state.setPip({
             mood: "idle",
             carrying: false,
             moving: false,
-            speech: "Here.",
+            speech: lang === "vi" ? "Gửi bạn nhé." : "Here.",
             x: pos.current.x,
             y: pos.current.y,
           });
@@ -118,6 +119,7 @@ export function Companion() {
         return;
       }
 
+      // Full screen wandering coordinates (across the entire monitor display)
       if (
         p.mood === "wander" &&
         now > waitUntil.current &&
@@ -125,8 +127,8 @@ export function Companion() {
         !menuOpen
       ) {
         target.current = {
-          x: 8 + Math.random() * 70,
-          y: 18 + Math.random() * 48,
+          x: 4 + Math.random() * 88,
+          y: 8 + Math.random() * 78,
           kind: "idle",
         };
         if (p.speech) state.setPip({ speech: null });
@@ -150,25 +152,25 @@ export function Companion() {
         applyDom(pos.current.x, pos.current.y);
         if (p.mood === "fetch" && t.kind === "well") {
           const drop = {
-            x: layout === "sidebar" ? 58 : 18 + Math.random() * 40,
-            y: 16 + Math.random() * 28,
+            x: layout === "sidebar" ? 58 : 10 + Math.random() * 72,
+            y: 12 + Math.random() * 64,
           };
           target.current = { ...drop, kind: "drop" };
           state.setPip({
             mood: "deliver",
             carrying: true,
             moving: true,
-            speech: "Got one! Bringing it over...",
+            speech: lang === "vi" ? "Pip lấy được giấy rồi! Đang mang đến..." : "Got one! Bringing it over...",
             x: pos.current.x,
             y: pos.current.y,
           });
         } else if (p.mood === "deliver" && t.kind === "drop") {
           state.addNote({
-            x: clamp(pos.current.x - 6, 4, 72),
-            y: clamp(pos.current.y - 8, 6, 52),
+            x: clamp(pos.current.x - 6, 4, 82),
+            y: clamp(pos.current.y - 8, 6, 78),
             tint: "cream",
             rot: (Math.random() - 0.5) * 4,
-            body: "From Pip — write your next big idea here ✨",
+            body: lang === "vi" ? "Từ Pip — ghi lại ý tưởng mới tại đây ✨" : "From Pip — write your next big idea here ✨",
           });
           waitUntil.current = now + 2400;
           target.current = { x: pos.current.x, y: pos.current.y, kind: "idle" };
@@ -176,7 +178,7 @@ export function Companion() {
             mood: "wander",
             carrying: false,
             moving: false,
-            speech: "Here you go! ✨",
+            speech: lang === "vi" ? "Giấy của bạn đây! ✨" : "Here you go! ✨",
             x: pos.current.x,
             y: pos.current.y,
           });
@@ -205,7 +207,7 @@ export function Companion() {
     applyDom(pos.current.x, pos.current.y);
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [enabled, layout, menuOpen]);
+  }, [enabled, layout, menuOpen, lang]);
 
   if (!enabled) return null;
 
@@ -215,7 +217,7 @@ export function Companion() {
       className="group absolute z-50 -translate-x-1/2 -translate-y-1/2 p-0 select-none"
       style={{ left: `${startX}%`, top: `${startY}%` }}
     >
-      {/* Speech Bubble — Automatically stacks above toolbar if menu is open to prevent overlapping */}
+      {/* Speech Bubble — Automatically stacks above toolbar if menu is open */}
       {speech ? (
         <span
           className={cn(
@@ -224,7 +226,7 @@ export function Companion() {
           )}
         >
           {speech}
-          {/* Cute pointer notch */}
+          {/* Pointer notch */}
           <span className="absolute -bottom-1 left-1/2 size-2 -translate-x-1/2 rotate-45 bg-elevated" />
         </span>
       ) : null}
@@ -238,7 +240,7 @@ export function Companion() {
               e.stopPropagation();
               petPip();
             }}
-            title="Pet Pip"
+            title="Xoa đầu Pip (Pet)"
             className="flex size-7 items-center justify-center rounded-full text-rose-400 hover:bg-elevated hover:scale-110 active:scale-95 transition-all cursor-pointer"
           >
             <Heart className="size-3.5 fill-rose-400/30" />
@@ -249,7 +251,7 @@ export function Companion() {
               e.stopPropagation();
               feedPip();
             }}
-            title="Feed Berry Snack"
+            title="Cho Pip ăn dâu (Feed)"
             className="flex size-7 items-center justify-center rounded-full text-amber-400 hover:bg-elevated hover:scale-110 active:scale-95 transition-all cursor-pointer"
           >
             <Cookie className="size-3.5" />
@@ -261,7 +263,7 @@ export function Companion() {
               requestNoteFromPip();
               setMenuOpen(false);
             }}
-            title="Ask Pip for Note"
+            title="Nhờ Pip lấy giấy (Fetch Note)"
             className="flex size-7 items-center justify-center rounded-full text-emerald-400 hover:bg-elevated hover:scale-110 active:scale-95 transition-all cursor-pointer"
           >
             <NoteIcon className="size-3.5" />
@@ -272,7 +274,7 @@ export function Companion() {
               e.stopPropagation();
               dancePip();
             }}
-            title="Dance Party"
+            title="Nhảy múa (Dance)"
             className="flex size-7 items-center justify-center rounded-full text-indigo-400 hover:bg-elevated hover:scale-110 active:scale-95 transition-all cursor-pointer"
           >
             <Sparkles className="size-3.5" />

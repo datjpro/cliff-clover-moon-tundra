@@ -176,6 +176,17 @@
     linear-gradient(165deg, var(--wall-1), var(--wall-2));
 }
 
+[data-transparent="true"],
+[data-transparent="true"] body,
+[data-transparent="true"] #app,
+[data-transparent="true"] .wallpaper {
+  background: transparent !important;
+}
+
+[data-transparent="true"] .wallpaper::after {
+  display: none !important;
+}
+
 .wallpaper::after {
   content: "";
   position: absolute;

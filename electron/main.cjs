@@ -5,9 +5,14 @@ let mainWindow = null;
 let tray = null;
 
 function createWindow() {
+  const primaryDisplay = screen.getPrimaryDisplay();
+  const { width, height } = primaryDisplay.bounds;
+
   mainWindow = new BrowserWindow({
-    width: 1280,
-    height: 840,
+    x: 0,
+    y: 0,
+    width: width,
+    height: height,
     minWidth: 320,
     minHeight: 380,
     transparent: true,
@@ -41,21 +46,28 @@ function createWindow() {
     mainWindow.webContents.send("open-quick-capture");
   });
 
+  // IPC channel: Toggle Mouse Click-Through on transparent screen areas
+  ipcMain.on("set-ignore-mouse-events", (event, ignore) => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.setIgnoreMouseEvents(Boolean(ignore), { forward: true });
+    }
+  });
+
   // IPC channel: Toggle Always on Top
   ipcMain.on("set-always-on-top", (event, flag) => {
-    if (mainWindow) {
+    if (mainWindow && !mainWindow.isDestroyed()) {
       mainWindow.setAlwaysOnTop(Boolean(flag), "screen-saver");
     }
   });
 
   // IPC channel: Minimize Window to taskbar
   ipcMain.on("minimize-window", () => {
-    if (mainWindow) mainWindow.minimize();
+    if (mainWindow && !mainWindow.isDestroyed()) mainWindow.minimize();
   });
 
   // IPC channel: Hide Window to tray
   ipcMain.on("hide-window", () => {
-    if (mainWindow) mainWindow.hide();
+    if (mainWindow && !mainWindow.isDestroyed()) mainWindow.hide();
   });
 
   // IPC channel: Quit App
@@ -65,34 +77,44 @@ function createWindow() {
 
   // IPC channel: Switch to Mini Corner Widget Mode (Bottom-Right of Computer Screen)
   ipcMain.on("switch-to-corner-mode", () => {
-    if (!mainWindow) return;
-    const primaryDisplay = screen.getPrimaryDisplay();
-    const { width, height } = primaryDisplay.workAreaSize;
+    if (!mainWindow || mainWindow.isDestroyed()) return;
+    const { width: scrW, height: scrH } = screen.getPrimaryDisplay().workAreaSize;
     const widgetWidth = 340;
     const widgetHeight = 440;
-    mainWindow.setResizable(true);
+    mainWindow.setIgnoreMouseEvents(false);
     mainWindow.setBounds({
-      x: width - widgetWidth - 16,
-      y: height - widgetHeight - 16,
+      x: scrW - widgetWidth - 16,
+      y: scrH - widgetHeight - 16,
       width: widgetWidth,
       height: widgetHeight,
     });
     mainWindow.setAlwaysOnTop(true, "screen-saver");
   });
 
-  // IPC channel: Switch to Full Workspace Mode
-  ipcMain.on("switch-to-full-mode", () => {
-    if (!mainWindow) return;
-    const primaryDisplay = screen.getPrimaryDisplay();
-    const { width, height } = primaryDisplay.workAreaSize;
-    const fullWidth = Math.min(1280, width - 60);
-    const fullHeight = Math.min(840, height - 60);
+  // IPC channel: Switch to Fullscreen Transparent Desktop Overlay Mode
+  ipcMain.on("switch-to-transparent-screen-mode", () => {
+    if (!mainWindow || mainWindow.isDestroyed()) return;
+    const { width: scrW, height: scrH } = screen.getPrimaryDisplay().bounds;
     mainWindow.setBounds({
-      x: Math.round((width - fullWidth) / 2),
-      y: Math.round((height - fullHeight) / 2),
-      width: fullWidth,
-      height: fullHeight,
+      x: 0,
+      y: 0,
+      width: scrW,
+      height: scrH,
     });
+    mainWindow.setAlwaysOnTop(true, "screen-saver");
+  });
+
+  // IPC channel: Switch to Full Centered Window Mode
+  ipcMain.on("switch-to-full-mode", () => {
+    if (!mainWindow || mainWindow.isDestroyed()) return;
+    const { width: scrW, height: scrH } = screen.getPrimaryDisplay().bounds;
+    mainWindow.setBounds({
+      x: 0,
+      y: 0,
+      width: scrW,
+      height: scrH,
+    });
+    mainWindow.setAlwaysOnTop(true, "screen-saver");
   });
 
   // System Tray Menu
@@ -121,15 +143,23 @@ function createWindow() {
         },
       },
       {
+        label: "Phủ toàn màn hình trong suốt (Full Desktop Overlay)",
+        click: () => {
+          if (!mainWindow) return;
+          mainWindow.show();
+          const { width: scrW, height: scrH } = screen.getPrimaryDisplay().bounds;
+          mainWindow.setBounds({ x: 0, y: 0, width: scrW, height: scrH });
+        },
+      },
+      {
         label: "Thu nhỏ về góc màn hình máy tính",
         click: () => {
           if (!mainWindow) return;
           mainWindow.show();
-          const primaryDisplay = screen.getPrimaryDisplay();
-          const { width, height } = primaryDisplay.workAreaSize;
+          const { width: scrW, height: scrH } = screen.getPrimaryDisplay().workAreaSize;
           mainWindow.setBounds({
-            x: width - 356,
-            y: height - 456,
+            x: scrW - 356,
+            y: scrH - 456,
             width: 340,
             height: 440,
           });
