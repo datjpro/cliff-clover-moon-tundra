@@ -179,6 +179,76 @@ var Heart = createLucideIcon("heart", [["path", {
 * This source code is licensed under the ISC license.
 * See the LICENSE file in the root directory of this source tree.
 */
+var Maximize2 = createLucideIcon("maximize-2", [
+	["polyline", {
+		points: "15 3 21 3 21 9",
+		key: "mznyad"
+	}],
+	["polyline", {
+		points: "9 21 3 21 3 15",
+		key: "1avn1i"
+	}],
+	["line", {
+		x1: "21",
+		x2: "14",
+		y1: "3",
+		y2: "10",
+		key: "ota7mn"
+	}],
+	["line", {
+		x1: "3",
+		x2: "10",
+		y1: "21",
+		y2: "14",
+		key: "1atl0r"
+	}]
+]);
+/**
+* @license lucide-react v0.510.0 - ISC
+*
+* This source code is licensed under the ISC license.
+* See the LICENSE file in the root directory of this source tree.
+*/
+var Minimize2 = createLucideIcon("minimize-2", [
+	["polyline", {
+		points: "4 14 10 14 10 20",
+		key: "11kfnr"
+	}],
+	["polyline", {
+		points: "20 10 14 10 14 4",
+		key: "rlmsce"
+	}],
+	["line", {
+		x1: "14",
+		x2: "21",
+		y1: "10",
+		y2: "3",
+		key: "o5lafz"
+	}],
+	["line", {
+		x1: "3",
+		x2: "10",
+		y1: "21",
+		y2: "14",
+		key: "1atl0r"
+	}]
+]);
+/**
+* @license lucide-react v0.510.0 - ISC
+*
+* This source code is licensed under the ISC license.
+* See the LICENSE file in the root directory of this source tree.
+*/
+var Minus = createLucideIcon("minus", [["path", {
+	d: "M5 12h14",
+	key: "1ays0h"
+}]]);
+/**
+* @license lucide-react v0.510.0 - ISC
+*
+* This source code is licensed under the ISC license.
+* See the LICENSE file in the root directory of this source tree.
+*/
 var Music = createLucideIcon("music", [
 	["path", {
 		d: "M9 18V5l12-2v13",
@@ -406,4 +476,4 @@ var X = createLucideIcon("x", [["path", {
 	key: "d8bk6v"
 }]]);
 //#endregion
-export { Bell as _, Trash2 as a, Settings2 as c, Music as d, Heart as f, ChevronDown as g, ChevronUp as h, TriangleAlert as i, Pin as l, Cookie as m, VolumeX as n, StickyNote as o, Globe as p, Volume2 as r, Sparkles as s, X as t, PenLine as u };
+export { Cookie as _, Trash2 as a, Bell as b, Settings2 as c, Music as d, Minus as f, Globe as g, Heart as h, TriangleAlert as i, Pin as l, Maximize2 as m, VolumeX as n, StickyNote as o, Minimize2 as p, Volume2 as r, Sparkles as s, X as t, PenLine as u, ChevronUp as v, ChevronDown as y };

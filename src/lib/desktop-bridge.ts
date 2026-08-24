@@ -1,34 +1,131 @@
 /**
- * Lumen Desktop Native Bridge (Tauri v2 / Rust IPC)
+ * Lumen Desktop Native Bridge (Electron & Tauri v2 IPC)
  * Provides seamless cross-platform communication between Webview and Native OS Shell.
  */
 
-// Safe detection of Tauri Native runtime environment
+declare global {
+  interface Window {
+    desktopAPI?: {
+      minimize: () => void;
+      hide: () => void;
+      quit: () => void;
+      setAlwaysOnTop: (flag: boolean) => void;
+      switchToCornerMode: () => void;
+      switchToFullMode: () => void;
+    };
+    __TAURI_INTERNALS__?: unknown;
+    __TAURI__?: unknown;
+  }
+}
+
+// Safe detection of Desktop Native runtime environment (Electron or Tauri)
 export function isDesktopApp(): boolean {
   if (typeof window === "undefined") return false;
-  return "__TAURI_INTERNALS__" in window || "__TAURI__" in window;
+  return Boolean(window.desktopAPI || window.__TAURI_INTERNALS__ || window.__TAURI__);
 }
 
 /**
- * Toggle native mouse click-through for transparent overlays.
- * When enabled (ignore = true), mouse clicks fall straight through to Windows / macOS desktop apps.
- * When disabled (ignore = false), mouse clicks interact with Pip, sticky notes, and menus.
+ * Switch OS Desktop Window to Mini Corner Widget Mode (Bottom-Right of Computer Screen)
  */
-export async function setNativeClickThrough(ignore: boolean): Promise<void> {
-  if (!isDesktopApp()) return;
-  try {
-    const { invoke } = await import("@tauri-apps/api/core");
-    await invoke("set_ignore_cursor_events", { ignore });
-  } catch (err) {
-    console.debug("[DesktopBridge] setNativeClickThrough:", err);
+export async function switchToCornerWidgetMode(): Promise<void> {
+  if (typeof window !== "undefined" && window.desktopAPI) {
+    window.desktopAPI.switchToCornerMode();
+    return;
+  }
+  if (typeof window !== "undefined" && (window.__TAURI_INTERNALS__ || window.__TAURI__)) {
+    try {
+      const { getCurrentWindow, LogicalPosition, LogicalSize } = await import("@tauri-apps/api/window");
+      const { currentMonitor } = await import("@tauri-apps/api/window");
+      const win = getCurrentWindow();
+      const monitor = await currentMonitor();
+      if (monitor) {
+        const screenW = monitor.size.width;
+        const screenH = monitor.size.height;
+        await win.setSize(new LogicalSize(340, 440));
+        await win.setPosition(new LogicalPosition(screenW - 360, screenH - 460));
+        await win.setAlwaysOnTop(true);
+      }
+    } catch (err) {
+      console.debug("[DesktopBridge] tauri corner mode:", err);
+    }
   }
 }
 
 /**
- * Native OS Notification (bypasses browser permissions when running in desktop shell)
+ * Restore OS Desktop Window to Full Workspace Mode
+ */
+export async function switchToFullDesktopMode(): Promise<void> {
+  if (typeof window !== "undefined" && window.desktopAPI) {
+    window.desktopAPI.switchToFullMode();
+    return;
+  }
+  if (typeof window !== "undefined" && (window.__TAURI_INTERNALS__ || window.__TAURI__)) {
+    try {
+      const { getCurrentWindow, LogicalSize } = await import("@tauri-apps/api/window");
+      const win = getCurrentWindow();
+      await win.setSize(new LogicalSize(1280, 840));
+      await win.center();
+    } catch (err) {
+      console.debug("[DesktopBridge] tauri full mode:", err);
+    }
+  }
+}
+
+/**
+ * Minimize Desktop Window to taskbar
+ */
+export async function minimizeDesktopWindow(): Promise<void> {
+  if (typeof window !== "undefined" && window.desktopAPI) {
+    window.desktopAPI.minimize();
+    return;
+  }
+  if (typeof window !== "undefined" && (window.__TAURI_INTERNALS__ || window.__TAURI__)) {
+    try {
+      const { getCurrentWindow } = await import("@tauri-apps/api/window");
+      await getCurrentWindow().minimize();
+    } catch (err) {
+      console.debug("[DesktopBridge] minimize:", err);
+    }
+  }
+}
+
+/**
+ * Close / Quit Desktop Application completely
+ */
+export async function closeOrQuitDesktopApp(): Promise<void> {
+  if (typeof window !== "undefined" && window.desktopAPI) {
+    window.desktopAPI.quit();
+    return;
+  }
+  if (typeof window !== "undefined" && (window.__TAURI_INTERNALS__ || window.__TAURI__)) {
+    try {
+      const { getCurrentWindow } = await import("@tauri-apps/api/window");
+      await getCurrentWindow().close();
+    } catch (err) {
+      console.debug("[DesktopBridge] quit:", err);
+    }
+  }
+}
+
+/**
+ * Toggle native mouse click-through for transparent overlays.
+ */
+export async function setNativeClickThrough(ignore: boolean): Promise<void> {
+  if (typeof window !== "undefined" && (window.__TAURI_INTERNALS__ || window.__TAURI__)) {
+    try {
+      const { invoke } = await import("@tauri-apps/api/core");
+      await invoke("set_ignore_cursor_events", { ignore });
+    } catch (err) {
+      console.debug("[DesktopBridge] setNativeClickThrough:", err);
+    }
+  }
+}
+
+/**
+ * Native OS Notification
  */
 export async function sendDesktopNotification(title: string, body: string): Promise<void> {
-  if (isDesktopApp()) {
+  if (typeof window !== "undefined" && (window.__TAURI_INTERNALS__ || window.__TAURI__)) {
     try {
       const { sendNotification, isPermissionGranted, requestPermission } = await import(
         "@tauri-apps/plugin-notification"
@@ -48,30 +145,25 @@ export async function sendDesktopNotification(title: string, body: string): Prom
   }
 
   // Web Notification API fallback
-  if ("Notification" in window && Notification.permission === "granted") {
+  if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
     new Notification(title, { body });
   }
 }
 
 /**
- * Native Window Minimize / Maximize / Close controls
+ * Toggle Always On Top
  */
-export async function minimizeDesktopWindow(): Promise<void> {
-  if (!isDesktopApp()) return;
-  try {
-    const { getCurrentWindow } = await import("@tauri-apps/api/window");
-    await getCurrentWindow().minimize();
-  } catch (err) {
-    console.debug("[DesktopBridge] minimize:", err);
-  }
-}
-
 export async function toggleAlwaysOnTop(onTop: boolean): Promise<void> {
-  if (!isDesktopApp()) return;
-  try {
-    const { getCurrentWindow } = await import("@tauri-apps/api/window");
-    await getCurrentWindow().setAlwaysOnTop(onTop);
-  } catch (err) {
-    console.debug("[DesktopBridge] setAlwaysOnTop:", err);
+  if (typeof window !== "undefined" && window.desktopAPI) {
+    window.desktopAPI.setAlwaysOnTop(onTop);
+    return;
+  }
+  if (typeof window !== "undefined" && (window.__TAURI_INTERNALS__ || window.__TAURI__)) {
+    try {
+      const { getCurrentWindow } = await import("@tauri-apps/api/window");
+      await getCurrentWindow().setAlwaysOnTop(onTop);
+    } catch (err) {
+      console.debug("[DesktopBridge] setAlwaysOnTop:", err);
+    }
   }
 }

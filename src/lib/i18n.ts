@@ -30,6 +30,14 @@ export const DICTIONARY = {
     remindPlaceholder: "In 2 minutes: stretch, hydrate…",
     add: "Add",
     remindHint: "Reminders trigger a toast and ask Pip to gently nudge you.",
+    windowControls: {
+      cornerMode: "Shrink to OS Screen Corner (Mini Widget)",
+      fullMode: "Expand to Full Workspace",
+      minimize: "Minimize to Taskbar",
+      quit: "Quit Application",
+      cornerTitle: "Mini Desk Companion",
+      openHub: "Open Hub",
+    },
     tabs: {
       pip: "Pip",
       look: "Look",
@@ -110,6 +118,14 @@ export const DICTIONARY = {
     remindPlaceholder: "Trong 2 phút: đứng dậy uống nước…",
     add: "Thêm",
     remindHint: "Bộ đếm giờ sẽ hiển thị thông báo và nhờ Pip nhẹ nhàng nhắc nhở bạn.",
+    windowControls: {
+      cornerMode: "Thu nhỏ về góc màn hình máy tính (Mini Widget)",
+      fullMode: "Phóng to toàn bộ bàn làm việc",
+      minimize: "Thu nhỏ xuống thanh Taskbar",
+      quit: "Thoát hoàn toàn ứng dụng",
+      cornerTitle: "Góc Làm Việc Nhỏ",
+      openHub: "Mở Cài Đặt",
+    },
     tabs: {
       pip: "Thú cưng Pip",
       look: "Giao diện",
