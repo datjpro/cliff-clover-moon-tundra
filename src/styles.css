@@ -231,3 +231,18 @@
   animation: petTailWalk 0.35s ease-in-out infinite;
   transform-origin: 24px 58px;
 }
+
+/* Transparent Desktop Overlay Click-Through Layer */
+[data-transparent="true"] {
+  pointer-events: none !important;
+}
+
+.interactive-el,
+article,
+button,
+input,
+textarea,
+section[role="dialog"],
+[role="dialog"] {
+  pointer-events: auto !important;
+}

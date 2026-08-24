@@ -206,22 +206,29 @@ export function DesktopScene() {
     void Promise.resolve(useLumen.persist.rehydrate()).then(() => markHydrated());
   }, [markHydrated]);
 
-  // Click-Through Mouse Event Controller
+  // Click-Through Mouse Event Controller (100% transparent click-through for desktop background & apps)
   useEffect(() => {
     if (!isDesktopApp()) return;
+
+    setIgnoreMouseEvents(true);
+    let currentIgnore = true;
 
     const handlePointerMove = (e: MouseEvent) => {
       const target = e.target as HTMLElement | null;
       if (!target) return;
       const isInteractive = Boolean(
         target.closest(
-          "article, .interactive-el, section[role='dialog'], form, button, input, textarea, .group, [role='dialog']",
+          "article, .interactive-el, section[role='dialog'], form, button, input, textarea, .group, [role='dialog'], [tabindex]",
         ),
       );
-      setIgnoreMouseEvents(!isInteractive);
+      const shouldIgnore = !isInteractive;
+      if (shouldIgnore !== currentIgnore) {
+        currentIgnore = shouldIgnore;
+        setIgnoreMouseEvents(shouldIgnore);
+      }
     };
 
-    window.addEventListener("mousemove", handlePointerMove);
+    window.addEventListener("mousemove", handlePointerMove, { passive: true });
     return () => window.removeEventListener("mousemove", handlePointerMove);
   }, []);
 
@@ -324,8 +331,7 @@ export function DesktopScene() {
     <div
       data-theme={theme}
       data-transparent="true"
-      className="fixed inset-0 h-screen w-screen bg-transparent text-fg select-none overflow-hidden"
-      onDoubleClick={onDoubleClickBackground}
+      className="fixed inset-0 h-screen w-screen bg-transparent text-fg select-none overflow-hidden pointer-events-none"
     >
       <PaperWell />
       {visibleNotes.map((n) => (

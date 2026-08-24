@@ -37,6 +37,9 @@ function createWindow() {
   // Keep window floating above normal desktop apps
   mainWindow.setAlwaysOnTop(true, "screen-saver");
 
+  // Initialize mouse click-through so desktop wallpaper and background apps work 100%
+  mainWindow.setIgnoreMouseEvents(true, { forward: true });
+
   const devUrl = "http://localhost:8080";
   mainWindow.loadURL(devUrl).catch(() => {
     setTimeout(() => {
@@ -63,7 +66,11 @@ function createWindow() {
   // IPC channel: Toggle Mouse Click-Through on transparent screen areas
   ipcMain.on("set-ignore-mouse-events", (event, ignore) => {
     if (mainWindow && !mainWindow.isDestroyed()) {
-      mainWindow.setIgnoreMouseEvents(Boolean(ignore), { forward: true });
+      if (ignore) {
+        mainWindow.setIgnoreMouseEvents(true, { forward: true });
+      } else {
+        mainWindow.setIgnoreMouseEvents(false);
+      }
     }
   });
 
