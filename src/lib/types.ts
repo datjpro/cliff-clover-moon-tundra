@@ -1,7 +1,8 @@
 export type ThemeId = "ink" | "paper" | "glass" | "moss";
 export type LayoutMode = "stickies" | "sidebar" | "tray";
 export type NoteTint = "cream" | "mist" | "sage" | "blush";
-export type PipMood = "idle" | "wander" | "fetch" | "deliver" | "nudge" | "sleep";
+export type PipMood = "idle" | "wander" | "fetch" | "deliver" | "nudge" | "sleep" | "dance" | "eating" | "focus";
+export type PetSkin = "classic" | "matcha" | "amber" | "cyber" | "obsidian";
 
 export type Note = {
   id: string;
@@ -12,6 +13,7 @@ export type Note = {
   tint: NoteTint;
   z: number;
   createdAt: number;
+  pinned?: boolean;
 };
 
 export type Reminder = {
@@ -31,6 +33,11 @@ export type ToastItem = {
 export type PipState = {
   enabled: boolean;
   mood: PipMood;
+  skin: PetSkin;
+  happiness: number; // 0 - 100
+  energy: number; // 0 - 100
+  treatsEaten: number;
+  soundEnabled: boolean;
   x: number;
   y: number;
   facing: 1 | -1;

@@ -1,12 +1,13 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { LayoutMode, Note, NoteTint, PipState, Reminder, ThemeId, ToastItem } from "./types";
+import { sounds } from "./audio";
+import type { LayoutMode, Note, NoteTint, PetSkin, PipMood, PipState, Reminder, ThemeId, ToastItem } from "./types";
 import { uid } from "./utils";
 
 const SEED_NOTES: Note[] = [
   {
     id: "seed-1",
-    body: "Ask Pip for a note — click the companion.",
+    body: "🐾 Meet Pip! Click the companion to pet, feed snacks, or ask for a fresh note.",
     x: 12,
     y: 18,
     rot: -2.4,
@@ -16,7 +17,7 @@ const SEED_NOTES: Note[] = [
   },
   {
     id: "seed-2",
-    body: "Switch themes in the hub.\nTry Ink, Paper, Glass, Moss.",
+    body: "🎨 Switch themes & pet skins in the Hub (Ink, Paper, Glass, Moss).\nTry Cyber or Matcha Pip!",
     x: 38,
     y: 42,
     rot: 1.8,
@@ -26,7 +27,7 @@ const SEED_NOTES: Note[] = [
   },
   {
     id: "seed-3",
-    body: "Quick capture: Ctrl + Shift + N\n(or the tray button)",
+    body: "⚡ Quick capture: Ctrl + Shift + N\n(or click the paper stack)",
     x: 62,
     y: 16,
     rot: -1.1,
@@ -65,6 +66,11 @@ type LumenState = {
   dismissToast: (id: string) => void;
   setPip: (patch: Partial<PipState>) => void;
   setPipEnabled: (enabled: boolean) => void;
+  setPipSkin: (skin: PetSkin) => void;
+  feedPip: () => void;
+  petPip: () => void;
+  dancePip: () => void;
+  toggleSound: (enabled?: boolean) => void;
   requestNoteFromPip: () => void;
   resetDemo: () => void;
 };
@@ -73,6 +79,11 @@ function emptyPip(): PipState {
   return {
     enabled: true,
     mood: "wander",
+    skin: "classic",
+    happiness: 88,
+    energy: 92,
+    treatsEaten: 0,
+    soundEnabled: true,
     x: 72,
     y: 58,
     facing: -1,
@@ -97,11 +108,22 @@ export const useLumen = create<LumenState>()(
       pip: emptyPip(),
       maxZ: 4,
       markHydrated: () => set({ hydrated: true }),
-      setTheme: (theme) => set({ theme }),
-      setLayout: (layout) => set({ layout }),
-      setHubOpen: (hubOpen) => set({ hubOpen, captureOpen: hubOpen ? false : get().captureOpen }),
-      setCaptureOpen: (captureOpen) =>
-        set({ captureOpen, hubOpen: captureOpen ? false : get().hubOpen }),
+      setTheme: (theme) => {
+        sounds.playPop(600);
+        set({ theme });
+      },
+      setLayout: (layout) => {
+        sounds.playPop(520);
+        set({ layout });
+      },
+      setHubOpen: (hubOpen) => {
+        sounds.playPop(480);
+        set({ hubOpen, captureOpen: hubOpen ? false : get().captureOpen });
+      },
+      setCaptureOpen: (captureOpen) => {
+        sounds.playPop(550);
+        set({ captureOpen, hubOpen: captureOpen ? false : get().hubOpen });
+      },
       dismissOnboarding: () => set({ onboarding: false }),
       addNote: (partial) => {
         const id = partial?.id ?? uid();
@@ -116,12 +138,16 @@ export const useLumen = create<LumenState>()(
           z: partial?.z ?? z,
           createdAt: Date.now(),
         };
+        sounds.playPop(640);
         set({ notes: [...get().notes, note], maxZ: z });
         return id;
       },
       updateNote: (id, patch) =>
         set({ notes: get().notes.map((n) => (n.id === id ? { ...n, ...patch } : n)) }),
-      removeNote: (id) => set({ notes: get().notes.filter((n) => n.id !== id) }),
+      removeNote: (id) => {
+        sounds.playPop(380);
+        set({ notes: get().notes.filter((n) => n.id !== id) });
+      },
       bringNote: (id) => {
         const z = get().maxZ + 1;
         set({
@@ -129,26 +155,31 @@ export const useLumen = create<LumenState>()(
           maxZ: z,
         });
       },
-      addReminder: (title, delayMs) =>
+      addReminder: (title, delayMs) => {
+        sounds.playChime();
         set({
           reminders: [
             ...get().reminders,
             { id: uid(), title, fireAt: Date.now() + delayMs, done: false },
           ],
-        }),
-      completeReminder: (id) =>
+        });
+      },
+      completeReminder: (id) => {
+        sounds.playChime();
         set({
           reminders: get().reminders.map((r) => (r.id === id ? { ...r, done: true } : r)),
-        }),
+        });
+      },
       fireReminder: (id) => {
         const r = get().reminders.find((x) => x.id === id);
         if (!r || r.done) return;
         set({
           reminders: get().reminders.map((x) => (x.id === id ? { ...x, done: true } : x)),
         });
+        sounds.playChime();
         get().pushToast("Reminder", r.title);
         if (get().pip.enabled) {
-          get().setPip({ mood: "nudge", speech: "Time." });
+          get().setPip({ mood: "nudge", speech: `⏰ ${r.title}` });
         }
       },
       pushToast: (title, body) => {
@@ -163,11 +194,58 @@ export const useLumen = create<LumenState>()(
             ...get().pip,
             enabled,
             mood: enabled ? "wander" : "idle",
-            speech: enabled ? "Hello." : null,
+            speech: enabled ? "Hello!" : null,
             carrying: false,
             moving: false,
           },
         }),
+      setPipSkin: (skin) => {
+        sounds.playPop(580);
+        set({ pip: { ...get().pip, skin } });
+      },
+      feedPip: () => {
+        const p = get().pip;
+        sounds.playSnack();
+        set({
+          pip: {
+            ...p,
+            mood: "eating",
+            happiness: Math.min(100, p.happiness + 8),
+            energy: Math.min(100, p.energy + 10),
+            treatsEaten: p.treatsEaten + 1,
+            speech: "Nom nom! Delicious berry 🍓",
+          },
+        });
+      },
+      petPip: () => {
+        const p = get().pip;
+        sounds.playPurr();
+        set({
+          pip: {
+            ...p,
+            mood: "dance",
+            happiness: Math.min(100, p.happiness + 5),
+            speech: "Purrrr~ ❤️ (*happy purrs*)",
+          },
+        });
+      },
+      dancePip: () => {
+        const p = get().pip;
+        sounds.playChime();
+        set({
+          pip: {
+            ...p,
+            mood: "dance",
+            happiness: 100,
+            speech: "✨ Wheee! (*spins joyfully*)",
+          },
+        });
+      },
+      toggleSound: (val) => {
+        const next = val ?? !get().pip.soundEnabled;
+        sounds.setEnabled(next);
+        set({ pip: { ...get().pip, soundEnabled: next } });
+      },
       requestNoteFromPip: () => {
         const { pip } = get();
         if (!pip.enabled) {
@@ -175,7 +253,8 @@ export const useLumen = create<LumenState>()(
           return;
         }
         if (pip.mood === "fetch" || pip.mood === "deliver") return;
-        get().setPip({ mood: "fetch", speech: "On it.", carrying: false });
+        sounds.playPop(500);
+        get().setPip({ mood: "fetch", speech: "Fetching a fresh note for you!", carrying: false });
       },
       resetDemo: () =>
         set({
@@ -225,4 +304,12 @@ export const NOTE_TINTS: { id: NoteTint; label: string }[] = [
   { id: "mist", label: "Mist" },
   { id: "sage", label: "Sage" },
   { id: "blush", label: "Blush" },
+];
+
+export const PET_SKINS: { id: PetSkin; name: string; bodyColor: string; shadeColor: string; eyeColor: string }[] = [
+  { id: "classic", name: "Classic Mochi", bodyColor: "#f3eee4", shadeColor: "#d6cfc3", eyeColor: "#1c1917" },
+  { id: "matcha", name: "Matcha Sprite", bodyColor: "#dceadb", shadeColor: "#b2cfb0", eyeColor: "#182c18" },
+  { id: "amber", name: "Amber Fox", bodyColor: "#fbe4c8", shadeColor: "#e6be94", eyeColor: "#452410" },
+  { id: "cyber", name: "Cyber Neon", bodyColor: "#d4f4fa", shadeColor: "#93dfec", eyeColor: "#083344" },
+  { id: "obsidian", name: "Obsidian Void", bodyColor: "#333b47", shadeColor: "#1e2430", eyeColor: "#f1f5f9" },
 ];

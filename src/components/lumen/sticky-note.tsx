@@ -1,5 +1,6 @@
 import { useRef, type PointerEvent } from "react";
 import { Trash2 } from "lucide-react";
+import { sounds } from "@/lib/audio";
 import { NOTE_TINTS, useLumen } from "@/lib/store";
 import type { Note } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -19,6 +20,7 @@ export function StickyNote({ note, stacked }: Props) {
     if (stacked) return;
     if ((e.target as HTMLElement).closest("textarea,button")) return;
     bringNote(note.id);
+    sounds.playPop(540);
     const parent = (e.currentTarget.parentElement as HTMLElement).getBoundingClientRect();
     drag.current = {
       dx: ((e.clientX - parent.left) / parent.width) * 100 - note.x,
@@ -53,8 +55,8 @@ export function StickyNote({ note, stacked }: Props) {
   return (
     <article
       className={cn(
-        "rounded-lg p-3 shadow-[var(--shadow-float)]",
-        stacked ? "relative w-full" : "absolute w-40 sm:w-52",
+        "rounded-lg p-3 shadow-[var(--shadow-float)] transition-shadow duration-200 select-none",
+        stacked ? "relative w-full" : "absolute w-44 sm:w-56 cursor-grab active:cursor-grabbing",
         `note-${note.tint}`,
       )}
       style={style}
@@ -70,14 +72,17 @@ export function StickyNote({ note, stacked }: Props) {
               key={t.id}
               type="button"
               aria-label={t.label}
-              onClick={() => updateNote(note.id, { tint: t.id })}
-              className="relative flex size-7 items-center justify-center"
+              onClick={() => {
+                sounds.playPop(620);
+                updateNote(note.id, { tint: t.id });
+              }}
+              className="relative flex size-7 items-center justify-center cursor-pointer"
             >
               <span
                 className={cn(
-                  "size-3 rounded-full shadow-[var(--shadow-border)]",
+                  "size-3 rounded-full shadow-[var(--shadow-border)] transition-transform hover:scale-125",
                   `note-${t.id}`,
-                  note.tint === t.id ? "ring-1 ring-fg/30" : "opacity-70",
+                  note.tint === t.id ? "ring-1 ring-fg/30 scale-110" : "opacity-70",
                 )}
               />
             </button>
@@ -87,7 +92,7 @@ export function StickyNote({ note, stacked }: Props) {
           type="button"
           aria-label="Delete note"
           onClick={() => removeNote(note.id)}
-          className="flex size-7 items-center justify-center rounded-sm opacity-50 hover:opacity-100"
+          className="flex size-7 items-center justify-center rounded-sm opacity-50 hover:opacity-100 hover:text-red-600 transition-opacity cursor-pointer"
         >
           <Trash2 className="size-3.5" />
         </button>
@@ -96,10 +101,10 @@ export function StickyNote({ note, stacked }: Props) {
         value={note.body}
         onChange={(e) => updateNote(note.id, { body: e.target.value })}
         onFocus={() => bringNote(note.id)}
-        placeholder="Write…"
+        placeholder="Write your note…"
         rows={5}
         suppressHydrationWarning
-        className="w-full resize-none bg-transparent text-sm leading-snug text-inherit outline-none placeholder:opacity-40"
+        className="w-full resize-none bg-transparent text-sm leading-snug text-inherit outline-none placeholder:opacity-40 select-text"
       />
     </article>
   );
