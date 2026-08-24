@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Cookie, Heart, Sparkles, StickyNote as NoteIcon } from "lucide-react";
 import { useLumen } from "@/lib/store";
 import { PipFigure } from "./pip";
+import { cn } from "@/lib/utils";
 
 const WELL = { x: 86, y: 62 };
 const SPEED = 38;
@@ -44,6 +45,18 @@ export function Companion() {
   useEffect(() => {
     pos.current = { x: startX, y: startY };
   }, [enabled, startX, startY]);
+
+  // Click outside to dismiss pet quick action menu
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onClickOutside = (e: MouseEvent) => {
+      if (elRef.current && !elRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    window.addEventListener("pointerdown", onClickOutside);
+    return () => window.removeEventListener("pointerdown", onClickOutside);
+  }, [menuOpen]);
 
   useEffect(() => {
     if (!enabled) return;
@@ -202,16 +215,23 @@ export function Companion() {
       className="group absolute z-50 -translate-x-1/2 -translate-y-1/2 p-0 select-none"
       style={{ left: `${startX}%`, top: `${startY}%` }}
     >
-      {/* Speech Bubble */}
+      {/* Speech Bubble — Automatically stacks above toolbar if menu is open to prevent overlapping */}
       {speech ? (
-        <span className="animate-in fade-in zoom-in-90 absolute -top-9 left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded-full bg-elevated/95 px-3 py-1 text-[11px] font-medium text-fg shadow-[var(--shadow-float)] ring-1 ring-fg/10">
+        <span
+          className={cn(
+            "animate-in fade-in zoom-in-90 absolute left-1/2 z-20 -translate-x-1/2 whitespace-nowrap rounded-full bg-elevated/95 px-3 py-1 text-[11px] font-medium text-fg shadow-[var(--shadow-float)] ring-1 ring-fg/10 transition-all duration-200",
+            menuOpen ? "-top-24" : "-top-10",
+          )}
+        >
           {speech}
+          {/* Cute pointer notch */}
+          <span className="absolute -bottom-1 left-1/2 size-2 -translate-x-1/2 rotate-45 bg-elevated" />
         </span>
       ) : null}
 
       {/* Floating Pet Interaction Quick Toolbar */}
       {menuOpen ? (
-        <div className="animate-in fade-in zoom-in-95 absolute -top-12 left-1/2 flex -translate-x-1/2 items-center gap-1 rounded-full bg-surface/90 p-1 backdrop-blur-md shadow-[var(--shadow-float)] ring-1 ring-border">
+        <div className="animate-in fade-in zoom-in-95 absolute -top-12 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 rounded-full bg-surface/95 p-1 backdrop-blur-md shadow-[var(--shadow-float)] ring-1 ring-border">
           <button
             type="button"
             onClick={(e) => {
@@ -219,7 +239,7 @@ export function Companion() {
               petPip();
             }}
             title="Pet Pip"
-            className="flex size-7 items-center justify-center rounded-full text-rose-400 hover:bg-elevated hover:scale-110 active:scale-95 transition-all"
+            className="flex size-7 items-center justify-center rounded-full text-rose-400 hover:bg-elevated hover:scale-110 active:scale-95 transition-all cursor-pointer"
           >
             <Heart className="size-3.5 fill-rose-400/30" />
           </button>
@@ -230,7 +250,7 @@ export function Companion() {
               feedPip();
             }}
             title="Feed Berry Snack"
-            className="flex size-7 items-center justify-center rounded-full text-amber-400 hover:bg-elevated hover:scale-110 active:scale-95 transition-all"
+            className="flex size-7 items-center justify-center rounded-full text-amber-400 hover:bg-elevated hover:scale-110 active:scale-95 transition-all cursor-pointer"
           >
             <Cookie className="size-3.5" />
           </button>
@@ -242,7 +262,7 @@ export function Companion() {
               setMenuOpen(false);
             }}
             title="Ask Pip for Note"
-            className="flex size-7 items-center justify-center rounded-full text-emerald-400 hover:bg-elevated hover:scale-110 active:scale-95 transition-all"
+            className="flex size-7 items-center justify-center rounded-full text-emerald-400 hover:bg-elevated hover:scale-110 active:scale-95 transition-all cursor-pointer"
           >
             <NoteIcon className="size-3.5" />
           </button>
@@ -253,7 +273,7 @@ export function Companion() {
               dancePip();
             }}
             title="Dance Party"
-            className="flex size-7 items-center justify-center rounded-full text-indigo-400 hover:bg-elevated hover:scale-110 active:scale-95 transition-all"
+            className="flex size-7 items-center justify-center rounded-full text-indigo-400 hover:bg-elevated hover:scale-110 active:scale-95 transition-all cursor-pointer"
           >
             <Sparkles className="size-3.5" />
           </button>
