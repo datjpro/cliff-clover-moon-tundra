@@ -8,6 +8,7 @@ import {
   setIgnoreMouseEvents,
 } from "@/lib/desktop-bridge";
 import { useLumen } from "@/lib/store";
+import { AlarmRingingModal } from "./alarm-ringing-modal";
 import { BallToy } from "./ball-toy";
 import { Companion } from "./companion";
 import { FloatingTimers } from "./floating-timers";
@@ -334,6 +335,7 @@ export function DesktopScene() {
       <BallToy />
       <Companion />
       <ToastStack />
+      <AlarmRingingModal />
       <QuickCapture />
       <QuickTimer />
       <Hub />

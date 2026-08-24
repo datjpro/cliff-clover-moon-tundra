@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { sounds } from "./audio";
 import { DICTIONARY } from "./i18n";
-import type { Language, LayoutMode, Note, NoteTint, PetSkin, PipState, Reminder, ThemeId, ToastItem } from "./types";
+import type { AlarmSettings, Language, LayoutMode, Note, NoteTint, PetSkin, PipState, Reminder, ThemeId, ToastItem } from "./types";
 import { uid } from "./utils";
 
 const SEED_NOTES: Note[] = [
@@ -105,6 +105,11 @@ type LumenState = {
   tidyNotes: () => void;
   removeNote: (id: string) => void;
   bringNote: (id: string) => void;
+  alarmSettings: AlarmSettings;
+  activeAlarm: Reminder | null;
+  setAlarmSettings: (patch: Partial<AlarmSettings>) => void;
+  dismissActiveAlarm: () => void;
+  snoozeReminder: (id: string, mins?: number) => void;
   addReminder: (title: string, delayMs: number, pinToScreen?: boolean) => void;
   removeReminder: (id: string) => void;
   togglePinReminder: (id: string) => void;
@@ -287,10 +292,44 @@ export const useLumen = create<LumenState>()(
           ),
         });
       },
+      alarmSettings: {
+        volume: 100,
+        tone: "bell_arpeggio",
+        loopIntervalSec: 3,
+      },
+      activeAlarm: null,
+      setAlarmSettings: (patch) => {
+        set({ alarmSettings: { ...get().alarmSettings, ...patch } });
+      },
+      dismissActiveAlarm: () => {
+        sounds.stopAlarmLoop();
+        sounds.playPop(500);
+        set({ activeAlarm: null });
+      },
+      snoozeReminder: (id, mins = 5) => {
+        sounds.stopAlarmLoop();
+        sounds.playPop(520);
+        const newFireAt = Date.now() + mins * 60 * 1000;
+        set({
+          reminders: get().reminders.map((r) =>
+            r.id === id
+              ? { ...r, fireAt: newFireAt, done: false, durationMs: mins * 60 * 1000 }
+              : r,
+          ),
+          activeAlarm: null,
+        });
+        const isVi = get().lang === "vi";
+        get().pushToast(
+          isVi ? "Báo lại sau 5 phút" : "Snoozed 5m",
+          isVi ? "Sẽ báo lại chuông sau 5 phút nữa" : "Will alarm again in 5 minutes",
+        );
+      },
       completeReminder: (id) => {
+        sounds.stopAlarmLoop();
         sounds.playChime();
         set({
           reminders: get().reminders.map((r) => (r.id === id ? { ...r, done: true } : r)),
+          activeAlarm: get().activeAlarm?.id === id ? null : get().activeAlarm,
         });
       },
       fireReminder: (id) => {
@@ -298,10 +337,13 @@ export const useLumen = create<LumenState>()(
         if (!r || r.done) return;
         set({
           reminders: get().reminders.map((x) => (x.id === id ? { ...x, done: true } : x)),
+          activeAlarm: r,
         });
-        sounds.playAlarmRing();
+        const tone = get().alarmSettings?.tone || "bell_arpeggio";
+        const vol = get().alarmSettings?.volume ?? 100;
+        sounds.startAlarmLoop(tone, vol);
         const currentLang = get().lang;
-        get().pushToast("⏰ " + r.title, currentLang === "vi" ? "Đã hết giờ! Hoàn thành mục tiêu." : "Timer finished!");
+        get().pushToast("⏰ " + r.title, currentLang === "vi" ? "ĐÃ HẾT GIỜ! Bấm để tắt chuông." : "TIME UP! Click to dismiss.");
         if (get().pip.enabled) {
           get().setPip({
             mood: "dance",

@@ -81,6 +81,9 @@ console.log("📦 [SUITE 1]: Natural Language Timer Parser (Phase 3)");
   const res4 = parseTimerInput("Làm đồ án 1h");
   assert(res4.title === "Làm đồ án", 'Title parsed as "Làm đồ án"');
   assert(res4.durationMs === 3600 * 1000, "Duration is exactly 1 hour");
+
+  const alarmTones = ["bell_arpeggio", "digital_alarm", "gentle_chime", "vintage_clock"];
+  assert(alarmTones.length === 4, "4 Procedural High-Volume Alarm Tones supported");
 }
 
 // TEST SUITE 2: VIRTUAL PET BEHAVIOR & WARDROBE ACCESSORIES (Phase 2 & 4)

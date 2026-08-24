@@ -14,6 +14,7 @@ import {
   Plus,
   Radio,
   RefreshCw,
+  Sliders,
   Sparkles,
   Sun,
   Trash2,
@@ -32,7 +33,7 @@ import { DICTIONARY } from "@/lib/i18n";
 import { sounds } from "@/lib/audio";
 import { THEMES } from "@/lib/themes";
 import { useLumen } from "@/lib/store";
-import type { PetBodyItem, PetHat, PetType, Reminder } from "@/lib/types";
+import type { AlarmSoundTone, PetBodyItem, PetHat, PetType, Reminder } from "@/lib/types";
 import { triggerThrowBall } from "./ball-toy";
 import { PipFigure } from "./pip";
 import { cn } from "@/lib/utils";
@@ -60,6 +61,13 @@ const BODY_ITEMS: { id: PetBodyItem; name: string; icon: string }[] = [
   { id: "wings", name: "Cánh Tiên", icon: "🧚" },
   { id: "scarf", name: "Khăn Quàng", icon: "🧣" },
   { id: "none", name: "Không mặc gì", icon: "❌" },
+];
+
+const ALARM_TONES: { id: AlarmSoundTone; name: string; icon: string; desc: string }[] = [
+  { id: "bell_arpeggio", name: "Chuông Game Ngân Vang", icon: "🔔", desc: "Âm chuông đa âm arpeggio tươi sáng, vang dội" },
+  { id: "digital_alarm", name: "Chuông Báo Thức Kêu To", icon: "🚨", desc: "Tiếng Beep-Beep dồn dập, cực kỳ to và rõ" },
+  { id: "gentle_chime", name: "Chuông Giai Điệu Dịu Dàng", icon: "🎵", desc: "Hợp âm du dương êm ái, thư giãn" },
+  { id: "vintage_clock", name: "Chuông Đồng Hồ Cổ Điển", icon: "🕰️", desc: "Tiếng chuông quả lắc sâu lắng trầm ấm" },
 ];
 
 function parseTimerInput(raw: string): { title: string; durationMs: number } {
@@ -134,7 +142,6 @@ function HubTimerRow({
 }) {
   const [diff, setDiff] = useState(Math.max(0, r.fireAt - Date.now()));
 
-  // Real-time ticking interval without needing to close/reopen modal
   useEffect(() => {
     if (r.done) return;
     const interval = setInterval(() => {
@@ -224,6 +231,8 @@ export function Hub() {
   const togglePinReminder = useLumen((s) => s.togglePinReminder);
   const fireReminder = useLumen((s) => s.fireReminder);
   const completeReminder = useLumen((s) => s.completeReminder);
+  const alarmSettings = useLumen((s) => s.alarmSettings || { volume: 100, tone: "bell_arpeggio", loopIntervalSec: 3 });
+  const setAlarmSettings = useLumen((s) => s.setAlarmSettings);
   const resetDemo = useLumen((s) => s.resetDemo);
   const pushToast = useLumen((s) => s.pushToast);
 
@@ -248,6 +257,10 @@ export function Hub() {
     setSmartInput("");
   };
 
+  const handleTestAlarm = () => {
+    sounds.playAlarmTone(alarmSettings.tone || "bell_arpeggio", alarmSettings.volume ?? 100);
+  };
+
   // Export JSON Backup
   const handleExportBackup = () => {
     const data = {
@@ -255,6 +268,7 @@ export function Hub() {
       reminders,
       theme,
       pip,
+      alarmSettings,
       exportedAt: new Date().toISOString(),
     };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
@@ -334,22 +348,12 @@ export function Hub() {
         <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 space-y-4 bg-[#1c1917]">
           {/* TAB 1: SMART TIMERS & COUNTDOWN */}
           <TabsContent value="remind" className="space-y-4">
+            {/* Smart Natural Language Creator */}
             <div className="rounded-xl bg-[#292524] p-3.5 border border-[#44403c] space-y-2.5 shadow-md">
-              <div className="flex items-center justify-between">
-                <p className="text-xs font-bold text-amber-400 uppercase tracking-wide flex items-center gap-1.5">
-                  <Clock className="size-3.5" />
-                  <span>Đặt giờ thông minh (Ví dụ: COC, nấu ăn...)</span>
-                </p>
-                <button
-                  type="button"
-                  onClick={() => sounds.playAlarmRing()}
-                  title="Thử tiếng chuông báo"
-                  className="flex items-center gap-1 text-[10px] text-[#a8a29e] hover:text-amber-400 cursor-pointer"
-                >
-                  <Volume2 className="size-3" />
-                  <span>Thử chuông</span>
-                </button>
-              </div>
+              <p className="text-xs font-bold text-amber-400 uppercase tracking-wide flex items-center gap-1.5">
+                <Clock className="size-3.5" />
+                <span>Đặt giờ thông minh (Ví dụ: COC, nấu ăn...)</span>
+              </p>
 
               <form onSubmit={handleSmartSubmit} className="space-y-2">
                 <div className="flex gap-2">
@@ -390,6 +394,75 @@ export function Hub() {
               </form>
             </div>
 
+            {/* Custom Alarm Sound Settings Card */}
+            <div className="rounded-xl bg-[#292524] p-3.5 border border-[#44403c] space-y-3 shadow-md">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-bold text-white uppercase tracking-wide flex items-center gap-1.5">
+                  <Volume2 className="size-3.5 text-amber-400" />
+                  <span>Cài đặt âm thanh chuông báo</span>
+                </p>
+                <button
+                  type="button"
+                  onClick={handleTestAlarm}
+                  className="flex items-center gap-1 text-[11px] font-bold text-amber-400 hover:text-amber-300 bg-amber-500/20 px-2 py-0.5 rounded-md cursor-pointer transition-colors"
+                >
+                  <Play className="size-3 fill-amber-400" />
+                  <span>Thử chuông</span>
+                </button>
+              </div>
+
+              {/* Volume Slider */}
+              <div className="space-y-1">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-[#a8a29e]">Âm lượng chuông</span>
+                  <span className="font-mono font-bold text-amber-400">{alarmSettings.volume ?? 100}%</span>
+                </div>
+                <input
+                  type="range"
+                  min="10"
+                  max="100"
+                  step="5"
+                  value={alarmSettings.volume ?? 100}
+                  onChange={(e) => setAlarmSettings({ volume: parseInt(e.target.value, 10) })}
+                  className="w-full h-1.5 bg-[#1c1917] rounded-lg appearance-none cursor-pointer accent-amber-500"
+                />
+              </div>
+
+              {/* Alarm Tones Selector */}
+              <div className="space-y-1.5 pt-1">
+                <span className="text-[11px] text-[#a8a29e] uppercase font-semibold">Chọn kiểu tiếng chuông:</span>
+                <div className="grid grid-cols-1 gap-1.5">
+                  {ALARM_TONES.map((tone) => (
+                    <button
+                      key={tone.id}
+                      type="button"
+                      onClick={() => {
+                        setAlarmSettings({ tone: tone.id });
+                        sounds.playAlarmTone(tone.id, alarmSettings.volume ?? 100);
+                      }}
+                      className={cn(
+                        "flex items-center justify-between rounded-xl bg-[#1c1917] p-2 text-left border border-[#38332e] cursor-pointer transition-all",
+                        (alarmSettings.tone || "bell_arpeggio") === tone.id &&
+                          "border-amber-500 ring-1 ring-amber-500 bg-amber-500/10",
+                      )}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="text-base">{tone.icon}</span>
+                        <div>
+                          <p className="text-xs font-bold text-white">{tone.name}</p>
+                          <p className="text-[10px] text-[#a8a29e]">{tone.desc}</p>
+                        </div>
+                      </div>
+                      {(alarmSettings.tone || "bell_arpeggio") === tone.id ? (
+                        <Check className="size-4 text-amber-400" />
+                      ) : null}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Active Timers List */}
             <div className="space-y-2">
               <p className="text-xs font-semibold text-[#a8a29e] uppercase tracking-wide">
                 Danh sách hẹn giờ đang chạy ({reminders.filter((r) => !r.done).length})

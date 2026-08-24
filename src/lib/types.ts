@@ -7,6 +7,13 @@ export type PetSkin = "classic" | "matcha" | "amber" | "cyber" | "obsidian";
 export type PetHat = "none" | "explorer_hat" | "sunglasses" | "wizard_hat" | "party_hat" | "sleep_cap";
 export type PetBodyItem = "backpack" | "cape" | "wings" | "scarf" | "none";
 export type Language = "en" | "vi";
+export type AlarmSoundTone = "bell_arpeggio" | "digital_alarm" | "gentle_chime" | "vintage_clock";
+
+export type AlarmSettings = {
+  volume: number; // 0 - 100
+  tone: AlarmSoundTone;
+  loopIntervalSec: number;
+};
 
 export type CheckItem = {
   id: string;
