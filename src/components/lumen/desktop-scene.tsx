@@ -1,5 +1,19 @@
-import { useEffect } from "react";
-import { Cookie, Eye, EyeOff, Heart, LayoutGrid, Maximize2, Minus, Minimize2, Pin, Sparkles, X } from "lucide-react";
+import { useEffect, useState } from "react";
+import {
+  Cookie,
+  Eye,
+  EyeOff,
+  Heart,
+  LayoutGrid,
+  Maximize2,
+  Minus,
+  Minimize2,
+  Pin,
+  Plus,
+  Settings,
+  Sparkles,
+  X,
+} from "lucide-react";
 import {
   closeOrQuitDesktopApp,
   isDesktopApp,
@@ -18,7 +32,6 @@ import { PipFigure } from "./pip";
 import { QuickCapture } from "./quick-capture";
 import { StickyNote } from "./sticky-note";
 import { ToastStack } from "./toasts";
-import { Tray } from "./tray";
 import { cn } from "@/lib/utils";
 
 function PaperWell() {
@@ -28,7 +41,7 @@ function PaperWell() {
     <button
       type="button"
       onClick={request}
-      className="absolute right-[5%] bottom-20 z-[5] hidden w-16 sm:block cursor-pointer hover:scale-110 transition-transform"
+      className="absolute right-[5%] bottom-24 z-[5] hidden w-16 sm:block cursor-pointer hover:scale-110 transition-transform"
       aria-label="Paper stack — ask Pip to fetch"
       disabled={!enabled}
     >
@@ -37,7 +50,7 @@ function PaperWell() {
         <span className="absolute inset-x-0.5 top-2 h-14 rotate-[4deg] rounded-sm bg-[var(--note-sage)] shadow-[var(--shadow-border)]" />
         <span className="absolute inset-x-0 top-0 h-14 rounded-sm bg-[var(--note-cream)] shadow-[var(--shadow-float)]" />
       </span>
-      <span className="mt-1 block text-center text-[10px] font-medium tracking-wide text-fg/50 uppercase">
+      <span className="mt-1 block text-center text-[10px] font-semibold tracking-wide text-fg/70 uppercase">
         Paper
       </span>
     </button>
@@ -78,10 +91,12 @@ function WindowTitlebar() {
       className="absolute inset-x-0 top-0 z-[95] flex h-9 items-center justify-between px-3 bg-tray/85 backdrop-blur-md border-b border-white/5 text-tray-fg select-none"
       style={{ WebkitAppRegion: "drag" } as React.CSSProperties}
     >
-      {/* Left: Brand + Language Toggle + Tidy Notes */}
+      {/* Left: Brand + Language Toggle + Arrange Notes */}
       <div className="flex items-center gap-2" style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}>
-        <span className="size-2 rounded-full bg-accent animate-pulse" />
-        <span className="font-display text-xs font-semibold tracking-wide">{dict.appName}</span>
+        <span className="size-2.5 rounded-full bg-amber-500 animate-pulse" />
+        <span className="font-display text-xs font-semibold tracking-wide flex items-center gap-1.5">
+          <span>🦊</span> {dict.appName}
+        </span>
 
         {/* Quick Language Toggle */}
         <button
@@ -93,19 +108,19 @@ function WindowTitlebar() {
           {lang === "vi" ? "🇻🇳 VI" : "🇬🇧 EN"}
         </button>
 
-        {/* Tidy / Organize Notes Button */}
+        {/* Arrange Notes Quick Button */}
         <button
           type="button"
           onClick={tidyNotes}
-          className="flex items-center gap-1 rounded px-2 py-0.5 text-[11px] font-medium bg-accent/15 hover:bg-accent/25 text-accent transition-colors cursor-pointer"
-          title={lang === "vi" ? "Sắp xếp lại ghi chú ngay ngắn" : "Tidy and arrange all notes"}
+          className="flex items-center gap-1 rounded px-2.5 py-0.5 text-[11px] font-semibold bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition-all cursor-pointer"
+          title={lang === "vi" ? "Sắp xếp lại ghi chú ngay ngắn" : "Arrange and tidy all notes"}
         >
           <LayoutGrid className="size-3" />
-          <span className="hidden sm:inline">{lang === "vi" ? "Sắp xếp ghi chú" : "Tidy Notes"}</span>
+          <span className="hidden sm:inline">{lang === "vi" ? "Sắp xếp ghi chú" : "Arrange Notes"}</span>
         </button>
       </div>
 
-      {/* Right: Window Controls (Transparent overlay toggle, Pin, Shrink to Corner, Minimize, Close/Exit) */}
+      {/* Right: Window Controls */}
       <div className="flex items-center gap-1" style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}>
         {/* Toggle Transparent Screen Overlay Mode */}
         <button
@@ -114,10 +129,10 @@ function WindowTitlebar() {
           title={
             transparentOverlay
               ? lang === "vi"
-                ? "Đang ở chế độ trong suốt phủ màn hình máy tính"
+                ? "Đang ở chế độ trong suốt phủ toàn màn hình"
                 : "Transparent desktop overlay active"
               : lang === "vi"
-                ? "Bật chế độ trong suốt phủ màn hình máy tính"
+                ? "Bật chế độ trong suốt phủ toàn màn hình"
                 : "Enable transparent desktop overlay"
           }
           className={cn(
@@ -175,6 +190,88 @@ function WindowTitlebar() {
         </button>
       </div>
     </header>
+  );
+}
+
+// Floating Quick Tray Menu (Matching Gemini Reference Image)
+function FloatingTrayMenu() {
+  const [open, setOpen] = useState(true);
+  const lang = useLumen((s) => s.lang);
+  const layout = useLumen((s) => s.layout);
+  const setLayout = useLumen((s) => s.setLayout);
+  const addNote = useLumen((s) => s.addNote);
+  const setHubOpen = useLumen((s) => s.setHubOpen);
+  const tidyNotes = useLumen((s) => s.tidyNotes);
+
+  const isVi = lang === "vi";
+
+  return (
+    <div className="absolute right-6 bottom-4 z-[80] flex flex-col items-end gap-2 select-none">
+      {open ? (
+        <div className="animate-in fade-in slide-in-from-bottom-2 w-48 rounded-xl bg-surface/95 text-fg p-2 shadow-[0_16px_36px_rgba(0,0,0,0.35)] border border-border backdrop-blur-md">
+          <div className="flex flex-col gap-1 text-xs font-medium">
+            {/* + New Note */}
+            <button
+              type="button"
+              onClick={() => addNote({ body: "", tint: "cream" })}
+              className="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-elevated transition-colors text-left cursor-pointer"
+            >
+              <Plus className="size-3.5 text-accent" />
+              <span>{isVi ? "+ Ghi chú mới" : "+ New Note"}</span>
+            </button>
+
+            {/* Hide All / Show All */}
+            <button
+              type="button"
+              onClick={() => setLayout(layout === "tray" ? "stickies" : "tray")}
+              className="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-elevated transition-colors text-left cursor-pointer"
+            >
+              {layout === "tray" ? (
+                <>
+                  <Eye className="size-3.5 text-muted" />
+                  <span>{isVi ? "Hiện tất cả" : "Show All"}</span>
+                </>
+              ) : (
+                <>
+                  <EyeOff className="size-3.5 text-muted" />
+                  <span>{isVi ? "Ẩn tất cả" : "Hide All"}</span>
+                </>
+              )}
+            </button>
+
+            {/* Settings */}
+            <button
+              type="button"
+              onClick={() => setHubOpen(true)}
+              className="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-elevated transition-colors text-left cursor-pointer"
+            >
+              <Settings className="size-3.5 text-muted" />
+              <span>{isVi ? "Cài đặt" : "Settings"}</span>
+            </button>
+
+            {/* Arrange Notes (Highlighted Blue Button matching reference image) */}
+            <button
+              type="button"
+              onClick={tidyNotes}
+              className="flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-md transition-all active:scale-95 text-left cursor-pointer mt-0.5"
+            >
+              <LayoutGrid className="size-3.5" />
+              <span>{isVi ? "Sắp xếp ghi chú" : "Arrange Notes"}</span>
+            </button>
+          </div>
+        </div>
+      ) : null}
+
+      {/* Tiny Custom Pet Icon Trigger in Taskbar Corner */}
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className="flex size-9 items-center justify-center rounded-xl bg-surface/90 hover:bg-surface text-fg shadow-lg border border-border backdrop-blur-md hover:scale-105 active:scale-95 transition-transform cursor-pointer"
+        title="Lumen Quick Menu"
+      >
+        <span className="text-base">🦊</span>
+      </button>
+    </div>
   );
 }
 
@@ -406,7 +503,7 @@ export function DesktopScene() {
             <Hub />
             <QuickCapture />
             <Onboarding />
-            <Tray />
+            <FloatingTrayMenu />
           </>
         )}
       </div>

@@ -82,19 +82,6 @@ var createLucideIcon = (iconName, iconNode) => {
 * This source code is licensed under the ISC license.
 * See the LICENSE file in the root directory of this source tree.
 */
-var Bell = createLucideIcon("bell", [["path", {
-	d: "M10.268 21a2 2 0 0 0 3.464 0",
-	key: "vwvbt9"
-}], ["path", {
-	d: "M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326",
-	key: "11g9vi"
-}]]);
-/**
-* @license lucide-react v0.510.0 - ISC
-*
-* This source code is licensed under the ISC license.
-* See the LICENSE file in the root directory of this source tree.
-*/
 var ChevronDown = createLucideIcon("chevron-down", [["path", {
 	d: "m6 9 6 6 6-6",
 	key: "qrunsl"
@@ -352,19 +339,6 @@ var Music = createLucideIcon("music", [
 * This source code is licensed under the ISC license.
 * See the LICENSE file in the root directory of this source tree.
 */
-var PenLine = createLucideIcon("pen-line", [["path", {
-	d: "M12 20h9",
-	key: "t2du7b"
-}], ["path", {
-	d: "M16.376 3.622a1 1 0 0 1 3.002 3.002L7.368 18.635a2 2 0 0 1-.855.506l-2.872.838a.5.5 0 0 1-.62-.62l.838-2.872a2 2 0 0 1 .506-.854z",
-	key: "1ykcvy"
-}]]);
-/**
-* @license lucide-react v0.510.0 - ISC
-*
-* This source code is licensed under the ISC license.
-* See the LICENSE file in the root directory of this source tree.
-*/
 var Pin = createLucideIcon("pin", [["path", {
 	d: "M12 17v5",
 	key: "bb1du9"
@@ -378,28 +352,28 @@ var Pin = createLucideIcon("pin", [["path", {
 * This source code is licensed under the ISC license.
 * See the LICENSE file in the root directory of this source tree.
 */
-var Settings2 = createLucideIcon("settings-2", [
-	["path", {
-		d: "M20 7h-9",
-		key: "3s1dr2"
-	}],
-	["path", {
-		d: "M14 17H5",
-		key: "gfn3mx"
-	}],
-	["circle", {
-		cx: "17",
-		cy: "17",
-		r: "3",
-		key: "18b49y"
-	}],
-	["circle", {
-		cx: "7",
-		cy: "7",
-		r: "3",
-		key: "dfmy0x"
-	}]
-]);
+var Plus = createLucideIcon("plus", [["path", {
+	d: "M5 12h14",
+	key: "1ays0h"
+}], ["path", {
+	d: "M12 5v14",
+	key: "s699le"
+}]]);
+/**
+* @license lucide-react v0.510.0 - ISC
+*
+* This source code is licensed under the ISC license.
+* See the LICENSE file in the root directory of this source tree.
+*/
+var Settings = createLucideIcon("settings", [["path", {
+	d: "M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z",
+	key: "1qme2f"
+}], ["circle", {
+	cx: "12",
+	cy: "12",
+	r: "3",
+	key: "1v7zrd"
+}]]);
 /**
 * @license lucide-react v0.510.0 - ISC
 *
@@ -555,4 +529,4 @@ var X = createLucideIcon("x", [["path", {
 	key: "d8bk6v"
 }]]);
 //#endregion
-export { Bell as C, ChevronDown as S, Globe as _, Trash2 as a, Cookie as b, Settings2 as c, Music as d, Minus as f, Heart as g, LayoutGrid as h, TriangleAlert as i, Pin as l, Maximize2 as m, VolumeX as n, StickyNote as o, Minimize2 as p, Volume2 as r, Sparkles as s, X as t, PenLine as u, Eye as v, ChevronUp as x, EyeOff as y };
+export { ChevronDown as S, Globe as _, Trash2 as a, Cookie as b, Settings as c, Music as d, Minus as f, Heart as g, LayoutGrid as h, TriangleAlert as i, Plus as l, Maximize2 as m, VolumeX as n, StickyNote as o, Minimize2 as p, Volume2 as r, Sparkles as s, X as t, Pin as u, Eye as v, ChevronUp as x, EyeOff as y };

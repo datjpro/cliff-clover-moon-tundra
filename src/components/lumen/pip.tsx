@@ -1,4 +1,3 @@
-import { PET_SKINS } from "@/lib/store";
 import type { PetSkin, PipMood } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -16,138 +15,184 @@ export function PipFigure({
   carrying,
   facing,
   mood = "idle",
-  skin = "classic",
   className,
 }: PipProps) {
-  const currentSkin = PET_SKINS.find((s) => s.id === skin) || PET_SKINS[0];
   const isDancing = mood === "dance";
   const isSleeping = mood === "sleep";
   const isEating = mood === "eating";
 
+  // Palette matching the adventurer fox in the reference artwork
+  const primaryFur = "#d97706"; // Warm amber fox fur
+  const shadeFur = "#b45309";
+  const whiteFur = "#fffbeb";
+  const earTip = "#451a03";
+  const eyeColor = "#292524";
+  const backpackColor = "#78350f";
+  const backpackStrap = "#92400e";
+  const buckleColor = "#fbbf24";
+
   return (
     <div
       className={cn(
-        "relative h-16 w-16 sm:h-20 sm:w-20 transition-transform duration-300",
+        "relative h-18 w-18 sm:h-22 sm:w-22 transition-transform duration-300 select-none",
         isDancing && "animate-bounce",
         className,
       )}
       style={{
-        transform: `scaleX(${facing}) ${isDancing ? "scale(1.15) rotate(5deg)" : ""}`,
+        transform: `scaleX(${facing}) ${isDancing ? "scale(1.15) rotate(6deg)" : ""}`,
       }}
     >
-      <svg viewBox="0 0 80 80" className="h-full w-full overflow-visible" aria-hidden>
-        {/* Soft Ground Shadow */}
-        <ellipse cx="40" cy="72" rx="16" ry="4" fill="currentColor" className="text-fg/15" />
+      <svg viewBox="0 0 90 90" className="h-full w-full overflow-visible" aria-hidden>
+        {/* Soft Ground Drop Shadow */}
+        <ellipse cx="45" cy="80" rx="22" ry="5" fill="currentColor" className="text-black/25" />
 
-        {/* Pet Animated Body */}
+        {/* Pet Animated Character */}
         <g className={walking ? "pip-walk-body" : isSleeping ? undefined : "pip-bob"}>
-          {/* Tail */}
-          <g className="pip-tail">
-            <ellipse cx="18" cy="46" rx="8" ry="6" fill={currentSkin.shadeColor} />
+          {/* Fluffy Bushy Fox Tail with White Tip */}
+          <g className="pip-tail" style={{ transformOrigin: "22px 58px" }}>
+            <path
+              d="M24 58 C 8 52, 2 34, 12 24 C 20 16, 32 26, 26 50 Z"
+              fill={primaryFur}
+            />
+            {/* White Tail Tip */}
+            <path
+              d="M12 24 C 15 20, 24 20, 20 28 C 16 34, 10 30, 12 24 Z"
+              fill={whiteFur}
+            />
           </g>
 
-          {/* Ears */}
-          <ellipse cx="28" cy="22" rx="7" ry="9" fill={currentSkin.bodyColor} />
-          <ellipse cx="52" cy="22" rx="7" ry="9" fill={currentSkin.bodyColor} />
-          <ellipse cx="28" cy="22" rx="4" ry="5.5" fill={currentSkin.shadeColor} />
-          <ellipse cx="52" cy="22" rx="4" ry="5.5" fill={currentSkin.shadeColor} />
+          {/* Tiny Adventurer Leather Backpack */}
+          <g transform="translate(18, 42) rotate(-8)">
+            <rect x="0" y="0" width="16" height="18" rx="4" fill={backpackColor} />
+            <rect x="2" y="3" width="12" height="6" rx="2" fill={backpackStrap} />
+            {/* Golden Buckle */}
+            <circle cx="8" cy="11" r="2" fill={buckleColor} />
+          </g>
+
+          {/* Back Left Leg */}
+          <ellipse cx="32" cy="72" rx="5" ry="6" fill={shadeFur} />
+          {/* Back Right Leg */}
+          <ellipse cx="58" cy="72" rx="5" ry="6" fill={shadeFur} />
 
           {/* Main Body */}
-          <circle cx="40" cy="42" r="20" fill={currentSkin.bodyColor} />
-          <ellipse cx="40" cy="48" rx="13" ry="11" fill={currentSkin.shadeColor} opacity="0.55" />
+          <ellipse cx="44" cy="54" rx="19" ry="17" fill={primaryFur} />
+          {/* Fluffy White Chest / Belly */}
+          <ellipse cx="50" cy="56" rx="11" ry="12" fill={whiteFur} />
 
-          {/* Cheerful Blush / Cheeks */}
-          <ellipse cx="30" cy="46" rx="3" ry="2" fill="#ff7f7f" opacity="0.45" />
-          <ellipse cx="50" cy="46" rx="3" ry="2" fill="#ff7f7f" opacity="0.45" />
+          {/* Pointy Fox Ears */}
+          {/* Left Ear */}
+          <path d="M30 32 L 22 10 L 40 22 Z" fill={primaryFur} />
+          <path d="M22 10 L 26 8 L 30 16 Z" fill={earTip} />
+          <path d="M28 26 L 24 16 L 34 22 Z" fill="#fbcfe8" opacity="0.85" />
 
-          {/* Eyes / Face */}
+          {/* Right Ear */}
+          <path d="M52 24 L 66 12 L 60 34 Z" fill={primaryFur} />
+          <path d="M66 12 L 70 14 L 64 20 Z" fill={earTip} />
+          <path d="M56 25 L 63 17 L 59 30 Z" fill="#fbcfe8" opacity="0.85" />
+
+          {/* Fox Head */}
+          <circle cx="46" cy="34" r="18" fill={primaryFur} />
+
+          {/* White Cheeks / Muzzle Mask */}
+          <path
+            d="M34 38 C 30 46, 38 52, 48 52 C 58 52, 64 46, 60 38 C 54 36, 40 36, 34 38 Z"
+            fill={whiteFur}
+          />
+          <ellipse cx="34" cy="40" rx="6" ry="7" fill={whiteFur} />
+          <ellipse cx="58" cy="40" rx="6" ry="7" fill={whiteFur} />
+
+          {/* Cute Rosy Cheeks */}
+          <circle cx="34" cy="43" r="3.5" fill="#fb7185" opacity="0.55" />
+          <circle cx="58" cy="43" r="3.5" fill="#fb7185" opacity="0.55" />
+
+          {/* Backpack Front Strap */}
+          <path d="M36 46 L 42 62" stroke={backpackStrap} strokeWidth="2.5" strokeLinecap="round" />
+
+          {/* Eyes */}
           {isSleeping ? (
             <g>
               <path
-                d="M30 41 Q33 44 36 41"
+                d="M36 34 Q 40 38 44 34"
                 fill="none"
-                stroke={currentSkin.eyeColor}
-                strokeWidth="1.8"
+                stroke={eyeColor}
+                strokeWidth="2.4"
                 strokeLinecap="round"
               />
               <path
-                d="M44 41 Q47 44 50 41"
+                d="M50 34 Q 54 38 58 34"
                 fill="none"
-                stroke={currentSkin.eyeColor}
-                strokeWidth="1.8"
+                stroke={eyeColor}
+                strokeWidth="2.4"
                 strokeLinecap="round"
               />
-              {/* ZZZ floating */}
-              <text x="56" y="28" fill="var(--fg)" fontSize="10" fontWeight="bold" opacity="0.7">
+              {/* ZZZ */}
+              <text x="64" y="20" fill="var(--fg)" fontSize="11" fontWeight="bold" opacity="0.8">
                 z
               </text>
-              <text x="62" y="20" fill="var(--fg)" fontSize="12" fontWeight="bold" opacity="0.85">
+              <text x="72" y="12" fill="var(--fg)" fontSize="13" fontWeight="bold" opacity="0.95">
                 Z
               </text>
             </g>
           ) : isDancing ? (
             <g>
-              {/* Joyful curved eyes */}
               <path
-                d="M30 42 Q33 37 36 42"
+                d="M36 35 Q 40 30 44 35"
                 fill="none"
-                stroke={currentSkin.eyeColor}
-                strokeWidth="2.2"
+                stroke={eyeColor}
+                strokeWidth="2.6"
                 strokeLinecap="round"
               />
               <path
-                d="M44 42 Q47 37 50 42"
+                d="M50 35 Q 54 30 58 35"
                 fill="none"
-                stroke={currentSkin.eyeColor}
-                strokeWidth="2.2"
+                stroke={eyeColor}
+                strokeWidth="2.6"
                 strokeLinecap="round"
               />
             </g>
           ) : (
             <g className="pip-blink">
-              <circle cx="33" cy="40" r="2.2" fill={currentSkin.eyeColor} />
-              <circle cx="47" cy="40" r="2.2" fill={currentSkin.eyeColor} />
-              <circle cx="33.7" cy="39.3" r="0.7" fill={currentSkin.bodyColor} />
-              <circle cx="47.7" cy="39.3" r="0.7" fill={currentSkin.bodyColor} />
+              {/* Left Eye with Sparkling Catchlight */}
+              <ellipse cx="40" cy="34" rx="3.2" ry="3.8" fill={eyeColor} />
+              <circle cx="41.2" cy="32.8" r="1.4" fill="#ffffff" />
+              <circle cx="39.2" cy="35.5" r="0.7" fill="#ffffff" />
+
+              {/* Right Eye with Sparkling Catchlight */}
+              <ellipse cx="54" cy="34" rx="3.2" ry="3.8" fill={eyeColor} />
+              <circle cx="55.2" cy="32.8" r="1.4" fill="#ffffff" />
+              <circle cx="53.2" cy="35.5" r="0.7" fill="#ffffff" />
             </g>
           )}
 
-          {/* Snout / Mouth */}
+          {/* Tiny Black Nose & Mouth */}
+          <ellipse cx="47" cy="42" rx="2.4" ry="1.8" fill="#1c1917" />
           {isEating ? (
-            <circle cx="40" cy="47" r="2.5" fill={currentSkin.eyeColor} opacity="0.7" />
+            <ellipse cx="47" cy="46" rx="2.5" ry="3" fill="#1c1917" />
           ) : (
-            <ellipse cx="40" cy="46.5" rx="2.2" ry="1.4" fill={currentSkin.eyeColor} opacity="0.55" />
+            <path
+              d="M44.5 44 Q 47 46.5 49.5 44"
+              fill="none"
+              stroke="#1c1917"
+              strokeWidth="1.4"
+              strokeLinecap="round"
+            />
           )}
-        </g>
 
-        {/* Legs */}
-        <g className={walking ? "pip-leg-l" : undefined} style={{ transformOrigin: "32px 62px" }}>
-          <rect x="29" y="60" width="5" height="10" rx="2.5" fill={currentSkin.shadeColor} />
-        </g>
-        <g className={walking ? "pip-leg-r" : undefined} style={{ transformOrigin: "48px 62px" }}>
-          <rect x="46" y="60" width="5" height="10" rx="2.5" fill={currentSkin.shadeColor} />
+          {/* Front Paws */}
+          <g className={walking ? "pip-leg-l" : undefined} style={{ transformOrigin: "38px 65px" }}>
+            <ellipse cx="38" cy="74" rx="4.5" ry="5.5" fill={whiteFur} stroke={primaryFur} strokeWidth="1.2" />
+          </g>
+          <g className={walking ? "pip-leg-r" : undefined} style={{ transformOrigin: "54px 65px" }}>
+            <ellipse cx="54" cy="74" rx="4.5" ry="5.5" fill={whiteFur} stroke={primaryFur} strokeWidth="1.2" />
+          </g>
         </g>
 
         {/* Carrying Sticky Note */}
         {carrying ? (
-          <g transform="translate(50 34) rotate(8)">
-            <rect x="0" y="0" width="18" height="16" rx="2" fill="var(--note-cream)" />
-            <rect
-              x="0"
-              y="0"
-              width="18"
-              height="16"
-              rx="2"
-              fill="none"
-              stroke={currentSkin.eyeColor}
-              strokeOpacity="0.12"
-            />
-            <path
-              d="M3 5h12M3 8h9M3 11h11"
-              stroke={currentSkin.eyeColor}
-              strokeOpacity="0.35"
-              strokeWidth="1"
-            />
+          <g transform="translate(56 36) rotate(10)">
+            <rect x="0" y="0" width="22" height="20" rx="3" fill="#fef08a" />
+            <circle cx="11" cy="4" r="2" fill="#d97706" />
+            <path d="M4 8 h14 M4 12 h10 M4 16 h12" stroke="#78350f" strokeOpacity="0.4" strokeWidth="1.2" />
           </g>
         ) : null}
       </svg>
