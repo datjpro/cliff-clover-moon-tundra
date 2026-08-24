@@ -1,0 +1,38 @@
+{
+  "url": "http://127.0.0.1:8081/",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "Lumen",
+      "hasCanvas": false,
+      "bodyTextLen": 306,
+      "bodyTextHash": "fed659183b0fc82c189015aac1541d06238a419c9e7c47623187e23708c42ab9",
+      "bodyTextPrefix": "PAPER Lumen A quiet desk. Notes you can pin. A small companion w",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-built.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "Lumen",
+      "hasCanvas": false,
+      "bodyTextLen": 294,
+      "bodyTextHash": "642da84bac432f77b16caf11082b8e968eec5f84eb87ceee39ed9f0dd454807c",
+      "bodyTextPrefix": "Lumen A quiet desk. Notes you can pin. A small companion who wil",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-built-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/app-builder-built.json",
+  "divergesFromBaseline": false,
+  "baselineReasons": []
+}

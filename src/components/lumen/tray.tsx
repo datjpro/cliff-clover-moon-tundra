@@ -1,0 +1,89 @@
+import { useEffect, useState } from "react";
+import { Bell, PenLine, Settings2 } from "lucide-react";
+import { useLumen } from "@/lib/store";
+import { PipFigure } from "./pip";
+
+function Clock() {
+  const [now, setNow] = useState<Date | null>(null);
+  useEffect(() => {
+    setNow(new Date());
+    const id = window.setInterval(() => setNow(new Date()), 1000);
+    return () => window.clearInterval(id);
+  }, []);
+  if (!now) {
+    return <span className="tabular-nums text-xs font-medium text-tray-fg/80">--:--</span>;
+  }
+  return (
+    <time className="tabular-nums text-xs font-medium text-tray-fg/80" dateTime={now.toISOString()}>
+      {now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+    </time>
+  );
+}
+
+export function Tray() {
+  const setHubOpen = useLumen((s) => s.setHubOpen);
+  const hubOpen = useLumen((s) => s.hubOpen);
+  const setCaptureOpen = useLumen((s) => s.setCaptureOpen);
+  const pipEnabled = useLumen((s) => s.pip.enabled);
+  const setPipEnabled = useLumen((s) => s.setPipEnabled);
+  const requestNoteFromPip = useLumen((s) => s.requestNoteFromPip);
+  const pending = useLumen((s) => s.reminders.filter((r) => !r.done).length);
+
+  return (
+    <footer className="absolute inset-x-0 bottom-0 z-[80] flex h-12 items-center justify-between gap-2 border-t border-white/5 bg-tray px-3 text-tray-fg">
+      <div className="flex items-center gap-1.5">
+        <button
+          type="button"
+          onClick={() => setHubOpen(!hubOpen)}
+          className="flex h-9 items-center gap-2 rounded-md px-2.5 hover:bg-white/5"
+          aria-pressed={hubOpen}
+        >
+          <span className="grid size-6 place-items-center rounded-sm bg-accent/20">
+            <span className="block size-2.5 rounded-full bg-accent" />
+          </span>
+          <span className="hidden font-display text-sm font-medium sm:inline">Lumen</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setCaptureOpen(true)}
+          className="flex size-9 items-center justify-center rounded-md hover:bg-white/5"
+          aria-label="Quick note"
+        >
+          <PenLine className="size-4" />
+        </button>
+        <button
+          type="button"
+          onClick={() => setHubOpen(true)}
+          className="relative flex size-9 items-center justify-center rounded-md hover:bg-white/5"
+          aria-label="Reminders"
+        >
+          <Bell className="size-4" />
+          {pending > 0 ? (
+            <span className="absolute top-1.5 right-1.5 size-1.5 rounded-full bg-accent" />
+          ) : null}
+        </button>
+      </div>
+      <div className="flex items-center gap-1.5">
+        <button
+          type="button"
+          onClick={() => (pipEnabled ? requestNoteFromPip() : setPipEnabled(true))}
+          className="hidden h-9 items-center gap-1 rounded-md px-1.5 hover:bg-white/5 sm:flex"
+          aria-label={pipEnabled ? "Ask Pip for a note" : "Show Pip"}
+        >
+          <span className="block h-8 w-8 scale-75">
+            <PipFigure walking={false} carrying={false} facing={-1} />
+          </span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setHubOpen(true)}
+          className="flex size-9 items-center justify-center rounded-md hover:bg-white/5"
+          aria-label="Settings"
+        >
+          <Settings2 className="size-4" />
+        </button>
+        <Clock />
+      </div>
+    </footer>
+  );
+}

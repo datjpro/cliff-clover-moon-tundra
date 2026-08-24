@@ -1,0 +1,236 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-elevated: var(--elevated);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-subtle: var(--subtle);
+  --color-accent: var(--accent);
+  --color-accent-fg: var(--accent-fg);
+  --color-border: var(--border);
+  --color-tray: var(--tray);
+  --color-tray-fg: var(--tray-fg);
+  --color-note-ink: var(--note-ink);
+  --font-sans: "Segoe UI", "Avenir Next", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Iowan Old Style", Palatino, "Palatino Linotype", Georgia, serif;
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 28px;
+}
+
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  html,
+  body,
+  #app {
+    min-height: 100%;
+    height: 100%;
+  }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-sans);
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+}
+
+:root,
+[data-theme="ink"] {
+  --bg: #1c1917;
+  --surface: #292524;
+  --elevated: #35302c;
+  --fg: #f5f0e8;
+  --muted: #a8a29e;
+  --subtle: #78716c;
+  --accent: #c5d1c8;
+  --accent-fg: #1c1917;
+  --border: color-mix(in oklab, var(--fg) 12%, transparent);
+  --tray: #141210;
+  --tray-fg: #e7e0d6;
+  --wall-1: #241f1c;
+  --wall-2: #3a322c;
+  --wall-glow: #6b5c4c;
+  --note-cream: #f3eee4;
+  --note-mist: #e4e8ee;
+  --note-sage: #dce6dc;
+  --note-blush: #f0e4e0;
+  --note-ink: #2a241f;
+  --pip-body: #f3eee4;
+  --pip-shade: #d6cfc3;
+  --pip-eye: #1c1917;
+  --shadow-border: 0 0 0 1px rgba(255, 255, 255, 0.08);
+  --shadow-float: 0 18px 40px -18px rgba(0, 0, 0, 0.55);
+}
+
+[data-theme="paper"] {
+  --bg: #e8e2d6;
+  --surface: #f7f3ea;
+  --elevated: #fffaf1;
+  --fg: #1c1917;
+  --muted: #57534e;
+  --subtle: #78716c;
+  --accent: #3f5d4e;
+  --accent-fg: #f7f3ea;
+  --border: color-mix(in oklab, var(--fg) 12%, transparent);
+  --tray: #2a2622;
+  --tray-fg: #f3eee4;
+  --wall-1: #d9d0c0;
+  --wall-2: #efe8da;
+  --wall-glow: #f6f1e6;
+  --note-cream: #fffaf1;
+  --note-mist: #e7edf2;
+  --note-sage: #e3eee4;
+  --note-blush: #f6e8e4;
+  --note-ink: #2a241f;
+  --pip-body: #fffaf1;
+  --pip-shade: #e4d9c8;
+  --pip-eye: #1c1917;
+  --shadow-border:
+    0 0 0 1px rgba(0, 0, 0, 0.06), 0 1px 2px -1px rgba(0, 0, 0, 0.06),
+    0 2px 4px 0 rgba(0, 0, 0, 0.04);
+  --shadow-float: 0 16px 36px -16px rgba(60, 40, 20, 0.28);
+}
+
+[data-theme="glass"] {
+  --bg: #0c0e12;
+  --surface: #161a22;
+  --elevated: #1e2430;
+  --fg: #e8edf3;
+  --muted: #9aa4b2;
+  --subtle: #6d7786;
+  --accent: #9db4c8;
+  --accent-fg: #0c0e12;
+  --border: color-mix(in oklab, var(--fg) 14%, transparent);
+  --tray: #080a0e;
+  --tray-fg: #e8edf3;
+  --wall-1: #10141c;
+  --wall-2: #1a2230;
+  --wall-glow: #3a4c62;
+  --note-cream: #eef1f5;
+  --note-mist: #dce6f0;
+  --note-sage: #d7e4e0;
+  --note-blush: #eadfe4;
+  --note-ink: #1a1e26;
+  --pip-body: #e8edf3;
+  --pip-shade: #c5ced8;
+  --pip-eye: #0c0e12;
+  --shadow-border: 0 0 0 1px rgba(255, 255, 255, 0.1);
+  --shadow-float: 0 18px 40px -18px rgba(0, 0, 0, 0.65);
+}
+
+[data-theme="moss"] {
+  --bg: #141a16;
+  --surface: #1c2620;
+  --elevated: #25322a;
+  --fg: #e8efe6;
+  --muted: #9aa894;
+  --subtle: #6d7a68;
+  --accent: #8fa38a;
+  --accent-fg: #141a16;
+  --border: color-mix(in oklab, var(--fg) 12%, transparent);
+  --tray: #0e1310;
+  --tray-fg: #e8efe6;
+  --wall-1: #182018;
+  --wall-2: #243028;
+  --wall-glow: #3d5244;
+  --note-cream: #eef2e8;
+  --note-mist: #e2ebe6;
+  --note-sage: #d5e4d4;
+  --note-blush: #eadfd6;
+  --note-ink: #1a221c;
+  --pip-body: #eef2e8;
+  --pip-shade: #c9d4c4;
+  --pip-eye: #141a16;
+  --shadow-border: 0 0 0 1px rgba(255, 255, 255, 0.08);
+  --shadow-float: 0 18px 40px -18px rgba(0, 0, 0, 0.55);
+}
+
+.wallpaper {
+  background:
+    radial-gradient(1200px 600px at 18% 12%, color-mix(in oklab, var(--wall-glow) 28%, transparent), transparent 60%),
+    radial-gradient(900px 500px at 88% 80%, color-mix(in oklab, var(--wall-glow) 16%, transparent), transparent 55%),
+    linear-gradient(165deg, var(--wall-1), var(--wall-2));
+}
+
+.wallpaper::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.07;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E");
+}
+
+.note-cream { background: var(--note-cream); color: var(--note-ink); }
+.note-mist { background: var(--note-mist); color: var(--note-ink); }
+.note-sage { background: var(--note-sage); color: var(--note-ink); }
+.note-blush { background: var(--note-blush); color: var(--note-ink); }
+
+@media (prefers-reduced-motion: reduce) {
+  .pip-legs,
+  .pip-bob,
+  .pip-blink {
+    animation: none !important;
+  }
+}
+
+@keyframes pip-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+@keyframes pip-walk {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50% { transform: translateY(-4px) rotate(2deg); }
+}
+
+@keyframes pip-leg-l {
+  0%, 100% { transform: rotate(18deg); }
+  50% { transform: rotate(-22deg); }
+}
+
+@keyframes pip-leg-r {
+  0%, 100% { transform: rotate(-18deg); }
+  50% { transform: rotate(22deg); }
+}
+
+@keyframes pip-blink {
+  0%, 92%, 100% { transform: scaleY(1); }
+  96% { transform: scaleY(0.08); }
+}
+
+@keyframes pip-tail {
+  0%, 100% { transform: rotate(-8deg); }
+  50% { transform: rotate(10deg); }
+}
+
+.pip-bob { animation: pip-bob 2.8s ease-in-out infinite; }
+.pip-walk-body { animation: pip-walk 0.42s ease-in-out infinite; }
+.pip-leg-l { animation: pip-leg-l 0.42s ease-in-out infinite; transform-origin: 50% 0%; }
+.pip-leg-r { animation: pip-leg-r 0.42s ease-in-out infinite; transform-origin: 50% 0%; }
+.pip-blink { animation: pip-blink 4.6s ease-in-out infinite; transform-origin: 50% 50%; }
+.pip-tail { animation: pip-tail 2.2s ease-in-out infinite; transform-origin: 8px 10px; }
