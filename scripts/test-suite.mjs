@@ -355,11 +355,16 @@ console.log("\n📦 [SUITE 5]: Desktop Window Visibility & Single Instance Recov
   const canDragLocked = !lockedNote.locked && !lockedNote.pinned;
   assert(canDragLocked === false, "Locked sticky note strictly prevents accidental dragging while preserving editing");
 
-  // Magnetic Snapping Logic Test
-  const testSnap = (val, target, thresh = 1.4) => Math.abs(val - target) < thresh ? target : val;
-  assert(testSnap(2.8, 2) === 2, "Note magnetically snaps to left edge (2%) when within 1.4% threshold");
+  // Flush Screen Edge & Magnetic Snapping Logic Test
+  const testSnap = (val, target, thresh = 1.2) => Math.abs(val - target) < thresh ? target : val;
+  assert(testSnap(0.8, 0) === 0, "Note magnetically snaps flush to left screen bezel (0%) when within 1.2% threshold");
   assert(testSnap(15.2, 15) === 15, "Note magnetically snaps to sibling note column alignment (15%)");
   assert(testSnap(40.0, 15) === 40.0, "Note does not snap when outside threshold distance");
+  // Flush Right Edge calculation
+  const screenW = 1920;
+  const cardW = 280;
+  const flushMaxX = ((screenW - cardW) / screenW) * 100;
+  assert(testSnap(flushMaxX - 0.5, flushMaxX) === flushMaxX, "Note magnetically snaps flush to right screen bezel");
 
   // Trash Bin & Undo Recovery Test
   let mockActiveNotes = [{ id: "n_del", body: "Kế hoạch tuần", createdAt: Date.now() }];

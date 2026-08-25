@@ -55,6 +55,8 @@ export function StickyNote({ note, stacked }: Props) {
     parentTop: number;
     parentWidth: number;
     parentHeight: number;
+    cardWidth: number;
+    cardHeight: number;
   } | null>(null);
   const rotateDrag = useRef<{
     lastAngle: number;
@@ -173,18 +175,22 @@ export function StickyNote({ note, stacked }: Props) {
     };
   }, []);
 
-  // High-Performance Position Drag Handlers (Cached Parent Bounds, Magnetic Edge/Sibling Snapping)
+  // High-Performance Position Drag Handlers (Flush Screen Edge Clamping & Magnetic Snapping)
   const onPointerDown = (e: PointerEvent<HTMLElement>) => {
     if (stacked || note.pinned || note.locked) return;
     if ((e.target as HTMLElement).closest("textarea,input,button,.no-drag")) return;
     bringNote(note.id);
     sounds.playPop(540);
     const parent = ((e.currentTarget.parentElement as HTMLElement) || document.body).getBoundingClientRect();
+    const cardEl = (e.currentTarget.closest("article") || e.currentTarget) as HTMLElement;
+    const cardRect = cardEl ? cardEl.getBoundingClientRect() : { width: 280, height: 220 };
     drag.current = {
       parentLeft: parent.left,
       parentTop: parent.top,
       parentWidth: parent.width || window.innerWidth,
       parentHeight: parent.height || window.innerHeight,
+      cardWidth: cardRect.width,
+      cardHeight: cardRect.height,
       dx: ((e.clientX - parent.left) / (parent.width || window.innerWidth)) * 100 - note.x,
       dy: ((e.clientY - parent.top) / (parent.height || window.innerHeight)) * 100 - note.y,
     };
@@ -194,20 +200,46 @@ export function StickyNote({ note, stacked }: Props) {
 
   const onPointerMove = (e: PointerEvent<HTMLElement>) => {
     if (!drag.current) return;
-    const { parentLeft, parentTop, parentWidth, parentHeight, dx, dy } = drag.current;
-    const maxX = parentWidth < 640 ? 48 : 90;
-    const maxY = parentHeight < 700 ? 58 : 88;
-    let x = Math.max(1, Math.min(maxX, ((e.clientX - parentLeft) / parentWidth) * 100 - dx));
-    let y = Math.max(2, Math.min(maxY, ((e.clientY - parentTop) / parentHeight) * 100 - dy));
+    const { parentLeft, parentTop, parentWidth, parentHeight, cardWidth, cardHeight, dx, dy } = drag.current;
 
-    // Smart Magnetic Snapping (Screen Edges & Sibling Alignments)
-    const SNAP_THRESH = 1.4;
-    if (Math.abs(x - 2) < SNAP_THRESH) x = 2;
-    else if (Math.abs(x - (maxX - 2)) < SNAP_THRESH) x = maxX - 2;
+    // Exact flush edge bounds (0% to exact right/bottom border)
+    const flushMaxX = Math.max(0, ((parentWidth - cardWidth) / parentWidth) * 100);
+    const flushMaxY = Math.max(0, ((parentHeight - cardHeight) / parentHeight) * 100);
 
-    if (Math.abs(y - 3) < SNAP_THRESH) y = 3;
-    else if (Math.abs(y - (maxY - 3)) < SNAP_THRESH) y = maxY - 3;
+    // Keep header reachable (never lost off-screen)
+    const absoluteMinX = 0;
+    const absoluteMinY = 0;
+    const absoluteMaxX = Math.max(flushMaxX, ((parentWidth - 48) / parentWidth) * 100);
+    const absoluteMaxY = Math.max(flushMaxY, ((parentHeight - 38) / parentHeight) * 100);
 
+    let rawX = ((e.clientX - parentLeft) / parentWidth) * 100 - dx;
+    let rawY = ((e.clientY - parentTop) / parentHeight) * 100 - dy;
+
+    let x = Math.max(absoluteMinX, Math.min(absoluteMaxX, rawX));
+    let y = Math.max(absoluteMinY, Math.min(absoluteMaxY, rawY));
+
+    // Smart Magnetic Snapping (Snaps cleanly to 0% and exact Flush Right/Bottom Bezels)
+    const SNAP_THRESH = 1.2;
+
+    // Flush Left Screen Edge Snap (0%)
+    if (Math.abs(x - 0) < SNAP_THRESH) {
+      x = 0;
+    }
+    // Flush Right Screen Edge Snap (flushMaxX)
+    else if (Math.abs(x - flushMaxX) < SNAP_THRESH) {
+      x = flushMaxX;
+    }
+
+    // Flush Top Screen Edge Snap (0%)
+    if (Math.abs(y - 0) < SNAP_THRESH) {
+      y = 0;
+    }
+    // Flush Bottom Screen Edge Snap (flushMaxY)
+    else if (Math.abs(y - flushMaxY) < SNAP_THRESH) {
+      y = flushMaxY;
+    }
+
+    // Sibling Alignment Snapping (Align with other notes on canvas)
     for (const other of allNotes) {
       if (other.id === note.id || other.collapsed) continue;
       if (Math.abs(x - other.x) < SNAP_THRESH) {
