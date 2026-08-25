@@ -66,6 +66,7 @@ function createWindow() {
     alwaysOnTop: true,
     skipTaskbar: true, // Pure background daemon: does not show as a window on the taskbar
     focusable: true,
+    acceptFirstMouse: true, // Allows single-click focus and typing into notes immediately
     fullscreenable: false,
     backgroundColor: "#00000000",
     webPreferences: {

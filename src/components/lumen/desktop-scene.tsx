@@ -293,17 +293,42 @@ export function DesktopScene() {
 
   const isAnyModalOpen = captureOpen || quickTimerOpen || hubOpen || searchOpen;
 
-  // Zero-Flicker DWM Mouse Controller: Keep transparent mouse pass-through steady
-  // to avoid calling Win32 SetWindowLongPtr on every mousemove, which causes Windows DWM
-  // to lock swapchains and freeze background video players (YouTube, media players)
+  // High-Precision Desktop Click-Through Controller:
+  // - Interactive Elements (Notes, Inputs, Textarea, Modals, Buttons) receive mouse clicks, focus, and caret
+  // - Empty canvas passes through directly to background desktop/apps
+  // - State transition filtering: Only sends IPC when boundary between interactive/transparent is crossed
   useEffect(() => {
     if (!isDesktopApp()) return;
 
     if (isAnyModalOpen) {
       setIgnoreMouseEvents(false);
-    } else {
-      setIgnoreMouseEvents(true);
+      return;
     }
+
+    setIgnoreMouseEvents(true);
+    let currentIgnore = true;
+
+    const handlePointerMove = (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (!target) return;
+
+      const isAtScreenBottomEdge = e.clientY >= window.innerHeight - 4;
+
+      const isInteractive = Boolean(
+        !isAtScreenBottomEdge &&
+        target.closest(
+          "article, .interactive-el, section[role='dialog'], form, button, input, textarea, .group, [role='dialog'], [tabindex]",
+        ),
+      );
+      const shouldIgnore = !isInteractive;
+      if (shouldIgnore !== currentIgnore) {
+        currentIgnore = shouldIgnore;
+        setIgnoreMouseEvents(shouldIgnore);
+      }
+    };
+
+    window.addEventListener("mousemove", handlePointerMove, { passive: true });
+    return () => window.removeEventListener("mousemove", handlePointerMove);
   }, [isAnyModalOpen]);
 
   // Global & In-App Keyboard Shortcuts

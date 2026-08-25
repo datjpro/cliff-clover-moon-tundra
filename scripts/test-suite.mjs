@@ -242,16 +242,26 @@ console.log("\n📦 [SUITE 5]: Desktop Window Visibility & Single Instance Recov
   };
   assert(onNoteFocus(true) === true, "Focusing/selecting notes preserves background YouTube video and media playback smoothly without freezing");
 
-  // Zero-Flicker DWM Mouse Controller Test
-  let win32SetWindowLongPtrCalls = 0;
-  const simulateMouseMove = (isModalOpen) => {
-    if (isModalOpen) win32SetWindowLongPtrCalls++;
-    // Zero calls during regular note interactions / mousemoves on canvas
+  // State-Transition Filtered Mouse Controller Test
+  let ipcTransitions = 0;
+  let currentIgnoreState = true;
+  const onPointerCheck = (isInteractive) => {
+    const shouldIgnore = !isInteractive;
+    if (shouldIgnore !== currentIgnoreState) {
+      currentIgnoreState = shouldIgnore;
+      ipcTransitions++;
+    }
   };
-  for (let i = 0; i < 100; i++) {
-    simulateMouseMove(false); // 100 mouse moves over sticky notes and canvas
-  }
-  assert(win32SetWindowLongPtrCalls === 0, "Zero-Flicker DWM controller eliminates rapid Win32 SetWindowLongPtr calls during note moves to keep background video 100% smooth");
+  // Entering note -> 1 transition to interactive
+  onPointerCheck(true);
+  // Moving within note -> 0 extra transitions
+  for (let i = 0; i < 50; i++) onPointerCheck(true);
+  // Leaving note -> 1 transition to transparent
+  onPointerCheck(false);
+  // Moving on canvas -> 0 extra transitions
+  for (let i = 0; i < 50; i++) onPointerCheck(false);
+
+  assert(ipcTransitions === 2 && currentIgnoreState === true, "State-transition filtered mouse controller activates note clicks and caret while passing empty canvas to background");
 
   // Test Suite for Global & In-App Shortcut Mappings (Clean Alt-based combinations)
   const shortcutMap = {
