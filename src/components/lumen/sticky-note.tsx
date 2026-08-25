@@ -4,6 +4,7 @@ import {
   CheckSquare,
   ChevronDown,
   ChevronUp,
+  Copy,
   Download,
   MoreHorizontal,
   Pin,
@@ -59,6 +60,22 @@ export function StickyNote({ note, stacked }: Props) {
   const [newCheckText, setNewCheckText] = useState("");
   const [isDragging, setIsDragging] = useState(false);
   const [isRotating, setIsRotating] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyNote = () => {
+    let content = note.body.trim();
+    if (note.checkItems && note.checkItems.length > 0) {
+      if (content) content += "\n\n";
+      content += note.checkItems.map((i) => `${i.done ? "[x]" : "[ ]"} ${i.text}`).join("\n");
+    }
+    if (content) {
+      void navigator.clipboard.writeText(content);
+      sounds.playPop(700);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    }
+    setMenuOpen(false);
+  };
 
   // Close menus when clicking outside (using click event so button clicks inside menu finish first)
   useEffect(() => {
@@ -74,11 +91,11 @@ export function StickyNote({ note, stacked }: Props) {
       }
     };
     const timer = setTimeout(() => {
-      window.addEventListener("click", handleOutsideClick);
+      document.addEventListener("click", handleOutsideClick);
     }, 10);
     return () => {
       clearTimeout(timer);
-      window.removeEventListener("click", handleOutsideClick);
+      document.removeEventListener("click", handleOutsideClick);
     };
   }, [menuOpen, colorPickerOpen]);
 
@@ -368,14 +385,18 @@ export function StickyNote({ note, stacked }: Props) {
           <div className="relative no-drag" ref={menuRef}>
             <button
               type="button"
-              title="Tùy chọn khác"
+              title="Tùy chọn khác (Thu gọn, Góc xoay, Sao chép, Xóa)"
+              onPointerDown={(e) => e.stopPropagation()}
               onClick={(e) => {
                 e.stopPropagation();
                 bringNote(note.id);
                 setMenuOpen(!menuOpen);
                 setColorPickerOpen(false);
               }}
-              className="flex size-6 items-center justify-center rounded-md text-[#8B90A0] hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+              className={cn(
+                "flex size-6 items-center justify-center rounded-md transition-colors cursor-pointer",
+                menuOpen ? "bg-white/15 text-white" : "text-[#8B90A0] hover:text-white hover:bg-white/10",
+              )}
             >
               <MoreHorizontal className="size-3.5" />
             </button>
@@ -384,42 +405,68 @@ export function StickyNote({ note, stacked }: Props) {
             {menuOpen && (
               <div
                 onPointerDown={(e) => e.stopPropagation()}
-                className="absolute right-0 top-8 z-50 w-48 flex flex-col p-1 rounded-xl bg-[#262A35] border border-white/10 shadow-[0_16px_36px_rgba(0,0,0,0.6)] backdrop-blur-xl text-xs animate-in fade-in zoom-in-95 duration-120 font-medium"
+                onClick={(e) => e.stopPropagation()}
+                className="absolute right-0 top-8 z-[80] w-52 flex flex-col p-1.5 rounded-2xl bg-[#1D2029]/98 text-[#F4F5F7] border border-white/15 shadow-[0_20px_45px_rgba(0,0,0,0.85)] backdrop-blur-2xl text-xs animate-in fade-in zoom-in-95 duration-120 font-medium select-none pointer-events-auto"
               >
+                {/* 1. Collapse / Expand */}
                 <button
                   type="button"
+                  onPointerDown={(e) => e.stopPropagation()}
                   onClick={(e) => {
                     e.stopPropagation();
+                    sounds.playPop(580);
                     toggleNoteCollapse(note.id);
                     setMenuOpen(false);
                   }}
-                  className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[#F4F5F7] hover:bg-white/10 transition-colors text-left cursor-pointer"
+                  className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl text-[#F4F5F7] hover:bg-[#262A35] hover:text-white transition-colors text-left cursor-pointer"
                 >
                   <ChevronUp className="size-3.5 text-[#8B90A0]" />
                   <span>Thu gọn ghi chú</span>
                 </button>
+
+                {/* 2. Rotation & Font Options */}
                 <button
                   type="button"
+                  onPointerDown={(e) => e.stopPropagation()}
                   onClick={(e) => {
                     e.stopPropagation();
+                    sounds.playPop(580);
                     setShowOptions(!showOptions);
                     setMenuOpen(false);
                   }}
-                  className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[#F4F5F7] hover:bg-white/10 transition-colors text-left cursor-pointer"
+                  className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl text-[#F4F5F7] hover:bg-[#262A35] hover:text-white transition-colors text-left cursor-pointer"
                 >
-                  <RotateCw className="size-3.5 text-[#8B90A0]" />
+                  <RotateCw className="size-3.5 text-[#F5A623]" />
                   <span>Độ xoay & Phông chữ</span>
                 </button>
-                <div className="h-px bg-white/5 my-0.5" />
+
+                {/* 3. Copy Content */}
                 <button
                   type="button"
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleCopyNote();
+                  }}
+                  className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl text-[#F4F5F7] hover:bg-[#262A35] hover:text-white transition-colors text-left cursor-pointer"
+                >
+                  <Copy className="size-3.5 text-[#3FAE6C]" />
+                  <span>{copied ? "Đã sao chép! ✓" : "Sao chép nội dung"}</span>
+                </button>
+
+                <div className="h-px bg-white/10 my-1" />
+
+                {/* 4. Delete Note */}
+                <button
+                  type="button"
+                  onPointerDown={(e) => e.stopPropagation()}
                   onClick={(e) => {
                     e.stopPropagation();
                     handleDeleteClick();
                   }}
-                  className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[#EF4444] hover:bg-red-500/15 transition-colors text-left cursor-pointer"
+                  className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl text-[#EF4444] hover:bg-red-500/15 transition-colors text-left cursor-pointer font-semibold"
                 >
-                  <Trash2 className="size-3.5" />
+                  <Trash2 className="size-3.5 text-[#EF4444]" />
                   <span>Xóa ghi chú</span>
                 </button>
               </div>
@@ -508,7 +555,27 @@ export function StickyNote({ note, stacked }: Props) {
       <div className="p-3.5 flex flex-col text-[#23262F] relative rounded-b-2xl">
         {/* Note Customization Drawer (Rotation, Opacity, Font) */}
         {showOptions && !showDeleteConfirm && (
-          <div className="no-drag mb-2 flex flex-col gap-2 rounded-xl bg-black/5 p-2.5 text-xs border border-black/5">
+          <div
+            onPointerDown={(e) => e.stopPropagation()}
+            className="no-drag mb-2.5 flex flex-col gap-2 rounded-xl bg-black/5 p-2.5 text-xs border border-black/5 animate-in fade-in zoom-in-95 duration-120"
+          >
+            <div className="flex items-center justify-between border-b border-black/10 pb-1 mb-0.5">
+              <span className="font-bold text-[10px] uppercase text-[#23262F]/75 tracking-wider">
+                Tùy chỉnh ghi chú
+              </span>
+              <button
+                type="button"
+                onPointerDown={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowOptions(false);
+                }}
+                className="size-4.5 flex items-center justify-center rounded-md hover:bg-black/10 text-[#23262F]/60 hover:text-[#23262F] transition-colors cursor-pointer"
+                title="Đóng bảng tùy chỉnh"
+              >
+                <X className="size-3" />
+              </button>
+            </div>
             {/* Rotation Control */}
             <div className="space-y-1">
               <div className="flex items-center justify-between">

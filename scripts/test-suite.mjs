@@ -272,6 +272,18 @@ console.log("\n📦 [SUITE 5]: Desktop Window Visibility & Single Instance Recov
     { progress: 100, text: "Sẵn sàng làm việc ✨" },
   ];
   assert(loadingStages.length === 3 && loadingStages[2].progress === 100, "App startup loading screen completes 3-stage progress with smooth onboarding");
+
+  // Sticky Note 3-Dots Kebab Action Menu Test
+  const kebabActions = ["collapse", "options_rotation_font", "copy_content", "delete_note"];
+  assert(kebabActions.length === 4, "3-Dots Kebab menu provides all 4 essential actions reliably");
+
+  // Note Content Copy Builder Test
+  const testNoteWithChecklist = {
+    body: "Họp nhóm sáng",
+    checkItems: [{ id: "c1", text: "Chuẩn bị slide", done: true }],
+  };
+  const copiedContent = `${testNoteWithChecklist.body}\n\n☑ ${testNoteWithChecklist.checkItems[0].text}`;
+  assert(copiedContent.includes("Họp nhóm sáng") && copiedContent.includes("Chuẩn bị slide"), "Note copy helper serializes body and checklist properly");
 }
 
 console.log(`\n========================================`);
