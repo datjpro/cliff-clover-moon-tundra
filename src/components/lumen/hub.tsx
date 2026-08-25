@@ -356,9 +356,9 @@ export function Hub() {
   // Initialize position on open
   useEffect(() => {
     if (open && pos === null && typeof window !== "undefined") {
-      const modalWidth = Math.min(480, window.innerWidth - 32);
+      const modalWidth = Math.min(540, window.innerWidth - 32);
       const initialX = Math.max(16, Math.round((window.innerWidth - modalWidth) / 2));
-      const initialY = Math.max(20, Math.round((window.innerHeight - 580) / 2));
+      const initialY = Math.max(20, Math.round((window.innerHeight - 600) / 2));
       setPos({ x: initialX, y: initialY });
     }
   }, [open, pos]);
@@ -387,7 +387,7 @@ export function Hub() {
   // Drag handlers
   const handlePointerDownHeader = (e: PointerEvent<HTMLElement>) => {
     if ((e.target as HTMLElement).closest("button, input, textarea, a, .no-drag")) return;
-    const currentX = pos?.x ?? Math.max(16, (window.innerWidth - 480) / 2);
+    const currentX = pos?.x ?? Math.max(16, (window.innerWidth - 540) / 2);
     const currentY = pos?.y ?? 40;
     dragRef.current = {
       startX: e.clientX,
@@ -403,8 +403,8 @@ export function Hub() {
     if (!dragRef.current) return;
     const dx = e.clientX - dragRef.current.startX;
     const dy = e.clientY - dragRef.current.startY;
-    const modalWidth = Math.min(480, window.innerWidth - 32);
-    const modalHeight = Math.min(580, window.innerHeight - 32);
+    const modalWidth = Math.min(540, window.innerWidth - 32);
+    const modalHeight = Math.min(600, window.innerHeight - 32);
     const newX = Math.max(8, Math.min(window.innerWidth - modalWidth - 8, dragRef.current.initX + dx));
     const newY = Math.max(8, Math.min(window.innerHeight - 80, dragRef.current.initY + dy));
     setPos({ x: newX, y: newY });
@@ -416,10 +416,10 @@ export function Hub() {
   };
 
   const handleResetPosition = () => {
-    const modalWidth = Math.min(480, window.innerWidth - 32);
+    const modalWidth = Math.min(540, window.innerWidth - 32);
     setPos({
       x: Math.max(16, Math.round((window.innerWidth - modalWidth) / 2)),
-      y: Math.max(20, Math.round((window.innerHeight - 580) / 2)),
+      y: Math.max(20, Math.round((window.innerHeight - 600) / 2)),
     });
     sounds.playPop(520);
   };
@@ -469,7 +469,7 @@ export function Hub() {
     <section
       className={cn(
         "interactive-el fixed z-[90] flex flex-col overflow-hidden bg-[#1D2029]/95 text-[#F4F5F7] shadow-[0_24px_60px_rgba(0,0,0,0.75)] border border-white/6 rounded-2xl select-none backdrop-blur-2xl",
-        "w-[calc(100vw-1.5rem)] max-w-[480px] h-[580px] max-h-[calc(100vh-2rem)]",
+        "w-[calc(100vw-1.5rem)] max-w-[540px] h-[600px] max-h-[calc(100vh-2rem)]",
         isDragging && "ring-1 ring-[#F5A623]/50 shadow-[0_30px_70px_rgba(0,0,0,0.85)]",
       )}
       style={
@@ -517,7 +517,7 @@ export function Hub() {
           <div className="flex items-center gap-1.5 min-w-0">
             <span className="text-sm">🦊</span>
             <p className="font-semibold text-xs tracking-tight text-[#F4F5F7]">
-              Lumen Settings
+              Lumen Settings & Trung Tâm Cài Đặt
             </p>
           </div>
         </div>
@@ -548,47 +548,47 @@ export function Hub() {
         onValueChange={setActiveTab}
         className="flex min-h-0 flex-1 flex-col"
       >
-        <div className="px-3 pt-2.5 pb-2 bg-[#14161D]/30 border-b border-white/5">
-          <TabsList className="grid grid-cols-5 bg-[#14161D] p-0.5 rounded-xl h-8.5 border border-white/6">
+        <div className="px-3.5 pt-2.5 pb-2 bg-[#14161D]/30 border-b border-white/5">
+          <TabsList className="grid grid-cols-5 bg-[#14161D] p-1 rounded-xl h-10 border border-white/6 gap-1">
             <TabsTrigger
               value="remind"
-              className="text-[11px] font-semibold rounded-lg transition-all duration-180 data-[state=active]:bg-[#F5A623] data-[state=active]:text-[#14161D] data-[state=active]:shadow-sm flex items-center justify-center gap-0.5 text-[#8B90A0]"
+              className="text-[11.5px] font-semibold rounded-lg transition-all duration-180 data-[state=active]:bg-[#F5A623] data-[state=active]:text-[#14161D] data-[state=active]:shadow-sm flex items-center justify-center gap-1.5 text-[#8B90A0] px-1 py-1"
             >
               <span>⏱</span>
-              <span>Hẹn giờ</span>
+              <span className="truncate">Hẹn giờ</span>
               {activeTimersCount > 0 ? (
-                <span className="size-3.5 rounded-full bg-[#14161D] text-[#F5A623] text-[9px] flex items-center justify-center font-bold">
+                <span className="size-4 rounded-full bg-[#14161D] text-[#F5A623] text-[9.5px] flex items-center justify-center font-bold shrink-0 border border-[#F5A623]/30">
                   {activeTimersCount}
                 </span>
               ) : null}
             </TabsTrigger>
             <TabsTrigger
               value="clusters"
-              className="text-[11px] font-semibold rounded-lg transition-all duration-180 data-[state=active]:bg-[#F5A623] data-[state=active]:text-[#14161D] data-[state=active]:shadow-sm flex items-center justify-center gap-0.5 text-[#8B90A0]"
+              className="text-[11.5px] font-semibold rounded-lg transition-all duration-180 data-[state=active]:bg-[#F5A623] data-[state=active]:text-[#14161D] data-[state=active]:shadow-sm flex items-center justify-center gap-1.5 text-[#8B90A0] px-1 py-1"
             >
               <span>🗂</span>
-              <span>Cụm Note</span>
+              <span className="truncate">Cụm Note</span>
             </TabsTrigger>
             <TabsTrigger
               value="pip"
-              className="text-[11px] font-semibold rounded-lg transition-all duration-180 data-[state=active]:bg-[#F5A623] data-[state=active]:text-[#14161D] data-[state=active]:shadow-sm flex items-center justify-center gap-0.5 text-[#8B90A0]"
+              className="text-[11.5px] font-semibold rounded-lg transition-all duration-180 data-[state=active]:bg-[#F5A623] data-[state=active]:text-[#14161D] data-[state=active]:shadow-sm flex items-center justify-center gap-1.5 text-[#8B90A0] px-1 py-1"
             >
               <span>🐾</span>
-              <span>Thú cưng</span>
+              <span className="truncate">Thú cưng</span>
             </TabsTrigger>
             <TabsTrigger
               value="look"
-              className="text-[11px] font-semibold rounded-lg transition-all duration-180 data-[state=active]:bg-[#F5A623] data-[state=active]:text-[#14161D] data-[state=active]:shadow-sm flex items-center justify-center gap-0.5 text-[#8B90A0]"
+              className="text-[11.5px] font-semibold rounded-lg transition-all duration-180 data-[state=active]:bg-[#F5A623] data-[state=active]:text-[#14161D] data-[state=active]:shadow-sm flex items-center justify-center gap-1.5 text-[#8B90A0] px-1 py-1"
             >
               <span>🎨</span>
-              <span>Giao diện</span>
+              <span className="truncate">Giao diện</span>
             </TabsTrigger>
             <TabsTrigger
               value="about"
-              className="text-[11px] font-semibold rounded-lg transition-all duration-180 data-[state=active]:bg-[#F5A623] data-[state=active]:text-[#14161D] data-[state=active]:shadow-sm flex items-center justify-center gap-0.5 text-[#8B90A0]"
+              className="text-[11.5px] font-semibold rounded-lg transition-all duration-180 data-[state=active]:bg-[#F5A623] data-[state=active]:text-[#14161D] data-[state=active]:shadow-sm flex items-center justify-center gap-1.5 text-[#8B90A0] px-1 py-1"
             >
               <span>⚙️</span>
-              <span>Hệ thống</span>
+              <span className="truncate">Hệ thống</span>
             </TabsTrigger>
           </TabsList>
         </div>
@@ -1255,74 +1255,74 @@ export function Hub() {
             {/* Shortcuts */}
             <div className="rounded-2xl bg-[#262A35]/50 p-3 space-y-1.5 border border-white/6">
               <p className="font-semibold text-[#F4F5F7] text-xs mb-1">Tổ hợp phím tắt nhanh (Alt):</p>
-              <div className="space-y-1.5 text-[11px]">
-                <div className="flex items-center justify-between">
+              <div className="divide-y divide-white/5 text-[11px]">
+                <div className="flex items-center justify-between py-1">
                   <span>Ghi chú nhanh:</span>
                   <div className="flex gap-1">
-                    <span className="font-mono bg-[#14161D] px-1.5 py-0.2 rounded-md border border-white/5 text-[#F5A623] font-semibold">
+                    <span className="font-mono bg-[#14161D] px-1.5 py-0.5 rounded-md border border-white/5 text-[#F5A623] font-semibold">
                       Alt + N
                     </span>
-                    <span className="font-mono bg-[#14161D] px-1.5 py-0.2 rounded-md border border-white/5 text-[#8B90A0]">
+                    <span className="font-mono bg-[#14161D] px-1.5 py-0.5 rounded-md border border-white/5 text-[#8B90A0]">
                       Alt + Q
                     </span>
                   </div>
                 </div>
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between py-1">
                   <span>Đặt giờ nhanh:</span>
-                  <span className="font-mono bg-[#14161D] px-1.5 py-0.2 rounded-md border border-white/5 text-[#F5A623] font-semibold">
+                  <span className="font-mono bg-[#14161D] px-1.5 py-0.5 rounded-md border border-white/5 text-[#F5A623] font-semibold">
                     Alt + T
                   </span>
                 </div>
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between py-1">
                   <span>Bảng cài đặt (Hub):</span>
                   <div className="flex gap-1">
-                    <span className="font-mono bg-[#14161D] px-1.5 py-0.2 rounded-md border border-white/5 text-[#F5A623] font-semibold">
+                    <span className="font-mono bg-[#14161D] px-1.5 py-0.5 rounded-md border border-white/5 text-[#F5A623] font-semibold">
                       Alt + S
                     </span>
-                    <span className="font-mono bg-[#14161D] px-1.5 py-0.2 rounded-md border border-white/5 text-[#8B90A0]">
+                    <span className="font-mono bg-[#14161D] px-1.5 py-0.5 rounded-md border border-white/5 text-[#8B90A0]">
                       Alt + H
                     </span>
                   </div>
                 </div>
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between py-1">
                   <span>Sắp xếp ghi chú:</span>
-                  <span className="font-mono bg-[#14161D] px-1.5 py-0.2 rounded-md border border-white/5 text-[#F5A623] font-semibold">
+                  <span className="font-mono bg-[#14161D] px-1.5 py-0.5 rounded-md border border-white/5 text-[#F5A623] font-semibold">
                     Alt + A
                   </span>
                 </div>
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between py-1">
                   <span>Ẩn / Hiện tất cả note:</span>
-                  <span className="font-mono bg-[#14161D] px-1.5 py-0.2 rounded-md border border-white/5 text-[#F5A623] font-semibold">
+                  <span className="font-mono bg-[#14161D] px-1.5 py-0.5 rounded-md border border-white/5 text-[#F5A623] font-semibold">
                     Alt + O
                   </span>
                 </div>
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between py-1">
                   <span>Bật / Tắt Thú cưng:</span>
-                  <span className="font-mono bg-[#14161D] px-1.5 py-0.2 rounded-md border border-white/5 text-[#F5A623] font-semibold">
+                  <span className="font-mono bg-[#14161D] px-1.5 py-0.5 rounded-md border border-white/5 text-[#F5A623] font-semibold">
                     Alt + P
                   </span>
                 </div>
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between py-1">
                   <span>Hiện cửa sổ lên trên:</span>
-                  <span className="font-mono bg-[#14161D] px-1.5 py-0.2 rounded-md border border-white/5 text-[#F5A623] font-semibold">
+                  <span className="font-mono bg-[#14161D] px-1.5 py-0.5 rounded-md border border-white/5 text-[#F5A623] font-semibold">
                     Alt + L
                   </span>
                 </div>
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between py-1">
                   <span>Tạo note tại con trỏ:</span>
-                  <span className="bg-[#14161D] px-1.5 py-0.2 rounded-md border border-white/5 text-[#3FAE6C] font-semibold text-[10px]">
+                  <span className="bg-[#14161D] px-1.5 py-0.5 rounded-md border border-white/5 text-[#3FAE6C] font-semibold text-[10px]">
                     Nhấp đúp chuột trên màn hình
                   </span>
                 </div>
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between py-1">
                   <span>Xoay góc nghiêng note:</span>
-                  <span className="bg-[#14161D] px-1.5 py-0.2 rounded-md border border-white/5 text-[#3FAE6C] font-semibold text-[10px]">
+                  <span className="bg-[#14161D] px-1.5 py-0.5 rounded-md border border-white/5 text-[#3FAE6C] font-semibold text-[10px]">
                     Kéo icon xoay ở góc note
                   </span>
                 </div>
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between py-1">
                   <span>Đóng cửa sổ / Modal:</span>
-                  <span className="font-mono bg-[#14161D] px-1.5 py-0.2 rounded-md border border-white/5 text-[#F4F5F7]">
+                  <span className="font-mono bg-[#14161D] px-1.5 py-0.5 rounded-md border border-white/5 text-[#F4F5F7]">
                     Escape
                   </span>
                 </div>
