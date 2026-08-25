@@ -70,9 +70,9 @@ export function AppStartupLoading() {
         <div className="absolute -top-12 size-36 rounded-full bg-[#F5A623]/15 blur-2xl pointer-events-none" />
 
         {/* Mascot Avatar with gentle bounce */}
-        <div className="relative mb-3 flex size-16 items-center justify-center rounded-2xl bg-gradient-to-b from-[#262A35] to-[#1D2029] border border-white/10 shadow-xl">
-          <span className="text-3xl animate-bounce">🦊</span>
-          <div className="absolute -bottom-1 -right-1 flex size-5 items-center justify-center rounded-full bg-[#F5A623] text-[#14161D] shadow-md">
+        <div className="relative mb-3 flex size-16 items-center justify-center rounded-2xl bg-gradient-to-b from-[#262A35] to-[#1D2029] border border-white/10 shadow-xl overflow-hidden p-1">
+          <img src="/icon.png" alt="Lumen Logo" className="size-14 object-contain animate-bounce" />
+          <div className="absolute -bottom-1 -right-1 flex size-5 items-center justify-center rounded-full bg-[#F5A623] text-[#14161D] shadow-md z-10">
             <Sparkles className="size-3" />
           </div>
         </div>

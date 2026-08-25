@@ -1,5 +1,9 @@
 {
-  "name": "app-builder-workspace",
+  "name": "lumen-desktop",
+  "version": "2.0.0",
+  "description": "Lumen — Artisanal Desktop Spatial Companion & Workspace",
+  "author": "Lumen Team",
+  "main": "electron/main.cjs",
   "private": true,
   "sideEffects": false,
   "type": "module",
@@ -19,8 +23,25 @@
     "desktop:tauri": "tauri dev",
     "desktop:dev": "npm run desktop",
     "desktop:build": "tauri build",
+    "desktop:pack": "electron-builder --dir",
+    "desktop:dist": "electron-builder --win nsis",
     "lint": "eslint .",
     "format": "prettier --write ."
+  },
+  "build": {
+    "appId": "com.lumen.desktop",
+    "productName": "Lumen",
+    "directories": {
+      "output": "dist-electron"
+    },
+    "files": [
+      "electron/**/*",
+      ".vercel/output/static/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": ["dir"]
+    }
   },
   "dependencies": {
     "@electric-sql/pglite": "^0.5.4",

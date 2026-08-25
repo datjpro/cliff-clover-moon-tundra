@@ -61,6 +61,7 @@ function createWindow() {
     y: 1,
     width: width - 2,
     height: height - 5, // Non-occluding clearance ensures zero background video freezing
+    icon: path.join(__dirname, "icon.png"),
     transparent: true,
     frame: false,
     hasShadow: false,
@@ -86,12 +87,17 @@ function createWindow() {
   // Initialize mouse click-through so desktop wallpaper, videos, and background apps work 100%
   mainWindow.setIgnoreMouseEvents(true, { forward: true });
 
-  const devUrl = "http://localhost:8080";
-  mainWindow.loadURL(devUrl).catch(() => {
-    setTimeout(() => {
-      if (mainWindow) mainWindow.loadURL(devUrl);
-    }, 1500);
-  });
+  const isDev = !app.isPackaged && process.env.NODE_ENV !== "production";
+  if (isDev) {
+    const devUrl = "http://localhost:8080";
+    mainWindow.loadURL(devUrl).catch(() => {
+      setTimeout(() => {
+        if (mainWindow) mainWindow.loadURL(devUrl);
+      }, 1500);
+    });
+  } else {
+    mainWindow.loadFile(path.join(__dirname, "../.vercel/output/static/index.html"));
+  }
 
   // Re-sync window bounds if display resolution or connected monitors change
   screen.on("display-metrics-changed", updateWindowBounds);

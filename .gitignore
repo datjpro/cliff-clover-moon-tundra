@@ -79,6 +79,7 @@ screenshots/qa-*.png
 src-tauri/target/
 src-tauri/gen/
 electron/dist/
+dist-electron/
 electron-builder-out/
 
 # Grok / System artifacts

@@ -519,7 +519,7 @@ export function Hub() {
             <GripHorizontal className="size-3.5" />
           </div>
           <div className="flex items-center gap-1.5 min-w-0">
-            <span className="text-sm">🦊</span>
+            <img src="/icon.png" alt="Lumen Logo" className="size-4 object-contain rounded-sm" />
             <p className="font-semibold text-xs tracking-tight text-[#F4F5F7]">
               Lumen Settings & Trung Tâm Cài Đặt
             </p>
