@@ -40,6 +40,7 @@ export type Note = {
   createdAt: number;
   pinned?: boolean;
   collapsed?: boolean;
+  cluster?: string; // Tên cụm / nhóm ghi chú (VD: "Công việc", "Dự án Alpha", "Game")
 };
 
 export type Reminder = {

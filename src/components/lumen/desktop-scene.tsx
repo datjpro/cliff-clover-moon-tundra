@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type PointerEvent } from "react";
-import { Clock, Eye, EyeOff, LayoutGrid, Plus, Settings, Sparkles, X } from "lucide-react";
+import { Clock, Eye, EyeOff, Folder, LayoutGrid, Plus, Settings, Sparkles, X } from "lucide-react";
 import { sounds } from "@/lib/audio";
 import {
   closeOrQuitDesktopApp,
@@ -15,6 +15,7 @@ import { BallToy } from "./ball-toy";
 import { Companion } from "./companion";
 import { FloatingTimers } from "./floating-timers";
 import { Hub } from "./hub";
+import { MissedRemindersModal } from "./missed-reminders-modal";
 import { Onboarding } from "./onboarding";
 import { QuickCapture } from "./quick-capture";
 import { QuickTimer, triggerOpenQuickTimer } from "./quick-timer";
@@ -422,14 +423,110 @@ export function DesktopScene() {
     addNote({ x, y, body: "", tint: "cream" });
   };
 
-  const visibleNotes = layout === "tray" ? [] : notes;
+  const selectedCluster = useLumen((s) => s.selectedCluster);
+  const setSelectedCluster = useLumen((s) => s.setSelectedCluster);
+  const pushToast = useLumen((s) => s.pushToast);
+
+  const [isDragOverFile, setIsDragOverFile] = useState(false);
+
+  // Drag and drop text files (.txt, .md, .csv, .log) directly to spawn sticky notes
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.dataTransfer.types.includes("Files")) {
+      setIsDragOverFile(true);
+    }
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOverFile(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOverFile(false);
+
+    const files = Array.from(e.dataTransfer.files);
+    if (!files.length) return;
+
+    files.forEach((file, index) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const text = (reader.result as string) || "";
+        const title = file.name.replace(/\.[^/.]+$/, "");
+        const parent = document.body.getBoundingClientRect();
+        const dropX = Math.max(6, Math.min(75, ((e.clientX + index * 25) / parent.width) * 100));
+        const dropY = Math.max(8, Math.min(70, ((e.clientY + index * 25) / parent.height) * 100));
+
+        addNote({
+          title,
+          body: text,
+          x: dropX,
+          y: dropY,
+          tint: index % 2 === 0 ? "cream" : "sage",
+          cluster: selectedCluster || undefined,
+        });
+
+        sounds.playPop(700);
+        pushToast("Đã tạo ghi chú từ file", `📄 ${file.name}`);
+      };
+      reader.readAsText(file);
+    });
+  };
+
+  // Filter notes by active cluster if selected
+  const visibleNotes =
+    layout === "tray"
+      ? []
+      : selectedCluster
+      ? notes.filter((n) => n.cluster === selectedCluster)
+      : notes;
 
   return (
     <div
       data-theme={theme}
       data-transparent="true"
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
       className="fixed inset-0 h-screen w-screen bg-transparent text-fg select-none overflow-hidden pointer-events-none"
     >
+      {/* Active Cluster Filter Chip (Top Center) */}
+      {selectedCluster && (
+        <div className="interactive-el absolute top-3 left-1/2 -translate-x-1/2 z-[85] flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#1D2029]/95 text-[#F4F5F7] border border-[#F5A623]/40 shadow-xl backdrop-blur-md animate-in fade-in zoom-in-95 pointer-events-auto">
+          <Folder className="size-3.5 text-[#F5A623]" />
+          <span className="text-xs font-semibold">
+            Đang lọc: <span className="text-[#F5A623]">{selectedCluster}</span> ({visibleNotes.length} note)
+          </span>
+          <button
+            type="button"
+            onClick={() => setSelectedCluster(null)}
+            className="size-4.5 rounded-full bg-white/10 hover:bg-white/20 text-[#8B90A0] hover:text-white flex items-center justify-center cursor-pointer transition-colors"
+            title="Bỏ lọc cụm (Hiện tất cả)"
+          >
+            <X className="size-3" />
+          </button>
+        </div>
+      )}
+
+      {/* Drag-and-drop file drop target indicator */}
+      {isDragOverFile && (
+        <div className="fixed inset-4 z-[95] rounded-3xl border-2 border-dashed border-[#F5A623] bg-[#1D2029]/85 backdrop-blur-md flex flex-col items-center justify-center text-[#F4F5F7] animate-in fade-in zoom-in-95 pointer-events-none shadow-2xl">
+          <div className="size-16 rounded-2xl bg-[#F5A623]/20 flex items-center justify-center text-[#F5A623] mb-3 animate-bounce">
+            <Folder className="size-8" />
+          </div>
+          <p className="font-bold text-base text-[#F5A623]">
+            Thả file .txt / .md vào đây để tạo ghi chú dán tức thì
+          </p>
+          <p className="text-xs text-[#8B90A0] mt-1">
+            Hỗ trợ tự động đọc văn bản từ các tệp .txt, .md, .csv, .log
+          </p>
+        </div>
+      )}
+
       {visibleNotes.map((n) => (
         <StickyNote key={n.id} note={n} />
       ))}
@@ -438,6 +535,7 @@ export function DesktopScene() {
       <Companion />
       <ToastStack />
       <AlarmRingingModal />
+      <MissedRemindersModal />
       <QuickCapture />
       <QuickTimer />
       <Hub />

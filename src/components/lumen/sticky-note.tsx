@@ -6,11 +6,14 @@ import {
   ChevronUp,
   Copy,
   Download,
+  Folder,
+  FolderPlus,
   MoreHorizontal,
   Pin,
   Plus,
   RotateCcw,
   RotateCw,
+  Scaling,
   Square,
   Trash2,
   X,
@@ -53,14 +56,65 @@ export function StickyNote({ note, stacked }: Props) {
   const menuRef = useRef<HTMLDivElement | null>(null);
   const colorPickerRef = useRef<HTMLDivElement | null>(null);
 
+  const allNotes = useLumen((s) => s.notes);
+  const existingClusters = Array.from(
+    new Set(allNotes.map((n) => n.cluster).filter((c): c is string => Boolean(c))),
+  );
+
   const [colorPickerOpen, setColorPickerOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [clusterPickerOpen, setClusterPickerOpen] = useState(false);
+  const [customClusterInput, setCustomClusterInput] = useState("");
   const [newCheckText, setNewCheckText] = useState("");
   const [isDragging, setIsDragging] = useState(false);
   const [isRotating, setIsRotating] = useState(false);
+  const [isResizing, setIsResizing] = useState(false);
   const [copied, setCopied] = useState(false);
+  const resizeDrag = useRef<{ startX: number; startY: number; startW: number; startH: number } | null>(null);
+
+  // Resize Handlers (Dragging bottom-left corner)
+  const onResizePointerDown = (e: PointerEvent<HTMLDivElement>) => {
+    e.stopPropagation();
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    bringNote(note.id);
+    const card = (e.currentTarget.closest("article") as HTMLElement) || null;
+    const rect = card ? card.getBoundingClientRect() : { width: 280, height: 220 };
+    resizeDrag.current = {
+      startX: e.clientX,
+      startY: e.clientY,
+      startW: rect.width,
+      startH: rect.height,
+    };
+    setIsResizing(true);
+    sounds.playPop(560);
+  };
+
+  const onResizePointerMove = (e: PointerEvent<HTMLDivElement>) => {
+    if (!isResizing || !resizeDrag.current) return;
+    const deltaX = resizeDrag.current.startX - e.clientX;
+    const deltaY = e.clientY - resizeDrag.current.startY;
+    const newW = Math.min(600, Math.max(220, Math.round(resizeDrag.current.startW + deltaX)));
+    const newH = Math.min(800, Math.max(160, Math.round(resizeDrag.current.startH + deltaY)));
+    updateNote(note.id, { width: newW, height: newH });
+  };
+
+  const onResizePointerUp = (e: PointerEvent<HTMLDivElement>) => {
+    if (!isResizing) return;
+    try {
+      (e.target as HTMLElement).releasePointerCapture(e.pointerId);
+    } catch {}
+    resizeDrag.current = null;
+    setIsResizing(false);
+    sounds.playPop(620);
+  };
+
+  const onResetSize = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    updateNote(note.id, { width: undefined, height: undefined });
+    sounds.playChime();
+  };
 
   const handleCopyNote = () => {
     let content = note.body.trim();
@@ -79,7 +133,7 @@ export function StickyNote({ note, stacked }: Props) {
 
   // Close menus when clicking outside (using click event so button clicks inside menu finish first)
   useEffect(() => {
-    if (!menuOpen && !colorPickerOpen) return;
+    if (!menuOpen && !colorPickerOpen && !clusterPickerOpen) return;
     const handleOutsideClick = (e: MouseEvent) => {
       const target = e.target as Node | null;
       if (!target) return;
@@ -97,7 +151,7 @@ export function StickyNote({ note, stacked }: Props) {
       clearTimeout(timer);
       document.removeEventListener("click", handleOutsideClick);
     };
-  }, [menuOpen, colorPickerOpen]);
+  }, [menuOpen, colorPickerOpen, clusterPickerOpen]);
 
   // High-Performance Position Drag Handlers (Cached Parent Bounds, Zero Layout Reflow)
   const onPointerDown = (e: PointerEvent<HTMLElement>) => {
@@ -231,7 +285,7 @@ export function StickyNote({ note, stacked }: Props) {
 
   const isTransformActive = isDragging || isRotating;
 
-  const isElevated = menuOpen || colorPickerOpen || showDeleteConfirm || showOptions;
+  const isElevated = menuOpen || colorPickerOpen || showDeleteConfirm || showOptions || clusterPickerOpen;
 
   const style = stacked
     ? undefined
@@ -241,7 +295,9 @@ export function StickyNote({ note, stacked }: Props) {
         transform: note.collapsed ? "none" : `rotate(${note.rot}deg)`,
         zIndex: (note.pinned ? 90 : 10) + note.z + (isElevated ? 250 : 0),
         opacity: note.opacity ?? 1,
-        transition: isTransformActive ? "none" : undefined,
+        width: note.width ? `${note.width}px` : undefined,
+        minHeight: note.height ? `${note.height}px` : undefined,
+        transition: isTransformActive || isResizing ? "none" : undefined,
       };
 
   // Minimized Capsule Pill Mode
@@ -347,6 +403,25 @@ export function StickyNote({ note, stacked }: Props) {
           )}
         </div>
 
+        {/* Center: Cluster Pill Badge */}
+        {note.cluster ? (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              bringNote(note.id);
+              setClusterPickerOpen(true);
+            }}
+            className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/10 hover:bg-white/20 text-[#F5A623] text-[10px] font-semibold border border-white/10 transition-colors cursor-pointer"
+            title="Nhóm / Cụm ghi chú (Click để đổi)"
+          >
+            <Folder className="size-2.5" />
+            <span className="max-w-[90px] truncate">{note.cluster}</span>
+          </button>
+        ) : (
+          <div className="flex-1" />
+        )}
+
         {/* Right Header Actions: Pin + Direct Trash (Delete) + Kebab (…) */}
         <div className="flex items-center gap-0.5 no-drag">
           {/* Pin Button */}
@@ -392,6 +467,7 @@ export function StickyNote({ note, stacked }: Props) {
                 bringNote(note.id);
                 setMenuOpen(!menuOpen);
                 setColorPickerOpen(false);
+                setClusterPickerOpen(false);
               }}
               className={cn(
                 "flex size-6 items-center justify-center rounded-md transition-colors cursor-pointer",
@@ -424,7 +500,23 @@ export function StickyNote({ note, stacked }: Props) {
                   <span>Thu gọn ghi chú</span>
                 </button>
 
-                {/* 2. Rotation & Font Options */}
+                {/* 2. Change Cluster / Group */}
+                <button
+                  type="button"
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    sounds.playPop(580);
+                    setClusterPickerOpen(true);
+                    setMenuOpen(false);
+                  }}
+                  className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl text-[#F4F5F7] hover:bg-[#262A35] hover:text-white transition-colors text-left cursor-pointer"
+                >
+                  <FolderPlus className="size-3.5 text-[#F5A623]" />
+                  <span>Đổi Cụm / Nhóm</span>
+                </button>
+
+                {/* 3. Rotation & Font Options */}
                 <button
                   type="button"
                   onPointerDown={(e) => e.stopPropagation()}
@@ -440,7 +532,7 @@ export function StickyNote({ note, stacked }: Props) {
                   <span>Độ xoay & Phông chữ</span>
                 </button>
 
-                {/* 3. Copy Content */}
+                {/* 4. Copy Content */}
                 <button
                   type="button"
                   onPointerDown={(e) => e.stopPropagation()}
@@ -456,7 +548,7 @@ export function StickyNote({ note, stacked }: Props) {
 
                 <div className="h-px bg-white/10 my-1" />
 
-                {/* 4. Delete Note */}
+                {/* 5. Delete Note */}
                 <button
                   type="button"
                   onPointerDown={(e) => e.stopPropagation()}
@@ -474,6 +566,93 @@ export function StickyNote({ note, stacked }: Props) {
           </div>
         </div>
       </header>
+
+      {/* Cluster Assignment Popover / Dialog */}
+      {clusterPickerOpen && (
+        <div
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={(e) => e.stopPropagation()}
+          className="interactive-el no-drag absolute inset-x-2 top-10 z-[90] p-3 rounded-2xl bg-[#1D2029]/98 text-[#F4F5F7] border border-white/15 shadow-[0_20px_45px_rgba(0,0,0,0.85)] backdrop-blur-2xl text-xs animate-in zoom-in-95 fade-in duration-120 select-none pointer-events-auto"
+        >
+          <div className="flex items-center justify-between pb-1.5 border-b border-white/10 mb-2">
+            <span className="font-bold text-[11px] text-[#F5A623] uppercase flex items-center gap-1">
+              <Folder className="size-3" />
+              Chọn Cụm Ghi Chú
+            </span>
+            <button
+              type="button"
+              onClick={() => setClusterPickerOpen(false)}
+              className="p-1 rounded hover:bg-white/10 text-[#8B90A0] hover:text-white cursor-pointer"
+            >
+              <X className="size-3.5" />
+            </button>
+          </div>
+
+          <div className="flex flex-wrap gap-1 mb-2 max-h-24 overflow-y-auto">
+            <button
+              type="button"
+              onClick={() => {
+                updateNote(note.id, { cluster: undefined });
+                setClusterPickerOpen(false);
+                sounds.playPop(560);
+              }}
+              className={cn(
+                "px-2 py-1 rounded-lg text-[11px] font-medium border cursor-pointer transition-colors",
+                !note.cluster ? "bg-[#F5A623] text-[#14161D] border-[#F5A623]" : "bg-white/5 border-white/10 text-[#8B90A0] hover:bg-white/10",
+              )}
+            >
+              Chung (Không nhóm)
+            </button>
+            {existingClusters.map((c) => (
+              <button
+                key={c}
+                type="button"
+                onClick={() => {
+                  updateNote(note.id, { cluster: c });
+                  setClusterPickerOpen(false);
+                  sounds.playPop(560);
+                }}
+                className={cn(
+                  "px-2 py-1 rounded-lg text-[11px] font-medium border cursor-pointer transition-colors flex items-center gap-1",
+                  note.cluster === c ? "bg-[#F5A623] text-[#14161D] border-[#F5A623]" : "bg-white/5 border-white/10 text-[#F4F5F7] hover:bg-white/10",
+                )}
+              >
+                <Folder className="size-2.5" />
+                <span>{c}</span>
+              </button>
+            ))}
+          </div>
+
+          {/* Create new cluster input */}
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              const trimmed = customClusterInput.trim();
+              if (trimmed) {
+                updateNote(note.id, { cluster: trimmed });
+                setCustomClusterInput("");
+                setClusterPickerOpen(false);
+                sounds.playPop(620);
+              }
+            }}
+            className="flex items-center gap-1.5 pt-1 border-t border-white/5"
+          >
+            <input
+              type="text"
+              value={customClusterInput}
+              onChange={(e) => setCustomClusterInput(e.target.value)}
+              placeholder="+ Cụm mới (VD: Dự án A)..."
+              className="flex-1 bg-black/30 px-2.5 py-1 rounded-lg text-xs text-[#F4F5F7] outline-none border border-white/10 focus:border-[#F5A623]"
+            />
+            <button
+              type="submit"
+              className="px-2.5 py-1 rounded-lg bg-[#F5A623] hover:bg-[#D6871A] text-[#14161D] font-bold text-xs cursor-pointer transition-colors"
+            >
+              Lưu
+            </button>
+          </form>
+        </div>
+      )}
 
       {/* Full-Card Delete Confirmation Overlay */}
       {showDeleteConfirm && (
@@ -740,6 +919,26 @@ export function StickyNote({ note, stacked }: Props) {
         {isRotating && (
           <div className="no-drag absolute top-2 right-2 z-30 flex items-center gap-1 rounded-full bg-[#1D2029] text-[#F5A623] px-2 py-0.5 text-[11px] font-mono font-bold shadow-xl border border-[#F5A623]/40 animate-in zoom-in-95 pointer-events-none">
             <span>{Math.round(note.rot || 0)}°</span>
+          </div>
+        )}
+
+        {/* Subtle Interactive Corner Resize Handle (Bottom-Left) */}
+        {!stacked && (
+          <div
+            onPointerDown={onResizePointerDown}
+            onPointerMove={onResizePointerMove}
+            onPointerUp={onResizePointerUp}
+            onPointerCancel={onResizePointerUp}
+            onDoubleClick={onResetSize}
+            className={cn(
+              "no-drag absolute bottom-1.5 left-1.5 size-6 flex items-center justify-center rounded-full transition-all cursor-nwse-resize z-20 touch-none select-none",
+              isResizing
+                ? "bg-[#F5A623] text-[#14161D] shadow-lg scale-110 opacity-100 ring-2 ring-[#1D2029]"
+                : "bg-black/10 hover:bg-black/25 text-[#23262F]/70 hover:text-[#23262F] opacity-0 group-hover:opacity-100 hover:scale-110",
+            )}
+            title="Kéo để co giãn kích thước note (Nhấp đúp để tự động vừa vặn)"
+          >
+            <Scaling className="size-3" />
           </div>
         )}
 

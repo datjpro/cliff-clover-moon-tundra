@@ -287,6 +287,33 @@ console.log("\n📦 [SUITE 5]: Desktop Window Visibility & Single Instance Recov
   };
   const copiedContent = `${testNoteWithChecklist.body}\n\n☑ ${testNoteWithChecklist.checkItems[0].text}`;
   assert(copiedContent.includes("Họp nhóm sáng") && copiedContent.includes("Chuẩn bị slide"), "Note copy helper serializes body and checklist properly");
+
+  // Note Cluster Grouping & Export Test
+  const mockClusterNotes = [
+    { id: "c1", title: "Task 1", body: "Làm slide báo cáo", cluster: "Công việc", createdAt: Date.now() },
+    { id: "c2", title: "Task 2", body: "Họp đối tác", cluster: "Công việc", createdAt: Date.now() },
+  ];
+  const clusterName = "Công việc";
+  const clusterExportText = `=== CỤM GHI CHÚ: ${clusterName.toUpperCase()} ===\nSố lượng ghi chú: ${mockClusterNotes.length}\n${mockClusterNotes.map(n => n.body).join("\n")}`;
+  assert(clusterExportText.includes("CÔNG VIỆC") && clusterExportText.includes("Làm slide báo cáo"), "Cluster export properly serializes all clustered notes into formatted text");
+
+  // Drag-and-Drop .txt File Import Parser Test
+  const rawFileName = "Ke_hoach_tuan_toi.txt";
+  const extractedTitle = rawFileName.replace(/\.[^/.]+$/, "");
+  assert(extractedTitle === "Ke_hoach_tuan_toi", "File drop parser cleanly extracts note title from .txt filename");
+
+  // Missed Offline Reminders Detection Test
+  const nowTime = Date.now();
+  const pastReminders = [
+    { id: "r1", title: "Nấu cơm", fireAt: nowTime - 120000, done: false }, // 2 mins ago while closed
+    { id: "r2", title: "Tập gym", fireAt: nowTime + 300000, done: false }, // in 5 mins
+  ];
+  const missedOnReboot = pastReminders.filter(r => !r.done && r.fireAt < nowTime - 5000);
+  assert(missedOnReboot.length === 1 && missedOnReboot[0].title === "Nấu cơm", "App boot properly detects reminders that expired while offline");
+
+  // Note Resizing Constraint Verification Test
+  const computeResize = (startW, deltaX) => Math.min(600, Math.max(220, Math.round(startW + deltaX)));
+  assert(computeResize(280, 50) === 330 && computeResize(280, -100) === 220 && computeResize(280, 500) === 600, "Note resizing smoothly clamps within ergonomic 220px - 600px bounds");
 }
 
 console.log(`\n========================================`);

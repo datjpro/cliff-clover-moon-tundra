@@ -16,10 +16,11 @@ const SEED_NOTES: Note[] = [
     z: 2,
     createdAt: 1,
     collapsed: false,
+    cluster: "Công việc",
   },
   {
     id: "seed-2",
-    body: "Ghi chú số 2: Ý tưởng phát triển 💡\n- Đồng hồ đếm ngược thông minh (COC, nấu ăn)\n- Giao diện Glassmorphism tối giản\n- Phím tắt nhanh Ctrl+Shift+N",
+    body: "Ghi chú số 2: Ý tưởng phát triển 💡\n- Đồng hồ đếm ngược thông minh (COC, nấu ăn)\n- Giao diện Glassmorphism tối giản\n- Phím tắt nhanh Alt+N",
     x: 64,
     y: 10,
     rot: 1.2,
@@ -27,6 +28,7 @@ const SEED_NOTES: Note[] = [
     z: 1,
     createdAt: 2,
     collapsed: false,
+    cluster: "Ý tưởng",
   },
   {
     id: "seed-3",
@@ -38,6 +40,7 @@ const SEED_NOTES: Note[] = [
     z: 3,
     createdAt: 3,
     collapsed: false,
+    cluster: "Hướng dẫn",
   },
   {
     id: "seed-4",
@@ -49,6 +52,7 @@ const SEED_NOTES: Note[] = [
     z: 4,
     createdAt: 4,
     collapsed: false,
+    cluster: "Công việc",
   },
   {
     id: "seed-5",
@@ -60,6 +64,7 @@ const SEED_NOTES: Note[] = [
     z: 5,
     createdAt: 5,
     collapsed: false,
+    cluster: "Thú cưng",
   },
 ];
 
@@ -126,6 +131,8 @@ type LumenState = {
   petPip: () => void;
   dancePip: () => void;
   toggleSound: (enabled?: boolean) => void;
+  selectedCluster: string | null;
+  setSelectedCluster: (cluster: string | null) => void;
   requestNoteFromPip: () => void;
   resetDemo: () => void;
 };
@@ -214,21 +221,30 @@ export const useLumen = create<LumenState>()(
           captureOpen: quickTimerOpen ? false : get().captureOpen,
         });
       },
+      selectedCluster: null,
+      setSelectedCluster: (selectedCluster) => {
+        sounds.playPop(520);
+        set({ selectedCluster });
+      },
       dismissOnboarding: () => set({ onboarding: false }),
       addNote: (partial) => {
         const id = partial?.id ?? uid();
         const z = get().maxZ + 1;
         const note: Note = {
           id,
+          title: partial?.title,
           body: partial?.body ?? "",
           x: partial?.x ?? 20 + Math.random() * 50,
           y: partial?.y ?? 15 + Math.random() * 45,
+          width: partial?.width,
+          height: partial?.height,
           rot: partial?.rot ?? (Math.random() - 0.5) * 4,
           tint: partial?.tint ?? "cream",
           z: partial?.z ?? z,
           createdAt: Date.now(),
           collapsed: false,
           pinned: false,
+          cluster: partial?.cluster ?? get().selectedCluster ?? undefined,
         };
         sounds.playPop(640);
         set({ notes: [...get().notes, note], maxZ: z });

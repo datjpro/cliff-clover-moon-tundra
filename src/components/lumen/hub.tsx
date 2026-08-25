@@ -6,6 +6,9 @@ import {
   Clock,
   Cookie,
   Download,
+  FileText,
+  Folder,
+  FolderPlus,
   Globe,
   GripHorizontal,
   Heart,
@@ -15,6 +18,7 @@ import {
   Play,
   Plus,
   RotateCcw,
+  Search,
   Sliders,
   Sparkles,
   Sun,
@@ -264,6 +268,79 @@ export function Hub() {
   const resetDemo = useLumen((s) => s.resetDemo);
   const pushToast = useLumen((s) => s.pushToast);
 
+  const selectedCluster = useLumen((s) => s.selectedCluster);
+  const setSelectedCluster = useLumen((s) => s.setSelectedCluster);
+  const addNote = useLumen((s) => s.addNote);
+  const updateNote = useLumen((s) => s.updateNote);
+  const removeNote = useLumen((s) => s.removeNote);
+
+  const [clusterSearch, setClusterSearch] = useState("");
+  const txtImportRef = useRef<HTMLInputElement>(null);
+
+  // Group notes by cluster
+  const clustersMap = notes.reduce<Record<string, typeof notes>>((acc, note) => {
+    const clusterName = note.cluster || "Chung (Không nhóm)";
+    if (!acc[clusterName]) acc[clusterName] = [];
+    acc[clusterName].push(note);
+    return acc;
+  }, {});
+
+  const handleExportClusterTxt = (clusterName: string, clusterNotes: typeof notes) => {
+    let content = `=== CỤM GHI CHÚ: ${clusterName.toUpperCase()} ===\n`;
+    content += `Thời gian xuất: ${new Date().toLocaleString("vi-VN")}\n`;
+    content += `Số lượng ghi chú: ${clusterNotes.length}\n\n`;
+
+    clusterNotes.forEach((n, idx) => {
+      content += `----------------------------------------\n`;
+      content += `[#${idx + 1}] (${new Date(n.createdAt).toLocaleDateString("vi-VN")})\n`;
+      if (n.title) content += `Tiêu đề: ${n.title}\n`;
+      content += `${n.body}\n`;
+      if (n.checkItems && n.checkItems.length > 0) {
+        content += `\nChecklist:\n`;
+        n.checkItems.forEach((c) => {
+          content += `  ${c.done ? "[x]" : "[ ]"} ${c.text}\n`;
+        });
+      }
+      content += `\n`;
+    });
+
+    const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `Lumen_Cluster_${clusterName.replace(/[^a-zA-Z0-9_\u00C0-\u024F\u1E00-\u1EFF]/g, "_")}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+    sounds.playChime();
+    pushToast("Đã lưu file .txt", `Đã xuất cụm "${clusterName}" thành công!`);
+  };
+
+  const handleTxtFileImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+
+    files.forEach((file, index) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const text = (reader.result as string) || "";
+        const title = file.name.replace(/\.[^/.]+$/, "");
+        addNote({
+          title,
+          body: text,
+          x: 20 + Math.random() * 40,
+          y: 15 + Math.random() * 40,
+          tint: index % 2 === 0 ? "cream" : "sage",
+          cluster: selectedCluster || undefined,
+        });
+      };
+      reader.readAsText(file);
+    });
+
+    sounds.playPop(700);
+    pushToast("Nhập file thành công", `Đã tạo ${files.length} ghi chú từ file .txt!`);
+    if (e.target) e.target.value = "";
+  };
+
   // Position & Drag state for Settings Modal
   const [pos, setPos] = useState<{ x: number; y: number } | null>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -412,6 +489,16 @@ export function Hub() {
       role="dialog"
       aria-label="Lumen Settings"
     >
+      {/* Hidden file input for .txt file import */}
+      <input
+        type="file"
+        ref={txtImportRef}
+        onChange={handleTxtFileImport}
+        accept=".txt,.md,.json,.csv,.log"
+        multiple
+        className="hidden"
+      />
+
       {/* Sleek Draggable Header */}
       <header
         onPointerDown={handlePointerDownHeader}
@@ -439,18 +526,16 @@ export function Hub() {
           <button
             type="button"
             onClick={handleResetPosition}
-            className="flex size-6.5 items-center justify-center rounded-lg hover:bg-white/10 cursor-pointer transition-colors text-[#8B90A0] hover:text-white"
-            title="Đặt lại vị trí giữa màn hình"
-            aria-label="Đặt lại vị trí"
+            className="size-6 flex items-center justify-center rounded-lg hover:bg-white/10 text-[#8B90A0] hover:text-[#F5A623] transition-colors cursor-pointer"
+            title="Đưa bảng về giữa màn hình"
           >
-            <RotateCcw className="size-3" />
+            <Maximize2 className="size-3" />
           </button>
           <button
             type="button"
             onClick={() => setHubOpen(false)}
-            className="flex size-6.5 items-center justify-center rounded-lg hover:bg-red-500/20 hover:text-[#EF4444] cursor-pointer transition-colors text-[#8B90A0]"
-            aria-label={dict.close}
-            title={dict.close}
+            className="size-6 flex items-center justify-center rounded-lg hover:bg-white/10 text-[#8B90A0] hover:text-white transition-colors cursor-pointer"
+            title="Đóng (Escape)"
           >
             <X className="size-3.5" />
           </button>
@@ -464,10 +549,10 @@ export function Hub() {
         className="flex min-h-0 flex-1 flex-col"
       >
         <div className="px-3 pt-2.5 pb-2 bg-[#14161D]/30 border-b border-white/5">
-          <TabsList className="grid grid-cols-4 bg-[#14161D] p-0.5 rounded-xl h-8.5 border border-white/6">
+          <TabsList className="grid grid-cols-5 bg-[#14161D] p-0.5 rounded-xl h-8.5 border border-white/6">
             <TabsTrigger
               value="remind"
-              className="text-[11px] font-semibold rounded-lg transition-all duration-180 data-[state=active]:bg-[#F5A623] data-[state=active]:text-[#14161D] data-[state=active]:shadow-sm flex items-center justify-center gap-1 text-[#8B90A0]"
+              className="text-[11px] font-semibold rounded-lg transition-all duration-180 data-[state=active]:bg-[#F5A623] data-[state=active]:text-[#14161D] data-[state=active]:shadow-sm flex items-center justify-center gap-0.5 text-[#8B90A0]"
             >
               <span>⏱</span>
               <span>Hẹn giờ</span>
@@ -478,22 +563,29 @@ export function Hub() {
               ) : null}
             </TabsTrigger>
             <TabsTrigger
+              value="clusters"
+              className="text-[11px] font-semibold rounded-lg transition-all duration-180 data-[state=active]:bg-[#F5A623] data-[state=active]:text-[#14161D] data-[state=active]:shadow-sm flex items-center justify-center gap-0.5 text-[#8B90A0]"
+            >
+              <span>🗂</span>
+              <span>Cụm Note</span>
+            </TabsTrigger>
+            <TabsTrigger
               value="pip"
-              className="text-[11px] font-semibold rounded-lg transition-all duration-180 data-[state=active]:bg-[#F5A623] data-[state=active]:text-[#14161D] data-[state=active]:shadow-sm flex items-center justify-center gap-1 text-[#8B90A0]"
+              className="text-[11px] font-semibold rounded-lg transition-all duration-180 data-[state=active]:bg-[#F5A623] data-[state=active]:text-[#14161D] data-[state=active]:shadow-sm flex items-center justify-center gap-0.5 text-[#8B90A0]"
             >
               <span>🐾</span>
               <span>Thú cưng</span>
             </TabsTrigger>
             <TabsTrigger
               value="look"
-              className="text-[11px] font-semibold rounded-lg transition-all duration-180 data-[state=active]:bg-[#F5A623] data-[state=active]:text-[#14161D] data-[state=active]:shadow-sm flex items-center justify-center gap-1 text-[#8B90A0]"
+              className="text-[11px] font-semibold rounded-lg transition-all duration-180 data-[state=active]:bg-[#F5A623] data-[state=active]:text-[#14161D] data-[state=active]:shadow-sm flex items-center justify-center gap-0.5 text-[#8B90A0]"
             >
               <span>🎨</span>
               <span>Giao diện</span>
             </TabsTrigger>
             <TabsTrigger
               value="about"
-              className="text-[11px] font-semibold rounded-lg transition-all duration-180 data-[state=active]:bg-[#F5A623] data-[state=active]:text-[#14161D] data-[state=active]:shadow-sm flex items-center justify-center gap-1 text-[#8B90A0]"
+              className="text-[11px] font-semibold rounded-lg transition-all duration-180 data-[state=active]:bg-[#F5A623] data-[state=active]:text-[#14161D] data-[state=active]:shadow-sm flex items-center justify-center gap-0.5 text-[#8B90A0]"
             >
               <span>⚙️</span>
               <span>Hệ thống</span>
@@ -664,7 +756,155 @@ export function Hub() {
             </div>
           </TabsContent>
 
-          {/* TAB 2: VIRTUAL PET STUDIO & WARDROBE */}
+          {/* TAB 2: NOTE CLUSTERS & ARCHIVE HUB */}
+          <TabsContent value="clusters" className="space-y-3 mt-0">
+            {/* Action Bar: Search, Import .txt, Export All */}
+            <div className="rounded-2xl bg-[#262A35]/50 p-3 border border-white/6 space-y-2.5 shadow-xs">
+              <div className="flex items-center justify-between gap-2">
+                <div className="relative flex-1">
+                  <Search className="size-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-[#8B90A0]" />
+                  <Input
+                    placeholder="Tìm kiếm trong các cụm ghi chú..."
+                    value={clusterSearch}
+                    onChange={(e) => setClusterSearch(e.target.value)}
+                    className="bg-[#14161D] border-white/10 focus:border-[#F5A623]/60 text-xs text-[#F4F5F7] placeholder:text-[#8B90A0]/60 h-8 pl-8 rounded-xl"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => txtImportRef.current?.click()}
+                  className="flex items-center gap-1.5 px-3 h-8 rounded-xl bg-[#F5A623] hover:bg-[#D6871A] text-[#14161D] text-xs font-bold shadow-xs transition-colors shrink-0 cursor-pointer"
+                  title="Mở file .txt hoặc .md từ máy tính để sinh note"
+                >
+                  <FileText className="size-3.5" />
+                  <span>+ Nạp .txt</span>
+                </button>
+              </div>
+
+              {/* Quick Summary & Desktop Filter state */}
+              <div className="flex items-center justify-between text-[11px] text-[#8B90A0] pt-1 border-t border-white/5">
+                <span>
+                  Tổng cộng: <b className="text-[#F4F5F7]">{notes.length}</b> note trong <b className="text-[#F5A623]">{Object.keys(clustersMap).length}</b> cụm
+                </span>
+                {selectedCluster ? (
+                  <button
+                    type="button"
+                    onClick={() => setSelectedCluster(null)}
+                    className="text-[#F5A623] hover:underline flex items-center gap-1 cursor-pointer font-semibold"
+                  >
+                    <span>Bỏ lọc: {selectedCluster}</span>
+                    <X className="size-3" />
+                  </button>
+                ) : (
+                  <span className="text-[#3FAE6C]">Đang hiện tất cả note</span>
+                )}
+              </div>
+            </div>
+
+            {/* Clusters List */}
+            <div className="space-y-2.5">
+              {Object.entries(clustersMap).map(([clusterName, clusterNotes]) => {
+                const isCurrentFilter = selectedCluster === clusterName;
+                const filteredClusterNotes = clusterSearch.trim()
+                  ? clusterNotes.filter(
+                      (n) =>
+                        n.body.toLowerCase().includes(clusterSearch.toLowerCase()) ||
+                        (n.title && n.title.toLowerCase().includes(clusterSearch.toLowerCase())),
+                    )
+                  : clusterNotes;
+
+                if (clusterSearch.trim() && filteredClusterNotes.length === 0) return null;
+
+                return (
+                  <div
+                    key={clusterName}
+                    className={cn(
+                      "rounded-2xl p-3 border transition-all space-y-2",
+                      isCurrentFilter
+                        ? "bg-[#262A35]/80 border-[#F5A623]/60 shadow-md ring-1 ring-[#F5A623]/30"
+                        : "bg-[#262A35]/40 border-white/6 hover:border-white/12",
+                    )}
+                  >
+                    {/* Cluster Header */}
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <div className="size-6 rounded-lg bg-[#F5A623]/15 text-[#F5A623] flex items-center justify-center shrink-0">
+                          <Folder className="size-3.5" />
+                        </div>
+                        <span className="font-bold text-xs text-[#F4F5F7] truncate">
+                          {clusterName}
+                        </span>
+                        <span className="px-1.5 py-0.2 rounded-md bg-white/10 text-[10px] font-mono text-[#8B90A0]">
+                          {clusterNotes.length}
+                        </span>
+                      </div>
+
+                      {/* Cluster Actions */}
+                      <div className="flex items-center gap-1 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (isCurrentFilter) {
+                              setSelectedCluster(null);
+                            } else {
+                              setSelectedCluster(clusterName === "Chung (Không nhóm)" ? null : clusterName);
+                            }
+                          }}
+                          className={cn(
+                            "px-2 py-1 rounded-lg text-[10px] font-semibold transition-colors cursor-pointer flex items-center gap-1",
+                            isCurrentFilter
+                              ? "bg-[#F5A623] text-[#14161D]"
+                              : "bg-white/10 hover:bg-white/15 text-[#F4F5F7]",
+                          )}
+                          title="Lọc chỉ hiển thị cụm này trên Desktop"
+                        >
+                          <Pin className="size-2.5" />
+                          <span>{isCurrentFilter ? "Đang lọc" : "Lọc Desktop"}</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleExportClusterTxt(clusterName, clusterNotes)}
+                          className="p-1 rounded-lg bg-white/10 hover:bg-white/15 text-[#8B90A0] hover:text-white transition-colors cursor-pointer"
+                          title="Lưu toàn bộ cụm này thành 1 file .txt"
+                        >
+                          <Download className="size-3" />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Note Item Previews in this cluster */}
+                    <div className="space-y-1.5 pt-1">
+                      {filteredClusterNotes.slice(0, 4).map((n) => (
+                        <div
+                          key={n.id}
+                          className="flex items-center justify-between p-2 rounded-xl bg-[#14161D]/60 border border-white/5 text-xs text-[#8B90A0] hover:text-[#F4F5F7] transition-colors"
+                        >
+                          <div className="flex items-center gap-2 min-w-0 pr-2">
+                            <span className={cn("size-2 rounded-full shrink-0", `note-${n.tint}`)} />
+                            <span className="truncate text-[11px]">
+                              {n.title ? `[${n.title}] ` : ""}
+                              {n.body.trim().slice(0, 50) || "Ghi chú trống"}
+                            </span>
+                          </div>
+                          <span className="text-[10px] font-mono shrink-0 opacity-60">
+                            {new Date(n.createdAt).toLocaleDateString("vi-VN", { month: "numeric", day: "numeric" })}
+                          </span>
+                        </div>
+                      ))}
+                      {filteredClusterNotes.length > 4 && (
+                        <p className="text-[10px] text-center text-[#8B90A0] pt-0.5">
+                          + {filteredClusterNotes.length - 4} ghi chú khác trong cụm
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </TabsContent>
+
+          {/* TAB 3: VIRTUAL PET STUDIO & WARDROBE */}
           <TabsContent value="pip" className="space-y-3 mt-0">
             <div className="flex items-center justify-between gap-3 rounded-2xl bg-[#262A35]/50 px-3 py-2.5 border border-white/6">
               <div>
