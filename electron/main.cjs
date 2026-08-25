@@ -43,8 +43,8 @@ function updateWindowBounds() {
   try {
     const primaryDisplay = screen.getPrimaryDisplay();
     const { width, height } = primaryDisplay.bounds;
-    // 1px height offset prevents Windows DWM from classifying window as Fullscreen Exclusive which blocks Auto-Hide Taskbar
-    mainWindow.setBounds({ x: 0, y: 0, width, height: height - 1 });
+    // 4px height offset completely exposes the 2px Windows Auto-Hide Taskbar sensor strip
+    mainWindow.setBounds({ x: 0, y: 0, width, height: height - 4 });
   } catch (err) {
     console.debug("[Display] Update bounds error:", err);
   }
@@ -58,7 +58,7 @@ function createWindow() {
     x: 0,
     y: 0,
     width: width,
-    height: height - 1, // 1px offset ensures Windows Auto-Hide Taskbar hook triggers 100% reliably
+    height: height - 4, // 4px offset ensures Windows Auto-Hide Taskbar sensor strip is 100% unobstructed
     transparent: true,
     frame: false,
     hasShadow: false,
