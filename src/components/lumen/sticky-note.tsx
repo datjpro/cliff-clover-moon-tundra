@@ -298,8 +298,8 @@ export function StickyNote({ note, stacked }: Props) {
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerUp}
     >
-      {/* Dark Integrated Header Bar (~34px height) */}
-      <header className="h-8.5 px-3 flex items-center justify-between bg-[#1D2029]/95 text-white backdrop-blur-md border-b border-white/5 shrink-0 select-none rounded-t-2xl">
+      {/* Dark Integrated Header Bar (~34px height) - relative z-30 ensures popovers float above body */}
+      <header className="relative z-30 h-8.5 px-3 flex items-center justify-between bg-[#1D2029]/95 text-white backdrop-blur-md border-b border-white/5 shrink-0 select-none rounded-t-2xl">
         {/* Color Dot Button (Opens 4-color popover) */}
         <div className="relative no-drag" ref={colorPickerRef}>
           <button
@@ -551,8 +551,8 @@ export function StickyNote({ note, stacked }: Props) {
         </div>
       )}
 
-      {/* Note Body Area (Pastel Background + #23262F Text) */}
-      <div className="p-3.5 flex flex-col text-[#23262F] relative rounded-b-2xl">
+      {/* Note Body Area (Pastel Background + #23262F Text) - relative z-0 keeps content below header popovers */}
+      <div className="relative z-0 p-3.5 flex flex-col text-[#23262F] rounded-b-2xl">
         {/* Note Customization Drawer (Rotation, Opacity, Font) */}
         {showOptions && !showDeleteConfirm && (
           <div
