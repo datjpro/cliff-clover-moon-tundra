@@ -315,6 +315,13 @@ article input[type="text"]:focus {
   cursor: text !important;
 }
 
+.note-charcoal textarea,
+.note-charcoal input,
+.note-dark textarea,
+.note-dark input {
+  caret-color: #F5A623 !important;
+}
+
 .sticky-note-textarea::selection,
 article textarea::selection {
   background-color: rgba(245, 166, 35, 0.35);

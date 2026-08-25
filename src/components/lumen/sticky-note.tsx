@@ -1068,11 +1068,20 @@ export function StickyNote({ note, stacked }: Props) {
           ref={textareaRef}
           value={note.body}
           onChange={(e) => updateNote(note.id, { body: e.target.value })}
-          onFocus={() => bringNote(note.id)}
+          onFocus={() => {
+            bringNote(note.id);
+            if (typeof window !== "undefined") window.focus();
+          }}
+          onClick={(e) => {
+            e.stopPropagation();
+            textareaRef.current?.focus();
+            if (typeof window !== "undefined") window.focus();
+          }}
           placeholder="Viết ghi chú của bạn..."
           suppressHydrationWarning
+          style={{ caretColor: note.tint === "dark" ? "#F5A623" : "#000000" }}
           className={cn(
-            "no-drag w-full flex-1 min-h-[64px] resize-none bg-transparent text-[13px] font-normal leading-relaxed text-[#23262F] outline-none placeholder:text-[#23262F]/40 select-text cursor-text touch-auto sticky-note-textarea caret-[#000000] focus:caret-[#000000] selection:bg-[#F5A623]/30 selection:text-[#000000] note-scrollbar",
+            "no-drag w-full flex-1 min-h-[64px] resize-none bg-transparent text-[13px] font-normal leading-relaxed text-[#23262F] outline-none placeholder:text-[#23262F]/40 select-text cursor-text touch-auto sticky-note-textarea !caret-[#000000] focus:!caret-[#000000] selection:bg-[#F5A623]/30 selection:text-[#000000] note-scrollbar",
             note.fontFamily === "handwriting" && "font-handwriting text-base leading-snug",
             note.fontFamily === "mono" && "font-mono text-xs leading-normal",
           )}

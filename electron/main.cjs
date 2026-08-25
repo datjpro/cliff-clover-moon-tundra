@@ -44,8 +44,9 @@ function updateWindowBounds() {
   try {
     const primaryDisplay = screen.getPrimaryDisplay();
     const { width, height } = primaryDisplay.bounds;
-    // 4px height offset completely exposes the 2px Windows Auto-Hide Taskbar sensor strip
-    mainWindow.setBounds({ x: 0, y: 0, width, height: height - 4 });
+    // 1px left/top offset and 5px bottom clearance ensures background Chrome/Edge never treats window as full occluder,
+    // keeping background YouTube video & media players decoding smoothly without freezing, while taskbar remains 100% responsive
+    mainWindow.setBounds({ x: 1, y: 1, width: width - 2, height: height - 5 });
   } catch (err) {
     console.debug("[Display] Update bounds error:", err);
   }
@@ -56,10 +57,10 @@ function createWindow() {
   const { width, height } = primaryDisplay.bounds;
 
   mainWindow = new BrowserWindow({
-    x: 0,
-    y: 0,
-    width: width,
-    height: height - 4, // 4px offset ensures Windows Auto-Hide Taskbar sensor strip is 100% unobstructed
+    x: 1,
+    y: 1,
+    width: width - 2,
+    height: height - 5, // Non-occluding clearance ensures zero background video freezing
     transparent: true,
     frame: false,
     hasShadow: false,

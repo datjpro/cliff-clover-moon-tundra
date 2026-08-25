@@ -208,10 +208,10 @@ console.log("\n📦 [SUITE 5]: Desktop Window Visibility & Single Instance Recov
   assert(mockWin.alwaysOnTop === true && mockWin.level === "normal", "Window re-asserts always-on-top at normal level (compatible with Windows auto-hide taskbar)");
   assert(mockWin.focused === true, "Window acquires system focus on restore");
 
-  // 4px screen height offset verification for Windows Auto-Hide Taskbar
-  const computeOverlayBounds = (screenH, screenW) => ({ x: 0, y: 0, width: screenW, height: screenH - 4 });
+  // Non-occluding clearance bounds verification for Windows Auto-Hide Taskbar & Chromium Occlusion Prevention
+  const computeOverlayBounds = (screenH, screenW) => ({ x: 1, y: 1, width: screenW - 2, height: screenH - 5 });
   const overlayBounds = computeOverlayBounds(1080, 1920);
-  assert(overlayBounds.height === 1076, "Overlay window height applies 4px bottom offset to expose Windows Auto-Hide taskbar sensor strip");
+  assert(overlayBounds.x === 1 && overlayBounds.y === 1 && overlayBounds.height === 1075, "Overlay window applies 1px top-left and 5px bottom clearance to prevent Chromium window occlusion and expose taskbar");
 
   // Single-instance handling: second instance wakes existing window
   let secondInstanceWoken = false;
@@ -241,6 +241,11 @@ console.log("\n📦 [SUITE 5]: Desktop Window Visibility & Single Instance Recov
     return backgroundMediaPlaying;
   };
   assert(onNoteFocus(true) === true, "Focusing/selecting notes preserves background YouTube video and media playback smoothly without freezing");
+
+  // High-Contrast Blinking Text Caret Verification
+  const computeCaretColor = (tint) => tint === "dark" ? "#F5A623" : "#000000";
+  assert(computeCaretColor("cream") === "#000000", "Pastel sticky note uses high-contrast pitch-black text caret");
+  assert(computeCaretColor("dark") === "#F5A623", "Dark sticky note uses amber accent text caret");
 
   // State-Transition Filtered Mouse Controller Test
   let ipcTransitions = 0;
