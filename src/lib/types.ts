@@ -13,6 +13,7 @@ export type AlarmSettings = {
   volume: number; // 0 - 100
   tone: AlarmSoundTone;
   loopIntervalSec: number;
+  muted?: boolean; // Tắt/bật âm thanh chuông báo thức
 };
 
 export type CheckItem = {

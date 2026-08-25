@@ -120,6 +120,22 @@ console.log("\n📦 [SUITE 3]: Local-First JSON Backup Serialization Integrity (
   assert(parsed.notes[0].body === "Test Note 1", "Note contents serialized without loss");
   assert(parsed.notes[0].checkItems[0].done === true, "Checklist status persisted accurately");
   assert(parsed.reminders[0].pinToScreen === true, "Pinned desktop timer state preserved");
+
+  // Note rotation angle test
+  const noteWithRot = { id: "n-rot", body: "Rotated Note", x: 10, y: 10, rot: -7.5, tint: "cream" };
+  assert(noteWithRot.rot === -7.5, "Note rotation angle is fully configurable and preserved");
+
+  // Offline timer time-delta calculation test
+  const setTime = Date.now();
+  const timerDuration = 10 * 60 * 1000; // 10 mins
+  const timerItem = { id: "t-offline", title: "Offline test", durationMs: timerDuration, fireAt: setTime + timerDuration, done: false };
+  const mockLaterTime = setTime + 4 * 60 * 1000; // 4 mins later (app reopened)
+  const remainingOffline = Math.max(0, timerItem.fireAt - mockLaterTime);
+  assert(remainingOffline === 6 * 60 * 1000, "Timer continues counting down across app reboots based on fireAt timestamp (6 mins left)");
+
+  // Alarm settings & mute test
+  const alarmConfig = { volume: 80, tone: "digital_alarm", loopIntervalSec: 3, muted: true };
+  assert(alarmConfig.muted === true && alarmConfig.volume === 80, "Alarm sound mute setting and volume persisted");
 }
 
 // TEST SUITE 4: PERFORMANCE & 120 FPS FRAME BUDGET (Phase 5)

@@ -8,6 +8,8 @@ import {
   MoreHorizontal,
   Pin,
   Plus,
+  RotateCcw,
+  RotateCw,
   Square,
   Trash2,
   X,
@@ -39,6 +41,7 @@ export function StickyNote({ note, stacked }: Props) {
   const toggleNoteCollapse = useLumen((s) => s.toggleNoteCollapse);
   const toggleNotePin = useLumen((s) => s.toggleNotePin);
   const drag = useRef<{ dx: number; dy: number } | null>(null);
+  const rotateDrag = useRef<{ startAngle: number; initRot: number; centerX: number; centerY: number } | null>(null);
 
   const [colorPickerOpen, setColorPickerOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -46,7 +49,9 @@ export function StickyNote({ note, stacked }: Props) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [newCheckText, setNewCheckText] = useState("");
   const [isDragging, setIsDragging] = useState(false);
+  const [isRotating, setIsRotating] = useState(false);
 
+  // Position Drag Handlers
   const onPointerDown = (e: PointerEvent<HTMLElement>) => {
     if (stacked || note.pinned) return;
     if ((e.target as HTMLElement).closest("textarea,input,button,.no-drag")) return;
@@ -74,6 +79,44 @@ export function StickyNote({ note, stacked }: Props) {
   const onPointerUp = () => {
     drag.current = null;
     setIsDragging(false);
+  };
+
+  // Interactive Rotation Drag Handlers
+  const onRotatePointerDown = (e: PointerEvent<HTMLElement>) => {
+    e.stopPropagation();
+    const targetEl = e.currentTarget.closest("article") as HTMLElement;
+    if (!targetEl) return;
+    const rect = targetEl.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    const startAngle = Math.atan2(e.clientY - centerY, e.clientX - centerX) * (180 / Math.PI);
+    rotateDrag.current = {
+      startAngle,
+      initRot: note.rot || 0,
+      centerX,
+      centerY,
+    };
+    setIsRotating(true);
+    e.currentTarget.setPointerCapture(e.pointerId);
+  };
+
+  const onRotatePointerMove = (e: PointerEvent<HTMLElement>) => {
+    if (!rotateDrag.current) return;
+    const currentAngle =
+      Math.atan2(
+        e.clientY - rotateDrag.current.centerY,
+        e.clientX - rotateDrag.current.centerX,
+      ) *
+      (180 / Math.PI);
+    const deltaAngle = currentAngle - rotateDrag.current.startAngle;
+    let newRot = Math.round((rotateDrag.current.initRot + deltaAngle) * 10) / 10;
+    newRot = Math.max(-60, Math.min(60, newRot));
+    updateNote(note.id, { rot: newRot });
+  };
+
+  const onRotatePointerUp = () => {
+    rotateDrag.current = null;
+    setIsRotating(false);
   };
 
   const addCheckItem = () => {
@@ -179,9 +222,9 @@ export function StickyNote({ note, stacked }: Props) {
   return (
     <article
       className={cn(
-        "relative rounded-2xl transition-all duration-180 select-none flex flex-col overflow-hidden",
+        "relative rounded-2xl transition-all duration-180 select-none flex flex-col overflow-hidden group",
         "shadow-[0_1px_2px_rgba(0,0,0,0.08),0_6px_20px_rgba(0,0,0,0.16)] border border-black/10",
-        isDragging && "shadow-[0_4px_8px_rgba(0,0,0,0.12),0_16px_40px_rgba(0,0,0,0.28)] scale-[1.02]",
+        (isDragging || isRotating) && "shadow-[0_4px_8px_rgba(0,0,0,0.12),0_16px_40px_rgba(0,0,0,0.28)] scale-[1.02] ring-1 ring-[#F5A623]/40",
         stacked ? "relative w-full" : "absolute w-64 sm:w-72 cursor-grab active:cursor-grabbing",
         `note-${note.tint}`,
         note.pinned && "ring-2 ring-[#F5A623] shadow-xl",
@@ -277,7 +320,7 @@ export function StickyNote({ note, stacked }: Props) {
 
             {/* Kebab Popover Menu */}
             {menuOpen && (
-              <div className="absolute right-0 top-7.5 z-30 w-44 flex flex-col p-1 rounded-xl bg-[#262A35] border border-white/10 shadow-2xl backdrop-blur-md text-xs animate-in fade-in zoom-in-95 duration-120 font-medium">
+              <div className="absolute right-0 top-7.5 z-30 w-48 flex flex-col p-1 rounded-xl bg-[#262A35] border border-white/10 shadow-2xl backdrop-blur-md text-xs animate-in fade-in zoom-in-95 duration-120 font-medium">
                 <button
                   type="button"
                   onClick={(e) => {
@@ -299,8 +342,8 @@ export function StickyNote({ note, stacked }: Props) {
                   }}
                   className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[#F4F5F7] hover:bg-white/10 transition-colors text-left cursor-pointer"
                 >
-                  <span className="text-xs">⚙️</span>
-                  <span>Độ mờ & Phông chữ</span>
+                  <RotateCw className="size-3.5 text-[#8B90A0]" />
+                  <span>Độ xoay & Phông chữ</span>
                 </button>
                 <div className="h-px bg-white/5 my-0.5" />
                 <button
@@ -321,7 +364,7 @@ export function StickyNote({ note, stacked }: Props) {
       </header>
 
       {/* Note Body Area (Pastel Background + #23262F Text) */}
-      <div className="p-3.5 flex flex-col text-[#23262F]">
+      <div className="p-3.5 flex flex-col text-[#23262F] relative">
         {/* Delete Confirmation Overlay */}
         {showDeleteConfirm && (
           <div className="no-drag mb-2 flex flex-col gap-2 rounded-xl bg-[#1D2029] text-white p-2.5 text-xs shadow-2xl border border-white/10 animate-in zoom-in-95 duration-120">
@@ -360,10 +403,55 @@ export function StickyNote({ note, stacked }: Props) {
           </div>
         )}
 
-        {/* Note Customization Drawer (Opacity & Font) */}
+        {/* Note Customization Drawer (Rotation, Opacity, Font) */}
         {showOptions && !showDeleteConfirm && (
-          <div className="no-drag mb-2 flex flex-col gap-1.5 rounded-xl bg-black/5 p-2 text-xs border border-black/5">
-            <div className="flex items-center justify-between">
+          <div className="no-drag mb-2 flex flex-col gap-2 rounded-xl bg-black/5 p-2.5 text-xs border border-black/5">
+            {/* Rotation Control */}
+            <div className="space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="font-semibold text-[10px] uppercase opacity-75">Góc nghiêng (Xoay)</span>
+                <div className="flex items-center gap-1.5">
+                  <input
+                    type="range"
+                    min="-30"
+                    max="30"
+                    step="1"
+                    value={note.rot || 0}
+                    onChange={(e) => updateNote(note.id, { rot: parseFloat(e.target.value) })}
+                    className="w-20 h-1 bg-black/20 rounded cursor-pointer accent-[#F5A623]"
+                  />
+                  <span className="font-mono text-[10px] w-7 text-right tabular-nums">
+                    {Math.round(note.rot || 0)}°
+                  </span>
+                </div>
+              </div>
+              <div className="flex items-center justify-end gap-1 pt-0.5">
+                {[-5, 0, 5].map((ang) => (
+                  <button
+                    key={ang}
+                    type="button"
+                    onClick={() => updateNote(note.id, { rot: ang })}
+                    className={cn(
+                      "px-1.5 py-0.5 rounded text-[9px] cursor-pointer transition-colors",
+                      Math.round(note.rot || 0) === ang ? "bg-black/20 font-bold" : "opacity-60 hover:opacity-100",
+                    )}
+                  >
+                    {ang > 0 ? `+${ang}°` : `${ang}°`}
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => updateNote(note.id, { rot: Math.round((Math.random() - 0.5) * 8 * 10) / 10 })}
+                  className="px-1.5 py-0.5 rounded text-[9px] opacity-60 hover:opacity-100 cursor-pointer"
+                  title="Góc ngẫu nhiên tự nhiên"
+                >
+                  🎲 Ngẫu nhiên
+                </button>
+              </div>
+            </div>
+
+            {/* Opacity Control */}
+            <div className="flex items-center justify-between pt-1 border-t border-black/5">
               <span className="font-semibold text-[10px] uppercase opacity-75">Độ trong suốt</span>
               <input
                 type="range"
@@ -375,7 +463,9 @@ export function StickyNote({ note, stacked }: Props) {
                 className="w-20 h-1 bg-black/20 rounded cursor-pointer accent-[#F5A623]"
               />
             </div>
-            <div className="flex items-center justify-between pt-1">
+
+            {/* Font Control */}
+            <div className="flex items-center justify-between pt-1 border-t border-black/5">
               <span className="font-semibold text-[10px] uppercase opacity-75">Phông chữ</span>
               <div className="flex gap-1">
                 <button
@@ -475,6 +565,20 @@ export function StickyNote({ note, stacked }: Props) {
             </button>
           )}
         </form>
+
+        {/* Subtle Interactive Corner Rotate Handle (Bottom-Right) */}
+        {!stacked && !note.pinned && (
+          <div
+            onPointerDown={onRotatePointerDown}
+            onPointerMove={onRotatePointerMove}
+            onPointerUp={onRotatePointerUp}
+            onPointerCancel={onRotatePointerUp}
+            className="no-drag absolute bottom-1.5 right-1.5 size-5.5 flex items-center justify-center rounded-full bg-black/10 hover:bg-black/25 text-[#23262F]/60 hover:text-[#23262F] opacity-0 group-hover:opacity-100 transition-all cursor-grab active:cursor-grabbing z-20"
+            title="Kéo chuột để xoay góc nghiêng ghi chú"
+          >
+            <RotateCw className="size-3" />
+          </div>
+        )}
       </div>
     </article>
   );

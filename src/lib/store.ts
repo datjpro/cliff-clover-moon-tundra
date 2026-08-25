@@ -296,6 +296,7 @@ export const useLumen = create<LumenState>()(
         volume: 100,
         tone: "bell_arpeggio",
         loopIntervalSec: 3,
+        muted: false,
       },
       activeAlarm: null,
       setAlarmSettings: (patch) => {
@@ -339,9 +340,12 @@ export const useLumen = create<LumenState>()(
           reminders: get().reminders.map((x) => (x.id === id ? { ...x, done: true } : x)),
           activeAlarm: r,
         });
-        const tone = get().alarmSettings?.tone || "bell_arpeggio";
-        const vol = get().alarmSettings?.volume ?? 100;
-        sounds.startAlarmLoop(tone, vol);
+        const isMuted = get().alarmSettings?.muted;
+        if (!isMuted) {
+          const tone = get().alarmSettings?.tone || "bell_arpeggio";
+          const vol = get().alarmSettings?.volume ?? 100;
+          sounds.startAlarmLoop(tone, vol);
+        }
         const currentLang = get().lang;
         get().pushToast("⏰ " + r.title, currentLang === "vi" ? "ĐÃ HẾT GIỜ! Bấm để tắt chuông." : "TIME UP! Click to dismiss.");
         if (get().pip.enabled) {
@@ -459,6 +463,7 @@ export const useLumen = create<LumenState>()(
         onboarding: s.onboarding,
         notes: s.notes,
         reminders: s.reminders,
+        alarmSettings: s.alarmSettings,
         pip: {
           ...s.pip,
           mood: "wander" as const,

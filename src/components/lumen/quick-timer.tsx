@@ -59,11 +59,12 @@ export function QuickTimer() {
   const addReminder = useLumen((s) => s.addReminder);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Global shortcut Ctrl+Shift+T and custom event listener
+  // Global shortcuts (Ctrl+Shift+T or Alt+T) and custom event listener
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       const meta = e.ctrlKey || e.metaKey;
-      if (meta && e.shiftKey && e.key.toLowerCase() === "t") {
+      const key = e.key.toLowerCase();
+      if ((meta && e.shiftKey && key === "t") || (e.altKey && key === "t")) {
         e.preventDefault();
         setOpen(true);
       }

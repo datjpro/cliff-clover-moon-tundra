@@ -566,21 +566,43 @@ export function Hub() {
                 </button>
               </div>
 
-              {/* Volume Slider */}
-              <div className="flex items-center gap-2.5 bg-[#14161D] px-2.5 py-1.5 rounded-xl border border-white/5">
-                <span className="text-[11px] text-[#8B90A0] shrink-0">Âm lượng</span>
-                <input
-                  type="range"
-                  min="10"
-                  max="100"
-                  step="5"
-                  value={alarmSettings.volume ?? 100}
-                  onChange={(e) => setAlarmSettings({ volume: parseInt(e.target.value, 10) })}
-                  className="w-full h-1 bg-[#262A35] rounded-full appearance-none cursor-pointer accent-[#F5A623]"
-                />
-                <span className="font-mono text-[11px] font-semibold text-[#F5A623] shrink-0 tabular-nums">
-                  {alarmSettings.volume ?? 100}%
-                </span>
+              {/* Volume Slider & Mute Toggle */}
+              <div className="space-y-1.5 bg-[#14161D] p-2 rounded-xl border border-white/5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 text-[11px] text-[#8B90A0]">
+                    {alarmSettings.muted ? (
+                      <VolumeX className="size-3.5 text-[#EF4444]" />
+                    ) : (
+                      <Volume2 className="size-3.5 text-[#F5A623]" />
+                    )}
+                    <span>{alarmSettings.muted ? "Đã tắt âm thanh chuông" : "Phát âm thanh chuông"}</span>
+                  </div>
+                  <Switch
+                    checked={!alarmSettings.muted}
+                    onCheckedChange={(val) => {
+                      setAlarmSettings({ muted: !val });
+                      sounds.playPop(520);
+                    }}
+                  />
+                </div>
+
+                {!alarmSettings.muted && (
+                  <div className="flex items-center gap-2.5 pt-1 border-t border-white/5">
+                    <span className="text-[10px] text-[#8B90A0] shrink-0">Âm lượng</span>
+                    <input
+                      type="range"
+                      min="10"
+                      max="100"
+                      step="5"
+                      value={alarmSettings.volume ?? 100}
+                      onChange={(e) => setAlarmSettings({ volume: parseInt(e.target.value, 10) })}
+                      className="w-full h-1 bg-[#262A35] rounded-full appearance-none cursor-pointer accent-[#F5A623]"
+                    />
+                    <span className="font-mono text-[11px] font-semibold text-[#F5A623] shrink-0 tabular-nums">
+                      {alarmSettings.volume ?? 100}%
+                    </span>
+                  </div>
+                )}
               </div>
 
               {/* Alarm Tones Selector */}
@@ -992,18 +1014,62 @@ export function Hub() {
 
             {/* Shortcuts */}
             <div className="rounded-2xl bg-[#262A35]/50 p-3 space-y-1.5 border border-white/6">
-              <p className="font-semibold text-[#F4F5F7] text-xs mb-1">Phím tắt nhanh:</p>
+              <p className="font-semibold text-[#F4F5F7] text-xs mb-1">Tổ hợp phím tắt nhanh:</p>
               <div className="space-y-1 text-[11px]">
                 <div className="flex items-center justify-between">
                   <span>Ghi chú nhanh:</span>
-                  <span className="font-mono bg-[#14161D] px-1.5 py-0.2 rounded-md border border-white/5 text-[#F5A623] font-semibold">
-                    Ctrl + Shift + N
-                  </span>
+                  <div className="flex gap-1">
+                    <span className="font-mono bg-[#14161D] px-1.5 py-0.2 rounded-md border border-white/5 text-[#F5A623] font-semibold">
+                      Ctrl + Shift + N
+                    </span>
+                    <span className="font-mono bg-[#14161D] px-1.5 py-0.2 rounded-md border border-white/5 text-[#8B90A0]">
+                      Alt + N
+                    </span>
+                  </div>
                 </div>
                 <div className="flex items-center justify-between">
                   <span>Hẹn giờ nhanh:</span>
-                  <span className="font-mono bg-[#14161D] px-1.5 py-0.2 rounded-md border border-white/5 text-[#F5A623] font-semibold">
-                    Ctrl + Shift + T
+                  <div className="flex gap-1">
+                    <span className="font-mono bg-[#14161D] px-1.5 py-0.2 rounded-md border border-white/5 text-[#F5A623] font-semibold">
+                      Ctrl + Shift + T
+                    </span>
+                    <span className="font-mono bg-[#14161D] px-1.5 py-0.2 rounded-md border border-white/5 text-[#8B90A0]">
+                      Alt + T
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span>Bảng cài đặt (Hub):</span>
+                  <div className="flex gap-1">
+                    <span className="font-mono bg-[#14161D] px-1.5 py-0.2 rounded-md border border-white/5 text-[#F5A623] font-semibold">
+                      Ctrl + Shift + H
+                    </span>
+                    <span className="font-mono bg-[#14161D] px-1.5 py-0.2 rounded-md border border-white/5 text-[#8B90A0]">
+                      Alt + S
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span>Sắp xếp ghi chú:</span>
+                  <div className="flex gap-1">
+                    <span className="font-mono bg-[#14161D] px-1.5 py-0.2 rounded-md border border-white/5 text-[#F5A623] font-semibold">
+                      Ctrl + Shift + A
+                    </span>
+                    <span className="font-mono bg-[#14161D] px-1.5 py-0.2 rounded-md border border-white/5 text-[#8B90A0]">
+                      Alt + A
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span>Tạo note tại con trỏ:</span>
+                  <span className="bg-[#14161D] px-1.5 py-0.2 rounded-md border border-white/5 text-[#3FAE6C] font-semibold text-[10px]">
+                    Nhấp đúp chuột trên màn hình
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span>Xoay góc nghiêng note:</span>
+                  <span className="bg-[#14161D] px-1.5 py-0.2 rounded-md border border-white/5 text-[#3FAE6C] font-semibold text-[10px]">
+                    Kéo icon xoay ở góc note
                   </span>
                 </div>
                 <div className="flex items-center justify-between">

@@ -264,9 +264,26 @@ export function DesktopScene() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const meta = e.ctrlKey || e.metaKey;
-      if (meta && e.shiftKey && e.key.toLowerCase() === "n") {
+      const key = e.key.toLowerCase();
+      // Quick Note: Ctrl+Shift+N or Alt+N
+      if ((meta && e.shiftKey && key === "n") || (e.altKey && key === "n")) {
         e.preventDefault();
         setCaptureOpen(true);
+      }
+      // Quick Timer: Ctrl+Shift+T or Alt+T
+      if ((meta && e.shiftKey && key === "t") || (e.altKey && key === "t")) {
+        e.preventDefault();
+        triggerOpenQuickTimer();
+      }
+      // Settings Hub: Ctrl+Shift+H or Alt+S
+      if ((meta && e.shiftKey && key === "h") || (e.altKey && key === "s")) {
+        e.preventDefault();
+        setHubOpen(true);
+      }
+      // Arrange Notes: Ctrl+Shift+A or Alt+A
+      if ((meta && e.shiftKey && key === "a") || (e.altKey && key === "a")) {
+        e.preventDefault();
+        tidyNotes();
       }
       if (e.key === "Escape") {
         setCaptureOpen(false);
