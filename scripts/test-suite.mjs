@@ -183,7 +183,7 @@ console.log("\n📦 [SUITE 5]: Desktop Window Visibility & Single Instance Recov
     if (!win) return;
     if (win.minimized) win.restore();
     if (!win.visible) win.show();
-    win.setAlwaysOnTop(true, "screen-saver");
+    win.setAlwaysOnTop(true, "floating");
     win.focus();
   }
 
@@ -192,7 +192,7 @@ console.log("\n📦 [SUITE 5]: Desktop Window Visibility & Single Instance Recov
 
   assert(mockWin.minimized === false, "Minimized window is unminimized on restore");
   assert(mockWin.visible === true, "Window is set to visible on restore");
-  assert(mockWin.alwaysOnTop === true && mockWin.level === "screen-saver", "Window re-asserts always-on-top at screen-saver level");
+  assert(mockWin.alwaysOnTop === true && mockWin.level === "floating", "Window re-asserts always-on-top at floating level (compatible with Windows auto-hide taskbar)");
   assert(mockWin.focused === true, "Window acquires system focus on restore");
 
   // Single-instance handling: second instance wakes existing window

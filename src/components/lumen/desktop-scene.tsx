@@ -307,7 +307,13 @@ export function DesktopScene() {
     const handlePointerMove = (e: MouseEvent) => {
       const target = e.target as HTMLElement | null;
       if (!target) return;
+
+      // When cursor is within the bottom 4px of screen, ensure mouse pass-through is active
+      // so Windows OS can detect the cursor hitting the screen edge and smoothly pop up the auto-hidden Taskbar
+      const isAtScreenBottomEdge = e.clientY >= window.innerHeight - 4;
+
       const isInteractive = Boolean(
+        !isAtScreenBottomEdge &&
         target.closest(
           "article, .interactive-el, section[role='dialog'], form, button, input, textarea, .group, [role='dialog'], [tabindex]",
         ),

@@ -33,7 +33,7 @@ function restoreAndFocusWindow() {
   if (!mainWindow.isVisible()) {
     mainWindow.show();
   }
-  mainWindow.setAlwaysOnTop(true, "screen-saver");
+  mainWindow.setAlwaysOnTop(true, "floating");
   mainWindow.moveTop();
   mainWindow.focus();
 }
@@ -76,8 +76,8 @@ function createWindow() {
     },
   });
 
-  // Keep window floating without using "screen-saver" level which suspends media playback
-  mainWindow.setAlwaysOnTop(true, "screen-saver");
+  // Keep window floating without using "screen-saver" level which blocks Windows Taskbar auto-hide
+  mainWindow.setAlwaysOnTop(true, "floating");
   mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
 
   // Initialize mouse click-through so desktop wallpaper, videos, and background apps work 100%
@@ -201,7 +201,7 @@ function createWindow() {
   // IPC channel: Toggle Always on Top
   ipcMain.on("set-always-on-top", (event, flag) => {
     if (mainWindow && !mainWindow.isDestroyed()) {
-      mainWindow.setAlwaysOnTop(Boolean(flag), "screen-saver");
+      mainWindow.setAlwaysOnTop(Boolean(flag), "floating");
     }
   });
 
