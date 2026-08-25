@@ -60,11 +60,12 @@ export function StickyNote({ note, stacked }: Props) {
   const [isDragging, setIsDragging] = useState(false);
   const [isRotating, setIsRotating] = useState(false);
 
-  // Close menus when clicking outside
+  // Close menus when clicking outside (using click event so button clicks inside menu finish first)
   useEffect(() => {
     if (!menuOpen && !colorPickerOpen) return;
-    const handleOutsideClick = (e: MouseEvent | globalThis.PointerEvent) => {
-      const target = e.target as HTMLElement;
+    const handleOutsideClick = (e: MouseEvent) => {
+      const target = e.target as Node | null;
+      if (!target) return;
       if (menuOpen && menuRef.current && !menuRef.current.contains(target)) {
         setMenuOpen(false);
       }
@@ -72,8 +73,13 @@ export function StickyNote({ note, stacked }: Props) {
         setColorPickerOpen(false);
       }
     };
-    window.addEventListener("pointerdown", handleOutsideClick);
-    return () => window.removeEventListener("pointerdown", handleOutsideClick);
+    const timer = setTimeout(() => {
+      window.addEventListener("click", handleOutsideClick);
+    }, 10);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("click", handleOutsideClick);
+    };
   }, [menuOpen, colorPickerOpen]);
 
   // High-Performance Position Drag Handlers (Cached Parent Bounds, Zero Layout Reflow)
@@ -324,7 +330,7 @@ export function StickyNote({ note, stacked }: Props) {
           )}
         </div>
 
-        {/* Right Header Actions: Pin + Kebab (…) */}
+        {/* Right Header Actions: Pin + Direct Trash (Delete) + Kebab (…) */}
         <div className="flex items-center gap-0.5 no-drag">
           {/* Pin Button */}
           <button
@@ -345,8 +351,21 @@ export function StickyNote({ note, stacked }: Props) {
             <Pin className={cn("size-3", note.pinned && "fill-current")} />
           </button>
 
+          {/* Direct Delete Note Button */}
+          <button
+            type="button"
+            title="Xóa ghi chú này"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDeleteClick();
+            }}
+            className="flex size-6 items-center justify-center rounded-md text-[#8B90A0] hover:text-[#EF4444] hover:bg-red-500/15 transition-colors cursor-pointer"
+          >
+            <Trash2 className="size-3" />
+          </button>
+
           {/* Kebab Menu Button */}
-          <div className="relative" ref={menuRef}>
+          <div className="relative no-drag" ref={menuRef}>
             <button
               type="button"
               title="Tùy chọn khác"
@@ -363,7 +382,10 @@ export function StickyNote({ note, stacked }: Props) {
 
             {/* Kebab Popover Menu */}
             {menuOpen && (
-              <div className="absolute right-0 top-8 z-50 w-48 flex flex-col p-1 rounded-xl bg-[#262A35] border border-white/10 shadow-[0_16px_36px_rgba(0,0,0,0.6)] backdrop-blur-xl text-xs animate-in fade-in zoom-in-95 duration-120 font-medium">
+              <div
+                onPointerDown={(e) => e.stopPropagation()}
+                className="absolute right-0 top-8 z-50 w-48 flex flex-col p-1 rounded-xl bg-[#262A35] border border-white/10 shadow-[0_16px_36px_rgba(0,0,0,0.6)] backdrop-blur-xl text-xs animate-in fade-in zoom-in-95 duration-120 font-medium"
+              >
                 <button
                   type="button"
                   onClick={(e) => {
@@ -426,7 +448,10 @@ export function StickyNote({ note, stacked }: Props) {
               </span>
               <button
                 type="button"
-                onClick={() => setShowDeleteConfirm(false)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowDeleteConfirm(false);
+                }}
                 className="size-6 flex items-center justify-center rounded-lg hover:bg-white/10 text-[#8B90A0] hover:text-white transition-colors cursor-pointer"
                 title="Hủy xóa"
               >
@@ -444,7 +469,10 @@ export function StickyNote({ note, stacked }: Props) {
           <div className="flex flex-col gap-1.5 pt-2 border-t border-white/10">
             <button
               type="button"
-              onClick={handleExportTxtAndDelete}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleExportTxtAndDelete();
+              }}
               className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-[#F5A623] hover:bg-[#D6871A] text-[#14161D] font-bold text-xs shadow-md transition-all active:scale-98 cursor-pointer"
             >
               <Download className="size-3.5" />
@@ -453,14 +481,20 @@ export function StickyNote({ note, stacked }: Props) {
             <div className="flex gap-1.5">
               <button
                 type="button"
-                onClick={() => removeNote(note.id)}
-                className="flex-1 py-1.5 px-2 rounded-xl bg-[#EF4444]/85 hover:bg-[#EF4444] text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer text-center"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  removeNote(note.id);
+                }}
+                className="flex-1 py-1.5 px-2 rounded-xl bg-[#EF4444] hover:bg-red-600 text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer text-center"
               >
                 Xóa luôn
               </button>
               <button
                 type="button"
-                onClick={() => setShowDeleteConfirm(false)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowDeleteConfirm(false);
+                }}
                 className="flex-1 py-1.5 px-2 rounded-xl bg-white/10 hover:bg-white/15 text-[#F4F5F7] text-xs font-medium transition-colors cursor-pointer text-center"
               >
                 Hủy
