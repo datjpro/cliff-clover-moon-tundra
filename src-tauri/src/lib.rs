@@ -40,8 +40,13 @@ fn toggle_window<R: Runtime>(window: tauri::WebviewWindow<R>) -> Result<(), Stri
     }
 }
 
+#[tauri::command]
+fn exit_app<R: Runtime>(app: tauri::AppHandle<R>) {
+    app.exit(0);
+}
+
 pub fn run() {
-    tauri::Builder::default()
+    match tauri::Builder::default()
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_shell::init())
@@ -49,7 +54,8 @@ pub fn run() {
             set_ignore_cursor_events,
             show_window,
             hide_window,
-            toggle_window
+            toggle_window,
+            exit_app
         ])
         .setup(|app| {
             // System Tray Menu Setup
@@ -127,7 +133,15 @@ pub fn run() {
 
             Ok(())
         })
-        .run(tauri::generate_context!())
-        .expect("error while running lumen desktop native shell");
+        .build(tauri::generate_context!()) {
+        Ok(app) => {
+            app.run(|_app_handle, _event| {});
+        }
+        Err(e) => {
+            let err_msg = format!("TAURI BUILD ERROR: {:#?}\nDetails: {}\n", e, e);
+            let _ = std::fs::write("tauri_error.log", err_msg.clone());
+            let _ = std::fs::write("D:\\Demo\\cliff-clover-moon-tundra\\tauri_error.log", err_msg);
+        }
+    }
 }
 

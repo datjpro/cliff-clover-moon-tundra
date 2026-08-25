@@ -567,46 +567,6 @@ export function DesktopScene() {
       onDrop={handleDrop}
       className="fixed inset-0 h-screen w-screen bg-transparent text-fg select-none overflow-hidden pointer-events-none"
     >
-      {/* Interactive Cluster Switcher Dock (Top Center) */}
-      {availableClusters.length > 0 && (
-        <div className="interactive-el absolute top-3 left-1/2 -translate-x-1/2 z-[85] flex items-center gap-1 p-1 rounded-2xl bg-[#1D2029]/95 text-[#F4F5F7] border border-white/10 shadow-2xl backdrop-blur-xl animate-in fade-in zoom-in-95 pointer-events-auto max-w-[90vw] overflow-x-auto note-scrollbar">
-          <button
-            type="button"
-            onClick={() => setSelectedCluster(null)}
-            className={cn(
-              "px-2.5 py-1 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 shrink-0",
-              !selectedCluster
-                ? "bg-[#F5A623] text-[#14161D] shadow-xs"
-                : "text-[#8B90A0] hover:text-white hover:bg-white/10",
-            )}
-          >
-            <span>Tất cả</span>
-            <span className="text-[10px] opacity-75 font-mono">({notes.length})</span>
-          </button>
-          {availableClusters.map((clusterName) => {
-            const count = notes.filter((n) => n.cluster === clusterName).length;
-            const isActive = selectedCluster === clusterName;
-            return (
-              <button
-                key={clusterName}
-                type="button"
-                onClick={() => setSelectedCluster(isActive ? null : clusterName)}
-                className={cn(
-                  "px-2.5 py-1 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 shrink-0",
-                  isActive
-                    ? "bg-[#F5A623] text-[#14161D] shadow-xs"
-                    : "text-[#8B90A0] hover:text-white hover:bg-white/10",
-                )}
-              >
-                <Folder className="size-3" />
-                <span className="max-w-[120px] truncate">{clusterName}</span>
-                <span className="text-[10px] opacity-75 font-mono">({count})</span>
-              </button>
-            );
-          })}
-        </div>
-      )}
-
       {/* Drag-and-drop file drop target indicator */}
       {isDragOverFile && (
         <div className="fixed inset-4 z-[95] rounded-3xl border-2 border-dashed border-[#F5A623] bg-[#1D2029]/85 backdrop-blur-md flex flex-col items-center justify-center text-[#F4F5F7] animate-in fade-in zoom-in-95 pointer-events-none shadow-2xl">
