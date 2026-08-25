@@ -135,6 +135,8 @@ type LumenState = {
   setSelectedCluster: (cluster: string | null) => void;
   requestNoteFromPip: () => void;
   resetDemo: () => void;
+  appLoaded: boolean;
+  setAppLoaded: (loaded: boolean) => void;
 };
 
 function emptyPip(): PipState {
@@ -162,6 +164,8 @@ export const useLumen = create<LumenState>()(
   persist(
     (set, get) => ({
       hydrated: false,
+      appLoaded: false,
+      setAppLoaded: (appLoaded) => set({ appLoaded }),
       lang: "vi",
       theme: "ink",
       layout: "stickies",

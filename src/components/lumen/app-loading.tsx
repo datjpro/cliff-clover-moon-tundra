@@ -9,6 +9,7 @@ export function AppStartupLoading() {
   const [statusText, setStatusText] = useState("Đang khởi tạo không gian làm việc...");
   const [isClosing, setIsClosing] = useState(false);
   const lang = useLumen((s) => s.lang);
+  const setAppLoaded = useLumen((s) => s.setAppLoaded);
   const isVi = lang === "vi";
 
   useEffect(() => {
@@ -30,9 +31,10 @@ export function AppStartupLoading() {
       setStatusText(isVi ? "Sẵn sàng làm việc ✨" : "Ready for workspace ✨");
     }, 950);
 
-    // Stage 4: Trigger smooth fade-out exit
+    // Stage 4: Trigger smooth fade-out exit & reveal notes
     const t4 = setTimeout(() => {
       setIsClosing(true);
+      setAppLoaded(true);
     }, 1300);
 
     // Stage 5: Unmount component completely
@@ -47,14 +49,14 @@ export function AppStartupLoading() {
       clearTimeout(t4);
       clearTimeout(t5);
     };
-  }, [isVi]);
+  }, [isVi, setAppLoaded]);
 
   if (!visible) return null;
 
   return (
     <div
       className={cn(
-        "interactive-el fixed inset-0 z-[120] flex items-center justify-center bg-black/40 backdrop-blur-md transition-opacity duration-300 pointer-events-auto select-none",
+        "interactive-el fixed inset-0 z-[120] flex items-center justify-center bg-[#14161D]/75 backdrop-blur-xl transition-opacity duration-300 pointer-events-auto select-none",
         isClosing && "opacity-0 pointer-events-none",
       )}
     >

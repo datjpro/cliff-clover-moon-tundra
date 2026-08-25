@@ -255,6 +255,7 @@ export function DesktopScene() {
   const tidyNotes = useLumen((s) => s.tidyNotes);
   const setPipEnabled = useLumen((s) => s.setPipEnabled);
   const markHydrated = useLumen((s) => s.markHydrated);
+  const appLoaded = useLumen((s) => s.appLoaded);
   const captureOpen = useLumen((s) => s.captureOpen);
   const setCaptureOpen = useLumen((s) => s.setCaptureOpen);
   const quickTimerOpen = useLumen((s) => s.quickTimerOpen);
@@ -527,20 +528,21 @@ export function DesktopScene() {
         </div>
       )}
 
-      {visibleNotes.map((n) => (
-        <StickyNote key={n.id} note={n} />
-      ))}
-      <FloatingTimers />
-      <BallToy />
-      <Companion />
+      {appLoaded &&
+        visibleNotes.map((n) => (
+          <StickyNote key={n.id} note={n} />
+        ))}
+      {appLoaded && <FloatingTimers />}
+      {appLoaded && <BallToy />}
+      {appLoaded && <Companion />}
       <ToastStack />
       <AlarmRingingModal />
       <MissedRemindersModal />
       <QuickCapture />
       <QuickTimer />
       <Hub />
-      <Onboarding />
-      <FloatingTrayMenu />
+      {appLoaded && <Onboarding />}
+      {appLoaded && <FloatingTrayMenu />}
       <AppStartupLoading />
     </div>
   );

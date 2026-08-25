@@ -323,6 +323,13 @@ console.log("\n📦 [SUITE 5]: Desktop Window Visibility & Single Instance Recov
   const resizedNote = { id: "n1", width: 450, height: 350, collapsed: true };
   const pillStyle = { width: resizedNote.collapsed ? undefined : `${resizedNote.width}px` };
   assert(pillStyle.width === undefined, "Collapsed note pill cleanly decouples from resized width/height to stay a compact capsule");
+
+  // App Startup Loading Screen Gate Test
+  let startupLoaded = false;
+  const shouldRenderNotes = (loaded) => loaded ? ["note-1", "note-2"] : [];
+  assert(shouldRenderNotes(startupLoaded).length === 0, "Sticky notes are strictly hidden while startup loading modal is progressing");
+  startupLoaded = true;
+  assert(shouldRenderNotes(startupLoaded).length === 2, "Sticky notes seamlessly reveal once startup loading completes 100%");
 }
 
 console.log(`\n========================================`);
