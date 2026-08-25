@@ -67,7 +67,8 @@ function FloatingTrayMenu() {
   const lang = useLumen((s) => s.lang);
   const layout = useLumen((s) => s.layout);
   const setLayout = useLumen((s) => s.setLayout);
-  const addNote = useLumen((s) => s.addNote);
+  const setCaptureOpen = useLumen((s) => s.setCaptureOpen);
+  const setQuickTimerOpen = useLumen((s) => s.setQuickTimerOpen);
   const setHubOpen = useLumen((s) => s.setHubOpen);
   const tidyNotes = useLumen((s) => s.tidyNotes);
   const pipEnabled = useLumen((s) => s.pip.enabled);
@@ -90,7 +91,7 @@ function FloatingTrayMenu() {
             <button
               type="button"
               onClick={() => {
-                addNote({ body: "", tint: "cream" });
+                setCaptureOpen(true);
                 setOpen(false);
               }}
               className="flex items-center justify-between px-2.5 h-9 rounded-xl hover:bg-[#262A35] transition-colors duration-120 text-left cursor-pointer group"
@@ -99,14 +100,14 @@ function FloatingTrayMenu() {
                 <Plus className="size-4.5 text-[#F5A623] group-hover:scale-110 transition-transform duration-120" />
                 <span className="font-medium text-[#F4F5F7]">{isVi ? "Ghi chú mới" : "New Note"}</span>
               </div>
-              <span className="text-[10px] text-[#8B90A0] font-mono">Ctrl+Shift+N</span>
+              <span className="text-[10px] text-[#8B90A0] font-mono">Alt+N</span>
             </button>
 
             {/* + Quick Timer */}
             <button
               type="button"
               onClick={() => {
-                triggerOpenQuickTimer();
+                setQuickTimerOpen(true);
                 setOpen(false);
               }}
               className="flex items-center justify-between px-2.5 h-9 rounded-xl hover:bg-[#262A35] transition-colors duration-120 text-left cursor-pointer group"
@@ -115,7 +116,7 @@ function FloatingTrayMenu() {
                 <Clock className="size-4.5 text-[#F5A623] group-hover:scale-110 transition-transform duration-120" />
                 <span className="font-medium text-[#F4F5F7]">{isVi ? "Đặt giờ nhanh" : "Quick Timer"}</span>
               </div>
-              <span className="text-[10px] text-[#8B90A0] font-mono">Ctrl+Shift+T</span>
+              <span className="text-[10px] text-[#8B90A0] font-mono">Alt+T</span>
             </button>
 
             {/* Toggle Pet Hide/Show */}
@@ -133,7 +134,7 @@ function FloatingTrayMenu() {
                   {pipEnabled ? (isVi ? "Ẩn Thú cưng" : "Hide Pet") : (isVi ? "Hiện Thú cưng" : "Show Pet")}
                 </span>
               </div>
-              <span className="text-xs">🐾</span>
+              <span className="text-[10px] text-[#8B90A0] font-mono">Alt+P</span>
             </button>
 
             {/* Hide All / Show All Notes */}
@@ -155,6 +156,7 @@ function FloatingTrayMenu() {
                   </>
                 )}
               </div>
+              <span className="text-[10px] text-[#8B90A0] font-mono">Alt+O</span>
             </button>
 
             {/* Settings */}
@@ -170,7 +172,7 @@ function FloatingTrayMenu() {
                 <Settings className="size-4.5 text-[#8B90A0]" />
                 <span className="font-medium text-[#F4F5F7]">{isVi ? "Cài đặt hệ thống" : "Settings"}</span>
               </div>
-              <span className="text-[10px] text-[#8B90A0] font-mono">Hub</span>
+              <span className="text-[10px] text-[#8B90A0] font-mono">Alt+S</span>
             </button>
 
             {/* Arrange Notes (Highlighted with Left Accent Bar + Surface Elevated) */}
@@ -187,7 +189,7 @@ function FloatingTrayMenu() {
                 <span>{isVi ? "Sắp xếp ghi chú" : "Arrange Notes"}</span>
               </div>
               <span className="text-[10px] bg-[#F5A623]/20 text-[#F5A623] px-1.5 py-0.2 rounded font-mono font-semibold">
-                Auto
+                Alt+A
               </span>
             </button>
 
@@ -227,7 +229,11 @@ export function DesktopScene() {
   const tidyNotes = useLumen((s) => s.tidyNotes);
   const setPipEnabled = useLumen((s) => s.setPipEnabled);
   const markHydrated = useLumen((s) => s.markHydrated);
+  const captureOpen = useLumen((s) => s.captureOpen);
   const setCaptureOpen = useLumen((s) => s.setCaptureOpen);
+  const quickTimerOpen = useLumen((s) => s.quickTimerOpen);
+  const setQuickTimerOpen = useLumen((s) => s.setQuickTimerOpen);
+  const hubOpen = useLumen((s) => s.hubOpen);
   const setHubOpen = useLumen((s) => s.setHubOpen);
   const fireReminder = useLumen((s) => s.fireReminder);
 
@@ -236,8 +242,15 @@ export function DesktopScene() {
   }, [markHydrated]);
 
   // Click-Through Mouse Event Controller (100% transparent click-through for desktop background & apps)
+  const isAnyModalOpen = captureOpen || quickTimerOpen || hubOpen;
+
   useEffect(() => {
     if (!isDesktopApp()) return;
+
+    if (isAnyModalOpen) {
+      setIgnoreMouseEvents(false);
+      return;
+    }
 
     setIgnoreMouseEvents(true);
     let currentIgnore = true;
@@ -259,35 +272,47 @@ export function DesktopScene() {
 
     window.addEventListener("mousemove", handlePointerMove, { passive: true });
     return () => window.removeEventListener("mousemove", handlePointerMove);
-  }, []);
+  }, [isAnyModalOpen]);
 
-  // Global Shortcuts & System Tray Native IPC Listeners
+  // Global & In-App Keyboard Shortcuts
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const meta = e.ctrlKey || e.metaKey;
       const key = e.key.toLowerCase();
-      // Quick Note: Ctrl+Shift+N or Alt+N
-      if ((meta && e.shiftKey && key === "n") || (e.altKey && key === "n")) {
+
+      // Quick Note: Alt+N, Ctrl+Shift+N, Alt+Q
+      if ((e.altKey && key === "n") || (meta && e.shiftKey && key === "n") || (e.altKey && key === "q")) {
         e.preventDefault();
-        setCaptureOpen(true);
+        setCaptureOpen(!useLumen.getState().captureOpen);
       }
-      // Quick Timer: Ctrl+Shift+T or Alt+T
-      if ((meta && e.shiftKey && key === "t") || (e.altKey && key === "t")) {
+      // Quick Timer: Alt+T, Ctrl+Shift+T
+      if ((e.altKey && key === "t") || (meta && e.shiftKey && key === "t")) {
         e.preventDefault();
-        triggerOpenQuickTimer();
+        setQuickTimerOpen(!useLumen.getState().quickTimerOpen);
       }
-      // Settings Hub: Ctrl+Shift+H or Alt+S
-      if ((meta && e.shiftKey && key === "h") || (e.altKey && key === "s")) {
+      // Settings Hub: Alt+S, Alt+H, Ctrl+Shift+H
+      if ((e.altKey && key === "s") || (e.altKey && key === "h") || (meta && e.shiftKey && key === "h")) {
         e.preventDefault();
-        setHubOpen(true);
+        setHubOpen(!useLumen.getState().hubOpen);
       }
-      // Arrange Notes: Ctrl+Shift+A or Alt+A
-      if ((meta && e.shiftKey && key === "a") || (e.altKey && key === "a")) {
+      // Arrange Notes: Alt+A, Ctrl+Shift+A
+      if ((e.altKey && key === "a") || (meta && e.shiftKey && key === "a")) {
         e.preventDefault();
         tidyNotes();
       }
+      // Toggle Show/Hide All: Alt+O
+      if (e.altKey && key === "o") {
+        e.preventDefault();
+        setLayout(useLumen.getState().layout === "tray" ? "stickies" : "tray");
+      }
+      // Toggle Pet: Alt+P
+      if (e.altKey && key === "p") {
+        e.preventDefault();
+        setPipEnabled(!useLumen.getState().pip.enabled);
+      }
       if (e.key === "Escape") {
         setCaptureOpen(false);
+        setQuickTimerOpen(false);
         setHubOpen(false);
       }
     };
@@ -303,7 +328,7 @@ export function DesktopScene() {
       );
       unlisteners.push(
         listenToDesktopEvent("open-quick-timer", () => {
-          triggerOpenQuickTimer();
+          setQuickTimerOpen(true);
         }),
       );
       unlisteners.push(
@@ -336,11 +361,6 @@ export function DesktopScene() {
           setHubOpen(true);
         }),
       );
-      unlisteners.push(
-        listenToDesktopEvent("restore-window", () => {
-          // Window restored
-        }),
-      );
     }
 
     return () => {
@@ -353,7 +373,7 @@ export function DesktopScene() {
         }
       }
     };
-  }, [setCaptureOpen, setHubOpen, addNote, tidyNotes, setLayout, setPipEnabled]);
+  }, [setCaptureOpen, setQuickTimerOpen, setHubOpen, addNote, tidyNotes, setLayout, setPipEnabled]);
 
   // Reminder scheduler
   useEffect(() => {

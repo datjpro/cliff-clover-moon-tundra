@@ -59,7 +59,7 @@ export function QuickCapture() {
         <div className="flex items-center justify-between pb-2.5 border-b border-white/6 mb-3">
           <p className="font-semibold text-xs text-[#F5A623] flex items-center gap-1.5 uppercase tracking-wide">
             <Sparkles className="size-3.5" />
-            <span>Ghi chú nhanh (Ctrl + Shift + N)</span>
+            <span>Ghi chú nhanh (Alt + N)</span>
           </p>
           <button
             type="button"

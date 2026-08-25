@@ -83,6 +83,7 @@ type LumenState = {
   transparentOverlay: boolean;
   hubOpen: boolean;
   captureOpen: boolean;
+  quickTimerOpen: boolean;
   onboarding: boolean;
   notes: Note[];
   reminders: Reminder[];
@@ -97,6 +98,7 @@ type LumenState = {
   setTransparentOverlay: (val: boolean) => void;
   setHubOpen: (open: boolean) => void;
   setCaptureOpen: (open: boolean) => void;
+  setQuickTimerOpen: (open: boolean) => void;
   dismissOnboarding: () => void;
   addNote: (partial?: Partial<Note>) => string;
   updateNote: (id: string, patch: Partial<Note>) => void;
@@ -160,6 +162,7 @@ export const useLumen = create<LumenState>()(
       transparentOverlay: true,
       hubOpen: false,
       captureOpen: false,
+      quickTimerOpen: false,
       onboarding: true,
       notes: SEED_NOTES,
       reminders: SEED_TIMERS,
@@ -189,11 +192,27 @@ export const useLumen = create<LumenState>()(
       },
       setHubOpen: (hubOpen) => {
         sounds.playPop(480);
-        set({ hubOpen, captureOpen: hubOpen ? false : get().captureOpen });
+        set({
+          hubOpen,
+          captureOpen: hubOpen ? false : get().captureOpen,
+          quickTimerOpen: hubOpen ? false : get().quickTimerOpen,
+        });
       },
       setCaptureOpen: (captureOpen) => {
         sounds.playPop(550);
-        set({ captureOpen, hubOpen: captureOpen ? false : get().hubOpen });
+        set({
+          captureOpen,
+          hubOpen: captureOpen ? false : get().hubOpen,
+          quickTimerOpen: captureOpen ? false : get().quickTimerOpen,
+        });
+      },
+      setQuickTimerOpen: (quickTimerOpen) => {
+        sounds.playPop(580);
+        set({
+          quickTimerOpen,
+          hubOpen: quickTimerOpen ? false : get().hubOpen,
+          captureOpen: quickTimerOpen ? false : get().captureOpen,
+        });
       },
       dismissOnboarding: () => set({ onboarding: false }),
       addNote: (partial) => {

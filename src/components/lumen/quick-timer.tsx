@@ -53,37 +53,12 @@ function parseTimerInput(raw: string): { title: string; durationMs: number } {
 }
 
 export function QuickTimer() {
-  const [open, setOpen] = useState(false);
+  const open = useLumen((s) => s.quickTimerOpen);
+  const setOpen = useLumen((s) => s.setQuickTimerOpen);
   const [input, setInput] = useState("xây nhà trong COC : 2g14p");
   const [pinToDesktop, setPinToDesktop] = useState(true);
   const addReminder = useLumen((s) => s.addReminder);
   const inputRef = useRef<HTMLInputElement>(null);
-
-  // Global shortcuts (Ctrl+Shift+T or Alt+T) and custom event listener
-  useEffect(() => {
-    const handleKey = (e: KeyboardEvent) => {
-      const meta = e.ctrlKey || e.metaKey;
-      const key = e.key.toLowerCase();
-      if ((meta && e.shiftKey && key === "t") || (e.altKey && key === "t")) {
-        e.preventDefault();
-        setOpen(true);
-      }
-      if (e.key === "Escape" && open) {
-        setOpen(false);
-      }
-    };
-
-    const handleOpenEvent = () => {
-      setOpen(true);
-    };
-
-    window.addEventListener("keydown", handleKey);
-    window.addEventListener("open-quick-timer", handleOpenEvent);
-    return () => {
-      window.removeEventListener("keydown", handleKey);
-      window.removeEventListener("open-quick-timer", handleOpenEvent);
-    };
-  }, [open]);
 
   useEffect(() => {
     if (open) {
@@ -121,7 +96,7 @@ export function QuickTimer() {
         <div className="flex items-center justify-between pb-2.5 border-b border-white/6">
           <p className="font-semibold text-xs text-[#F5A623] flex items-center gap-1.5 uppercase tracking-wide">
             <Clock className="size-3.5" />
-            <span>Đặt giờ nhanh (Ctrl + Shift + T)</span>
+            <span>Đặt giờ nhanh (Alt + T)</span>
           </p>
           <button
             type="button"

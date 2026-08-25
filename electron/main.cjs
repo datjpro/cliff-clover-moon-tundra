@@ -95,37 +95,75 @@ function createWindow() {
   screen.on("display-added", updateWindowBounds);
   screen.on("display-removed", updateWindowBounds);
 
-  // Global hotkeys to restore window and trigger actions
-  globalShortcut.register("CommandOrControl+Shift+N", () => {
+  function registerShortcuts(accelerators, callback) {
+    for (const acc of accelerators) {
+      try {
+        const registered = globalShortcut.register(acc, callback);
+        if (registered) {
+          console.log(`[GlobalShortcut] Registered: ${acc}`);
+        } else {
+          console.debug(`[GlobalShortcut] Could not register: ${acc} (in use)`);
+        }
+      } catch (err) {
+        console.debug(`[GlobalShortcut] Error registering ${acc}:`, err);
+      }
+    }
+  }
+
+  function triggerQuickCapture() {
     restoreAndFocusWindow();
     if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.setIgnoreMouseEvents(false);
       mainWindow.webContents.send("open-quick-capture");
     }
-  });
+  }
 
-  globalShortcut.register("CommandOrControl+Shift+T", () => {
+  function triggerQuickTimer() {
     restoreAndFocusWindow();
     if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.setIgnoreMouseEvents(false);
       mainWindow.webContents.send("open-quick-timer");
     }
-  });
+  }
 
-  globalShortcut.register("CommandOrControl+Shift+L", () => {
-    restoreAndFocusWindow();
-  });
-
-  globalShortcut.register("CommandOrControl+Shift+H", () => {
+  function triggerOpenSettings() {
     restoreAndFocusWindow();
     if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.setIgnoreMouseEvents(false);
       mainWindow.webContents.send("open-app-settings");
     }
-  });
+  }
 
-  globalShortcut.register("CommandOrControl+Shift+A", () => {
+  function triggerArrangeNotes() {
     restoreAndFocusWindow();
     if (mainWindow && !mainWindow.isDestroyed()) {
       mainWindow.webContents.send("arrange-notes");
     }
+  }
+
+  function triggerToggleNotes() {
+    restoreAndFocusWindow();
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send("toggle-show-hide-all");
+    }
+  }
+
+  function triggerTogglePet() {
+    restoreAndFocusWindow();
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send("toggle-pet");
+    }
+  }
+
+  // Register all global shortcuts with primary Alt combinations and Ctrl+Shift fallbacks
+  registerShortcuts(["Alt+N", "CommandOrControl+Shift+N", "Alt+Q"], triggerQuickCapture);
+  registerShortcuts(["Alt+T", "CommandOrControl+Shift+T"], triggerQuickTimer);
+  registerShortcuts(["Alt+S", "Alt+H", "CommandOrControl+Shift+H"], triggerOpenSettings);
+  registerShortcuts(["Alt+A", "CommandOrControl+Shift+A"], triggerArrangeNotes);
+  registerShortcuts(["Alt+O"], triggerToggleNotes);
+  registerShortcuts(["Alt+P"], triggerTogglePet);
+  registerShortcuts(["Alt+L", "CommandOrControl+Shift+L", "CommandOrControl+Shift+Space"], () => {
+    restoreAndFocusWindow();
   });
 
   // IPC Channels: Window Visibility & Controls
@@ -209,65 +247,47 @@ function createWindow() {
         enabled: false,
       },
       {
-        label: "🌟 Hiện Ứng Dụng (Khôi Phục Cửa Sổ)",
+        label: "🌟 Hiện Ứng Dụng (Khôi Phục Cửa Sổ — Alt+L)",
         click: () => {
           restoreAndFocusWindow();
         },
       },
       { type: "separator" },
       {
-        label: "📝 + Thêm Ghi Chú Mới (Ctrl+Shift+N)",
+        label: "📝 + Thêm Ghi Chú Mới (Alt+N)",
         click: () => {
-          restoreAndFocusWindow();
-          if (mainWindow && !mainWindow.isDestroyed()) {
-            mainWindow.webContents.send("open-quick-capture");
-          }
+          triggerQuickCapture();
         },
       },
       {
-        label: "⏰ + Đặt Giờ Nhanh (Ctrl+Shift+T)",
+        label: "⏰ + Đặt Giờ Nhanh (Alt+T)",
         click: () => {
-          restoreAndFocusWindow();
-          if (mainWindow && !mainWindow.isDestroyed()) {
-            mainWindow.webContents.send("open-quick-timer");
-          }
+          triggerQuickTimer();
         },
       },
       {
-        label: "🪟 Sắp Xếp Ghi Chú Gọn Gàng",
+        label: "🪟 Sắp Xếp Ghi Chú Gọn Gàng (Alt+A)",
         click: () => {
-          restoreAndFocusWindow();
-          if (mainWindow && !mainWindow.isDestroyed()) {
-            mainWindow.webContents.send("arrange-notes");
-          }
+          triggerArrangeNotes();
         },
       },
       {
-        label: "👁️ Ẩn / Hiện Tất Cả Ghi Chú",
+        label: "👁️ Ẩn / Hiện Tất Cả Ghi Chú (Alt+O)",
         click: () => {
-          restoreAndFocusWindow();
-          if (mainWindow && !mainWindow.isDestroyed()) {
-            mainWindow.webContents.send("toggle-show-hide-all");
-          }
+          triggerToggleNotes();
         },
       },
       { type: "separator" },
       {
-        label: "🐾 Bật / Tắt Thú Cưng",
+        label: "🐾 Bật / Tắt Thú Cưng (Alt+P)",
         click: () => {
-          restoreAndFocusWindow();
-          if (mainWindow && !mainWindow.isDestroyed()) {
-            mainWindow.webContents.send("toggle-pet");
-          }
+          triggerTogglePet();
         },
       },
       {
-        label: "⚙️ Cài Đặt Hệ Thống (Ctrl+Shift+H)",
+        label: "⚙️ Cài Đặt Hệ Thống (Alt+S)",
         click: () => {
-          restoreAndFocusWindow();
-          if (mainWindow && !mainWindow.isDestroyed()) {
-            mainWindow.webContents.send("open-app-settings");
-          }
+          triggerOpenSettings();
         },
       },
       { type: "separator" },

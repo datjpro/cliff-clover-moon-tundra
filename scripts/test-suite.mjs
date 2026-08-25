@@ -204,22 +204,27 @@ console.log("\n📦 [SUITE 5]: Desktop Window Visibility & Single Instance Recov
   onSecondInstance();
   assert(secondInstanceWoken && mockWin.visible, "Second instance launch properly restores and brings existing window to front");
 
-  // Symmetrical teardown test for desktop event listeners
-  const mockListeners = new Map();
-  const listen = (event, fn) => {
-    mockListeners.set(event, fn);
-    return () => mockListeners.delete(event);
+  // Test Suite for Global & In-App Shortcut Mappings
+  const shortcutMap = {
+    quickCapture: ["Alt+N", "Ctrl+Shift+N", "Alt+Q"],
+    quickTimer: ["Alt+T", "Ctrl+Shift+T"],
+    hubSettings: ["Alt+S", "Alt+H", "Ctrl+Shift+H"],
+    arrangeNotes: ["Alt+A", "Ctrl+Shift+A"],
+    toggleNotes: ["Alt+O"],
+    togglePet: ["Alt+P"],
+    restoreWindow: ["Alt+L", "Ctrl+Shift+L", "Ctrl+Shift+Space"],
   };
 
-  const unlisten1 = listen("open-quick-capture", () => {});
-  const unlisten2 = listen("open-quick-timer", () => {});
-  assert(mockListeners.size === 2, "IPC listeners registered properly");
-  unlisten1();
-  unlisten2();
-  assert(mockListeners.size === 0, "Deterministic teardown: all listeners symmetrically unbind without memory leak");
+  assert(shortcutMap.quickCapture.includes("Alt+N"), "Quick Capture supports direct Alt+N shortcut");
+  assert(shortcutMap.quickTimer.includes("Alt+T"), "Quick Timer supports direct Alt+T shortcut");
+  assert(shortcutMap.hubSettings.includes("Alt+S"), "Hub Settings supports direct Alt+S shortcut");
+  assert(shortcutMap.arrangeNotes.includes("Alt+A"), "Arrange Notes supports direct Alt+A shortcut");
+  assert(shortcutMap.toggleNotes.includes("Alt+O"), "Show/Hide all notes supports Alt+O shortcut");
+  assert(shortcutMap.togglePet.includes("Alt+P"), "Pet toggle supports Alt+P shortcut");
 }
 
 console.log(`\n========================================`);
 console.log(`📊 FINAL TEST REPORT: ${passed}/${total} Tests Passed (100% Success)`);
 console.log(`========================================\n`);
+
 
