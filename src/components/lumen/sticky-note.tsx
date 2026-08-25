@@ -9,6 +9,7 @@ import {
   Folder,
   FolderPlus,
   Lock,
+  Minus,
   MoreHorizontal,
   Pin,
   Plus,
@@ -487,11 +488,19 @@ export function StickyNote({ note, stacked }: Props) {
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerUp}
     >
-      {/* Dark Integrated Header Bar (~34px height) - acts as smooth drag handle */}
-      <header className={cn(
-        "relative z-30 h-8.5 px-3 flex items-center justify-between bg-[#1D2029]/95 text-white backdrop-blur-md border-b border-white/5 shrink-0 select-none touch-none rounded-t-2xl",
-        note.locked ? "cursor-default" : "cursor-grab active:cursor-grabbing",
-      )}>
+      {/* Dark Integrated Header Bar (~34px height) - acts as smooth drag handle & double click to minimize */}
+      <header
+        onDoubleClick={(e) => {
+          if ((e.target as HTMLElement).closest("button,input,form,.no-drag")) return;
+          e.stopPropagation();
+          sounds.playPop(580);
+          toggleNoteCollapse(note.id);
+        }}
+        className={cn(
+          "relative z-30 h-8.5 px-3 flex items-center justify-between bg-[#1D2029]/95 text-white backdrop-blur-md border-b border-white/5 shrink-0 select-none touch-none rounded-t-2xl",
+          note.locked ? "cursor-default" : "cursor-grab active:cursor-grabbing",
+        )}
+      >
         {/* Color Dot Button (Opens 4-color popover) */}
         <div className="relative no-drag" ref={colorPickerRef}>
           <button
@@ -568,8 +577,22 @@ export function StickyNote({ note, stacked }: Props) {
           )}
         </div>
 
-        {/* Right Header Actions: Lock + Pin + Direct Trash (Delete) + Kebab (…) */}
+        {/* Right Header Actions: Minimize + Lock + Pin + Direct Trash (Delete) + Kebab (…) */}
         <div className="flex items-center gap-0.5 no-drag">
+          {/* Direct Minimize / Collapse Quick Button */}
+          <button
+            type="button"
+            title="Thu nhỏ ghi chú (Nhấp đúp thanh tiêu đề cũng được)"
+            onClick={(e) => {
+              e.stopPropagation();
+              sounds.playPop(580);
+              toggleNoteCollapse(note.id);
+            }}
+            className="flex size-6 items-center justify-center rounded-md text-[#8B90A0] hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+          >
+            <Minus className="size-3" />
+          </button>
+
           {/* Lock / Unlock Quick Button */}
           <button
             type="button"

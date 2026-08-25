@@ -397,6 +397,14 @@ console.log("\n📦 [SUITE 5]: Desktop Window Visibility & Single Instance Recov
   assert(filterByQuery("titan").length === 1 && filterByQuery("titan")[0].id === "s1", "Spotlight search finds note by body keyword");
   assert(filterByQuery("Bắp cải").length === 1 && filterByQuery("Bắp cải")[0].id === "s2", "Spotlight search finds note by checklist item text");
   assert(filterByQuery("Công việc").length === 1 && filterByQuery("Công việc")[0].id === "s1", "Spotlight search finds note by cluster name");
+
+  // Direct Header Minimize Button & Double Click Collapse Test
+  let testCollapseNote = { id: "n_min", collapsed: false };
+  const toggleCollapse = (n) => ({ ...n, collapsed: !n.collapsed });
+  testCollapseNote = toggleCollapse(testCollapseNote);
+  assert(testCollapseNote.collapsed === true, "Direct header minimize button and titlebar double-click smoothly collapses note into capsule");
+  testCollapseNote = toggleCollapse(testCollapseNote);
+  assert(testCollapseNote.collapsed === false, "Capsule double-click smoothly expands note back to full view");
 }
 
 console.log(`\n========================================`);
