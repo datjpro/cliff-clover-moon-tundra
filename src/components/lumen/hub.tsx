@@ -1014,7 +1014,7 @@ export function Hub() {
 
             {/* Shortcuts */}
             <div className="rounded-2xl bg-[#262A35]/50 p-3 space-y-1.5 border border-white/6">
-              <p className="font-semibold text-[#F4F5F7] text-xs mb-1">Tổ hợp phím tắt nhanh:</p>
+              <p className="font-semibold text-[#F4F5F7] text-xs mb-1">Tổ hợp phím tắt nhanh (Alt):</p>
               <div className="space-y-1.5 text-[11px]">
                 <div className="flex items-center justify-between">
                   <span>Ghi chú nhanh:</span>
@@ -1023,20 +1023,15 @@ export function Hub() {
                       Alt + N
                     </span>
                     <span className="font-mono bg-[#14161D] px-1.5 py-0.2 rounded-md border border-white/5 text-[#8B90A0]">
-                      Ctrl+Shift+N
+                      Alt + Q
                     </span>
                   </div>
                 </div>
                 <div className="flex items-center justify-between">
                   <span>Đặt giờ nhanh:</span>
-                  <div className="flex gap-1">
-                    <span className="font-mono bg-[#14161D] px-1.5 py-0.2 rounded-md border border-white/5 text-[#F5A623] font-semibold">
-                      Alt + T
-                    </span>
-                    <span className="font-mono bg-[#14161D] px-1.5 py-0.2 rounded-md border border-white/5 text-[#8B90A0]">
-                      Ctrl+Shift+T
-                    </span>
-                  </div>
+                  <span className="font-mono bg-[#14161D] px-1.5 py-0.2 rounded-md border border-white/5 text-[#F5A623] font-semibold">
+                    Alt + T
+                  </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span>Bảng cài đặt (Hub):</span>
@@ -1045,20 +1040,15 @@ export function Hub() {
                       Alt + S
                     </span>
                     <span className="font-mono bg-[#14161D] px-1.5 py-0.2 rounded-md border border-white/5 text-[#8B90A0]">
-                      Ctrl+Shift+H
+                      Alt + H
                     </span>
                   </div>
                 </div>
                 <div className="flex items-center justify-between">
                   <span>Sắp xếp ghi chú:</span>
-                  <div className="flex gap-1">
-                    <span className="font-mono bg-[#14161D] px-1.5 py-0.2 rounded-md border border-white/5 text-[#F5A623] font-semibold">
-                      Alt + A
-                    </span>
-                    <span className="font-mono bg-[#14161D] px-1.5 py-0.2 rounded-md border border-white/5 text-[#8B90A0]">
-                      Ctrl+Shift+A
-                    </span>
-                  </div>
+                  <span className="font-mono bg-[#14161D] px-1.5 py-0.2 rounded-md border border-white/5 text-[#F5A623] font-semibold">
+                    Alt + A
+                  </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span>Ẩn / Hiện tất cả note:</span>

@@ -155,14 +155,14 @@ function createWindow() {
     }
   }
 
-  // Register all global shortcuts with primary Alt combinations and Ctrl+Shift fallbacks
-  registerShortcuts(["Alt+N", "CommandOrControl+Shift+N", "Alt+Q"], triggerQuickCapture);
-  registerShortcuts(["Alt+T", "CommandOrControl+Shift+T"], triggerQuickTimer);
-  registerShortcuts(["Alt+S", "Alt+H", "CommandOrControl+Shift+H"], triggerOpenSettings);
-  registerShortcuts(["Alt+A", "CommandOrControl+Shift+A"], triggerArrangeNotes);
+  // Register clean, non-conflicting Alt-based global shortcuts (Zero collision with browser Incognito / Tabs)
+  registerShortcuts(["Alt+N", "Alt+Q"], triggerQuickCapture);
+  registerShortcuts(["Alt+T"], triggerQuickTimer);
+  registerShortcuts(["Alt+S", "Alt+H"], triggerOpenSettings);
+  registerShortcuts(["Alt+A"], triggerArrangeNotes);
   registerShortcuts(["Alt+O"], triggerToggleNotes);
   registerShortcuts(["Alt+P"], triggerTogglePet);
-  registerShortcuts(["Alt+L", "CommandOrControl+Shift+L", "CommandOrControl+Shift+Space"], () => {
+  registerShortcuts(["Alt+L"], () => {
     restoreAndFocusWindow();
   });
 

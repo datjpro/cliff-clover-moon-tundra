@@ -52,8 +52,8 @@ export function Onboarding() {
             </span>
             <span>
               {isVi
-                ? "Nhấp đúp chuột vào màn hình (hoặc Ctrl+Shift+N) để tạo nhanh ghi chú dán."
-                : "Double-click desktop wallpaper (or Ctrl+Shift+N) to spawn sticky notes."}
+                ? "Nhấp đúp chuột vào màn hình (hoặc bấm Alt+N) để tạo nhanh ghi chú dán."
+                : "Double-click desktop wallpaper (or press Alt+N) to spawn sticky notes."}
             </span>
           </li>
           <li className="flex gap-2.5 items-start">
@@ -62,8 +62,8 @@ export function Onboarding() {
             </span>
             <span>
               {isVi
-                ? "Đặt giờ thông minh: Bấm Ctrl+Shift+T (ví dụ: xây nhà trong COC : 2g14p) để đếm ngược nổi."
-                : "Smart timers: Press Ctrl+Shift+T to start game countdown timers with alarm bell."}
+                ? "Đặt giờ thông minh: Bấm Alt+T (ví dụ: xây nhà trong COC : 2g14p) để đếm ngược nổi."
+                : "Smart timers: Press Alt+T to start game countdown timers with alarm bell."}
             </span>
           </li>
           <li className="flex gap-2.5 items-start">

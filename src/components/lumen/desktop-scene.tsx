@@ -302,26 +302,25 @@ export function DesktopScene() {
   // Global & In-App Keyboard Shortcuts
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      const meta = e.ctrlKey || e.metaKey;
       const key = e.key.toLowerCase();
 
-      // Quick Note: Alt+N, Ctrl+Shift+N, Alt+Q
-      if ((e.altKey && key === "n") || (meta && e.shiftKey && key === "n") || (e.altKey && key === "q")) {
+      // Quick Note: Alt+N, Alt+Q (Zero collision with Chrome/Edge Incognito)
+      if ((e.altKey && key === "n") || (e.altKey && key === "q")) {
         e.preventDefault();
         setCaptureOpen(!useLumen.getState().captureOpen);
       }
-      // Quick Timer: Alt+T, Ctrl+Shift+T
-      if ((e.altKey && key === "t") || (meta && e.shiftKey && key === "t")) {
+      // Quick Timer: Alt+T (Zero collision with Browser Reopen Tab)
+      if (e.altKey && key === "t") {
         e.preventDefault();
         setQuickTimerOpen(!useLumen.getState().quickTimerOpen);
       }
-      // Settings Hub: Alt+S, Alt+H, Ctrl+Shift+H
-      if ((e.altKey && key === "s") || (e.altKey && key === "h") || (meta && e.shiftKey && key === "h")) {
+      // Settings Hub: Alt+S, Alt+H
+      if ((e.altKey && key === "s") || (e.altKey && key === "h")) {
         e.preventDefault();
         setHubOpen(!useLumen.getState().hubOpen);
       }
-      // Arrange Notes: Alt+A, Ctrl+Shift+A
-      if ((e.altKey && key === "a") || (meta && e.shiftKey && key === "a")) {
+      // Arrange Notes: Alt+A
+      if (e.altKey && key === "a") {
         e.preventDefault();
         tidyNotes();
       }

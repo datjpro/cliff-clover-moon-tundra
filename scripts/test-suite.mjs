@@ -204,23 +204,26 @@ console.log("\n📦 [SUITE 5]: Desktop Window Visibility & Single Instance Recov
   onSecondInstance();
   assert(secondInstanceWoken && mockWin.visible, "Second instance launch properly restores and brings existing window to front");
 
-  // Test Suite for Global & In-App Shortcut Mappings
+  // Test Suite for Global & In-App Shortcut Mappings (Clean Alt-based combinations)
   const shortcutMap = {
-    quickCapture: ["Alt+N", "Ctrl+Shift+N", "Alt+Q"],
-    quickTimer: ["Alt+T", "Ctrl+Shift+T"],
-    hubSettings: ["Alt+S", "Alt+H", "Ctrl+Shift+H"],
-    arrangeNotes: ["Alt+A", "Ctrl+Shift+A"],
+    quickCapture: ["Alt+N", "Alt+Q"],
+    quickTimer: ["Alt+T"],
+    hubSettings: ["Alt+S", "Alt+H"],
+    arrangeNotes: ["Alt+A"],
     toggleNotes: ["Alt+O"],
     togglePet: ["Alt+P"],
-    restoreWindow: ["Alt+L", "Ctrl+Shift+L", "Ctrl+Shift+Space"],
+    restoreWindow: ["Alt+L"],
   };
 
   assert(shortcutMap.quickCapture.includes("Alt+N"), "Quick Capture supports direct Alt+N shortcut");
+  assert(!shortcutMap.quickCapture.includes("Ctrl+Shift+N"), "Browser Incognito shortcut Ctrl+Shift+N is removed to prevent collision");
   assert(shortcutMap.quickTimer.includes("Alt+T"), "Quick Timer supports direct Alt+T shortcut");
+  assert(!shortcutMap.quickTimer.includes("Ctrl+Shift+T"), "Browser Reopen Tab shortcut Ctrl+Shift+T is removed to prevent collision");
   assert(shortcutMap.hubSettings.includes("Alt+S"), "Hub Settings supports direct Alt+S shortcut");
   assert(shortcutMap.arrangeNotes.includes("Alt+A"), "Arrange Notes supports direct Alt+A shortcut");
   assert(shortcutMap.toggleNotes.includes("Alt+O"), "Show/Hide all notes supports Alt+O shortcut");
   assert(shortcutMap.togglePet.includes("Alt+P"), "Pet toggle supports Alt+P shortcut");
+  assert(shortcutMap.restoreWindow.includes("Alt+L"), "Restore window supports Alt+L shortcut");
 
   // Gesture Latency & Rotation Math Test
   const centerX = 200;
