@@ -10,6 +10,7 @@ import {
 } from "@/lib/desktop-bridge";
 import { useLumen } from "@/lib/store";
 import { AlarmRingingModal } from "./alarm-ringing-modal";
+import { AppStartupLoading } from "./app-loading";
 import { BallToy } from "./ball-toy";
 import { Companion } from "./companion";
 import { FloatingTimers } from "./floating-timers";
@@ -443,6 +444,7 @@ export function DesktopScene() {
       <Hub />
       <Onboarding />
       <FloatingTrayMenu />
+      <AppStartupLoading />
     </div>
   );
 }

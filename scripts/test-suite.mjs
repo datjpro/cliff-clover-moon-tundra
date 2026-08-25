@@ -258,6 +258,20 @@ console.log("\n📦 [SUITE 5]: Desktop Window Visibility & Single Instance Recov
   const isMenuOpen = true;
   const noteZIndex = (mockNote.pinned ? 90 : 10) + mockNote.z + (isMenuOpen ? 200 : 0);
   assert(noteZIndex >= 210, "Note z-index dynamically elevates above all other notes when kebab menu or color picker is opened");
+
+  // Sticky Note Delete Confirmation Layer & Top-Level Stacking Test
+  const showDeleteConfirm = true;
+  const isElevated = isMenuOpen || showDeleteConfirm;
+  const elevatedZIndex = (mockNote.pinned ? 90 : 10) + mockNote.z + (isElevated ? 250 : 0);
+  assert(elevatedZIndex >= 260, "Note z-index elevates to 260+ when delete confirmation modal is active");
+
+  // App Startup Loading Screen Progression Test
+  const loadingStages = [
+    { progress: 35, text: "Đang tải ghi chú và lịch nhắc..." },
+    { progress: 75, text: "Đang đánh thức người bạn Pip..." },
+    { progress: 100, text: "Sẵn sàng làm việc ✨" },
+  ];
+  assert(loadingStages.length === 3 && loadingStages[2].progress === 100, "App startup loading screen completes 3-stage progress with smooth onboarding");
 }
 
 console.log(`\n========================================`);

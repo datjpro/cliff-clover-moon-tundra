@@ -171,6 +171,7 @@ export function StickyNote({ note, stacked }: Props) {
   };
 
   const handleDeleteClick = () => {
+    bringNote(note.id);
     setMenuOpen(false);
     const hasContent = note.body.trim().length > 0 || (note.checkItems && note.checkItems.length > 0);
     if (!hasContent) {
@@ -207,7 +208,7 @@ export function StickyNote({ note, stacked }: Props) {
 
   const isTransformActive = isDragging || isRotating;
 
-  const isMenuOpen = menuOpen || colorPickerOpen;
+  const isElevated = menuOpen || colorPickerOpen || showDeleteConfirm || showOptions;
 
   const style = stacked
     ? undefined
@@ -215,7 +216,7 @@ export function StickyNote({ note, stacked }: Props) {
         left: `${note.x}%`,
         top: `${note.y}%`,
         transform: note.collapsed ? "none" : `rotate(${note.rot}deg)`,
-        zIndex: (note.pinned ? 90 : 10) + note.z + (isMenuOpen ? 200 : 0),
+        zIndex: (note.pinned ? 90 : 10) + note.z + (isElevated ? 250 : 0),
         opacity: note.opacity ?? 1,
         transition: isTransformActive ? "none" : undefined,
       };
@@ -405,46 +406,72 @@ export function StickyNote({ note, stacked }: Props) {
         </div>
       </header>
 
-      {/* Note Body Area (Pastel Background + #23262F Text) */}
-      <div className="p-3.5 flex flex-col text-[#23262F] relative rounded-b-2xl">
-        {/* Delete Confirmation Overlay */}
-        {showDeleteConfirm && (
-          <div className="no-drag mb-2 flex flex-col gap-2 rounded-xl bg-[#1D2029] text-white p-2.5 text-xs shadow-2xl border border-white/10 animate-in zoom-in-95 duration-120">
-            <p className="font-semibold text-[#F5A623] leading-tight">
-              Xác nhận xóa ghi chú này?
-            </p>
-            <p className="text-[11px] text-[#8B90A0]">
-              Lưu nội dung thành file .txt trước khi xóa?
-            </p>
-            <div className="flex flex-col gap-1 pt-1">
+      {/* Full-Card Delete Confirmation Overlay */}
+      {showDeleteConfirm && (
+        <div
+          role="alertdialog"
+          aria-modal="true"
+          className="interactive-el no-drag absolute inset-0 z-50 rounded-2xl bg-[#1D2029]/98 text-white p-4 shadow-[0_16px_40px_rgba(0,0,0,0.85)] border border-white/15 backdrop-blur-2xl flex flex-col justify-between animate-in fade-in zoom-in-95 duration-150 select-none pointer-events-auto"
+          onClick={(e) => e.stopPropagation()}
+          onPointerDown={(e) => {
+            e.stopPropagation();
+            bringNote(note.id);
+          }}
+        >
+          <div className="flex flex-col gap-1.5">
+            <div className="flex items-center justify-between">
+              <span className="flex items-center gap-1.5 text-xs font-bold text-[#F5A623] uppercase tracking-wider">
+                <Trash2 className="size-3.5 text-[#EF4444]" />
+                Xác nhận xóa
+              </span>
               <button
                 type="button"
-                onClick={handleExportTxtAndDelete}
-                className="flex items-center justify-center gap-1.5 py-1 px-2 rounded-lg bg-[#F5A623] hover:bg-[#D6871A] text-[#14161D] font-bold text-[11px] cursor-pointer transition-colors"
+                onClick={() => setShowDeleteConfirm(false)}
+                className="size-6 flex items-center justify-center rounded-lg hover:bg-white/10 text-[#8B90A0] hover:text-white transition-colors cursor-pointer"
+                title="Hủy xóa"
               >
-                <Download className="size-3" />
-                <span>Lưu .txt & Xóa</span>
+                <X className="size-3.5" />
               </button>
-              <div className="flex gap-1">
-                <button
-                  type="button"
-                  onClick={() => removeNote(note.id)}
-                  className="flex-1 py-1 px-2 rounded-lg bg-[#EF4444]/80 hover:bg-[#EF4444] text-white text-[11px] font-semibold cursor-pointer transition-colors"
-                >
-                  Xóa luôn
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowDeleteConfirm(false)}
-                  className="flex-1 py-1 px-2 rounded-lg bg-white/10 hover:bg-white/20 text-white text-[11px] cursor-pointer transition-colors"
-                >
-                  Hủy
-                </button>
-              </div>
+            </div>
+            <p className="text-xs text-[#F4F5F7] font-medium leading-snug">
+              Bạn có muốn lưu ghi chú này thành file văn bản trước khi xóa?
+            </p>
+            <p className="text-[10px] text-[#8B90A0] leading-tight">
+              Hành động xóa không thể hoàn tác nếu chưa lưu.
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-1.5 pt-2 border-t border-white/10">
+            <button
+              type="button"
+              onClick={handleExportTxtAndDelete}
+              className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-[#F5A623] hover:bg-[#D6871A] text-[#14161D] font-bold text-xs shadow-md transition-all active:scale-98 cursor-pointer"
+            >
+              <Download className="size-3.5" />
+              <span>Lưu file .txt & Xóa</span>
+            </button>
+            <div className="flex gap-1.5">
+              <button
+                type="button"
+                onClick={() => removeNote(note.id)}
+                className="flex-1 py-1.5 px-2 rounded-xl bg-[#EF4444]/85 hover:bg-[#EF4444] text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer text-center"
+              >
+                Xóa luôn
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowDeleteConfirm(false)}
+                className="flex-1 py-1.5 px-2 rounded-xl bg-white/10 hover:bg-white/15 text-[#F4F5F7] text-xs font-medium transition-colors cursor-pointer text-center"
+              >
+                Hủy
+              </button>
             </div>
           </div>
-        )}
+        </div>
+      )}
 
+      {/* Note Body Area (Pastel Background + #23262F Text) */}
+      <div className="p-3.5 flex flex-col text-[#23262F] relative rounded-b-2xl">
         {/* Note Customization Drawer (Rotation, Opacity, Font) */}
         {showOptions && !showDeleteConfirm && (
           <div className="no-drag mb-2 flex flex-col gap-2 rounded-xl bg-black/5 p-2.5 text-xs border border-black/5">
