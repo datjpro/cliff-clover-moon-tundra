@@ -60,7 +60,7 @@ function PaperWell() {
   );
 }
 
-// Floating Quick Tray Menu (Matching Gemini Reference Image)
+// Floating Quick Tray Menu (Modern Glassmorphism Design)
 function FloatingTrayMenu() {
   const [open, setOpen] = useState(false);
   const lang = useLumen((s) => s.lang);
@@ -77,8 +77,14 @@ function FloatingTrayMenu() {
   return (
     <div className="interactive-el fixed right-6 bottom-5 z-[85] flex flex-col items-end gap-2 select-none">
       {open ? (
-        <div className="animate-in fade-in slide-in-from-bottom-2 w-52 rounded-2xl bg-[#1c1917]/95 text-[#f5f5f4] p-2 shadow-[0_20px_45px_rgba(0,0,0,0.6)] border border-[#44403c] backdrop-blur-xl">
-          <div className="flex flex-col gap-1 text-xs font-semibold">
+        <div className="animate-in fade-in slide-in-from-bottom-2 w-60 rounded-2xl bg-slate-900/90 text-slate-100 p-2 shadow-[0_20px_50px_rgba(0,0,0,0.65)] border border-white/10 backdrop-blur-2xl">
+          <div className="flex flex-col gap-0.5 text-xs font-medium">
+            {/* Header label */}
+            <div className="flex items-center justify-between px-2.5 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-white/5 mb-1">
+              <span>Lumen Menu</span>
+              <span className="text-amber-400">Desktop</span>
+            </div>
+
             {/* + New Note */}
             <button
               type="button"
@@ -86,10 +92,13 @@ function FloatingTrayMenu() {
                 addNote({ body: "", tint: "cream" });
                 setOpen(false);
               }}
-              className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-white/10 transition-colors text-left cursor-pointer"
+              className="flex items-center justify-between px-2.5 py-2 rounded-xl hover:bg-white/10 transition-colors text-left cursor-pointer group"
             >
-              <Plus className="size-4 text-amber-500" />
-              <span>{isVi ? "+ Ghi chú mới" : "+ New Note"}</span>
+              <div className="flex items-center gap-2.5">
+                <Plus className="size-4 text-amber-400 group-hover:scale-110 transition-transform" />
+                <span className="font-semibold text-slate-100">{isVi ? "Ghi chú mới" : "New Note"}</span>
+              </div>
+              <span className="text-[10px] text-slate-500 font-mono">Ctrl+Shift+N</span>
             </button>
 
             {/* + Quick Timer */}
@@ -99,10 +108,13 @@ function FloatingTrayMenu() {
                 triggerOpenQuickTimer();
                 setOpen(false);
               }}
-              className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-white/10 transition-colors text-left cursor-pointer"
+              className="flex items-center justify-between px-2.5 py-2 rounded-xl hover:bg-white/10 transition-colors text-left cursor-pointer group"
             >
-              <Clock className="size-4 text-amber-400" />
-              <span>{isVi ? "⏰ + Đặt giờ nhanh" : "⏰ + Quick Timer"}</span>
+              <div className="flex items-center gap-2.5">
+                <Clock className="size-4 text-amber-400 group-hover:scale-110 transition-transform" />
+                <span className="font-semibold text-slate-100">{isVi ? "Đặt giờ nhanh" : "Quick Timer"}</span>
+              </div>
+              <span className="text-[10px] text-slate-500 font-mono">Ctrl+Shift+T</span>
             </button>
 
             {/* Toggle Pet Hide/Show */}
@@ -112,29 +124,34 @@ function FloatingTrayMenu() {
                 setPipEnabled(!pipEnabled);
                 setOpen(false);
               }}
-              className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-white/10 transition-colors text-left cursor-pointer"
+              className="flex items-center justify-between px-2.5 py-2 rounded-xl hover:bg-white/10 transition-colors text-left cursor-pointer group"
             >
-              <Sparkles className="size-4 text-amber-500" />
-              <span>{pipEnabled ? (isVi ? "Ẩn Thú cưng 🐾" : "Hide Pet 🐾") : (isVi ? "Hiện Thú cưng 🐾" : "Show Pet 🐾")}</span>
+              <div className="flex items-center gap-2.5">
+                <Sparkles className="size-4 text-amber-400 group-hover:scale-110 transition-transform" />
+                <span>{pipEnabled ? (isVi ? "Ẩn Thú cưng" : "Hide Pet") : (isVi ? "Hiện Thú cưng" : "Show Pet")}</span>
+              </div>
+              <span className="text-[10px] text-slate-500">🐾</span>
             </button>
 
             {/* Hide All / Show All Notes */}
             <button
               type="button"
               onClick={() => setLayout(layout === "tray" ? "stickies" : "tray")}
-              className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-white/10 transition-colors text-left cursor-pointer"
+              className="flex items-center justify-between px-2.5 py-2 rounded-xl hover:bg-white/10 transition-colors text-left cursor-pointer"
             >
-              {layout === "tray" ? (
-                <>
-                  <Eye className="size-4 text-muted" />
-                  <span>{isVi ? "Hiện tất cả note" : "Show All Notes"}</span>
-                </>
-              ) : (
-                <>
-                  <EyeOff className="size-4 text-muted" />
-                  <span>{isVi ? "Ẩn tất cả note" : "Hide All Notes"}</span>
-                </>
-              )}
+              <div className="flex items-center gap-2.5">
+                {layout === "tray" ? (
+                  <>
+                    <Eye className="size-4 text-slate-400" />
+                    <span>{isVi ? "Hiện tất cả note" : "Show All Notes"}</span>
+                  </>
+                ) : (
+                  <>
+                    <EyeOff className="size-4 text-slate-400" />
+                    <span>{isVi ? "Ẩn tất cả note" : "Hide All Notes"}</span>
+                  </>
+                )}
+              </div>
             </button>
 
             {/* Settings */}
@@ -144,30 +161,36 @@ function FloatingTrayMenu() {
                 setHubOpen(true);
                 setOpen(false);
               }}
-              className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-white/10 transition-colors text-left cursor-pointer"
+              className="flex items-center justify-between px-2.5 py-2 rounded-xl hover:bg-white/10 transition-colors text-left cursor-pointer"
             >
-              <Settings className="size-4 text-muted" />
-              <span>{isVi ? "Cài đặt" : "Settings"}</span>
+              <div className="flex items-center gap-2.5">
+                <Settings className="size-4 text-slate-400" />
+                <span>{isVi ? "Cài đặt hệ thống" : "Settings"}</span>
+              </div>
+              <span className="text-[10px] text-slate-500 font-mono">Hub</span>
             </button>
 
-            {/* Arrange Notes Highlighted Button */}
+            {/* Arrange Notes Unified Amber Highlight Button */}
             <button
               type="button"
               onClick={() => {
                 tidyNotes();
                 setOpen(false);
               }}
-              className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-md transition-all active:scale-95 text-left cursor-pointer mt-0.5"
+              className="flex items-center justify-between px-2.5 py-2 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 font-semibold shadow-sm transition-all active:scale-95 text-left cursor-pointer mt-1"
             >
-              <LayoutGrid className="size-4" />
-              <span>{isVi ? "Sắp xếp ghi chú" : "Arrange Notes"}</span>
+              <div className="flex items-center gap-2">
+                <LayoutGrid className="size-4 text-amber-400" />
+                <span>{isVi ? "Sắp xếp ghi chú" : "Arrange Notes"}</span>
+              </div>
+              <span className="text-[10px] bg-amber-500/20 px-1.5 py-0.5 rounded font-mono text-amber-300">Auto</span>
             </button>
 
             {/* Quit */}
             <button
               type="button"
               onClick={() => void closeOrQuitDesktopApp()}
-              className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl hover:bg-red-500/20 text-red-400 transition-colors text-left cursor-pointer text-[11px]"
+              className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl hover:bg-red-500/20 text-red-400 hover:text-red-300 transition-colors text-left cursor-pointer text-[11px] mt-0.5"
             >
               <X className="size-3.5" />
               <span>{isVi ? "Thoát ứng dụng" : "Quit"}</span>
@@ -180,7 +203,7 @@ function FloatingTrayMenu() {
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="flex size-10 items-center justify-center rounded-2xl bg-[#1c1917]/90 hover:bg-[#1c1917] text-white shadow-2xl border border-[#44403c] backdrop-blur-md hover:scale-110 active:scale-95 transition-transform cursor-pointer"
+        className="flex size-10 items-center justify-center rounded-2xl bg-slate-900/90 hover:bg-slate-900 text-white shadow-2xl border border-white/15 backdrop-blur-xl hover:scale-110 active:scale-95 transition-transform cursor-pointer"
         title="Lumen Overlay Menu"
       >
         <span className="text-xl">🦊</span>

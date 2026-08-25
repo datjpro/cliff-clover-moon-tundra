@@ -232,6 +232,37 @@
   transform-origin: 24px 58px;
 }
 
+/* Custom Subtle Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 9999px;
+}
+.custom-scrollbar:hover::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+/* Note Subtle Scrollbar */
+.note-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.note-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.note-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 9999px;
+}
+.note-scrollbar:hover::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+}
+
 /* Transparent Desktop Overlay Click-Through Layer */
 [data-transparent="true"] {
   pointer-events: none !important;

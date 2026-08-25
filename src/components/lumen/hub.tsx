@@ -49,12 +49,12 @@ const PET_TYPES: { id: PetType; name: string; icon: string; desc: string }[] = [
 ];
 
 const HATS: { id: PetHat; name: string; icon: string }[] = [
-  { id: "none", name: "Không đội mũ", icon: "❌" },
-  { id: "explorer_hat", name: "Mũ Thám Hiểm", icon: "🤠" },
-  { id: "sunglasses", name: "Kính Râm Ngầu", icon: "🕶️" },
-  { id: "wizard_hat", name: "Mũ Phù Thủy", icon: "🧙" },
-  { id: "party_hat", name: "Mũ Sinh Nhật", icon: "🥳" },
-  { id: "sleep_cap", name: "Mũ Ngủ Đêm", icon: "🌙" },
+  { id: "none", name: "Không mũ", icon: "❌" },
+  { id: "explorer_hat", name: "Thám Hiểm", icon: "🤠" },
+  { id: "sunglasses", name: "Kính Râm", icon: "🕶️" },
+  { id: "wizard_hat", name: "Phù Thủy", icon: "🧙" },
+  { id: "party_hat", name: "Sinh Nhật", icon: "🥳" },
+  { id: "sleep_cap", name: "Mũ Ngủ", icon: "🌙" },
 ];
 
 const BODY_ITEMS: { id: PetBodyItem; name: string; icon: string }[] = [
@@ -62,22 +62,22 @@ const BODY_ITEMS: { id: PetBodyItem; name: string; icon: string }[] = [
   { id: "cape", name: "Áo Choàng", icon: "🦸" },
   { id: "wings", name: "Cánh Tiên", icon: "🧚" },
   { id: "scarf", name: "Khăn Quàng", icon: "🧣" },
-  { id: "none", name: "Không mặc gì", icon: "❌" },
+  { id: "none", name: "Không mặc", icon: "❌" },
 ];
 
 const ALARM_TONES: { id: AlarmSoundTone; name: string; icon: string; desc: string }[] = [
-  { id: "bell_arpeggio", name: "Chuông Game Ngân Vang", icon: "🔔", desc: "Âm chuông đa âm tươi sáng, ngân vang rộn rã" },
-  { id: "digital_alarm", name: "Chuông Báo Thức Kêu To", icon: "🚨", desc: "Tiếng Beep-Beep dồn dập, cực kỳ to và rõ ràng" },
-  { id: "gentle_chime", name: "Chuông Giai Điệu Dịu Dàng", icon: "🎵", desc: "Hợp âm du dương êm ái, thư giãn tinh thần" },
-  { id: "vintage_clock", name: "Chuông Đồng Hồ Cổ Điển", icon: "🕰️", desc: "Tiếng chuông quả lắc sâu lắng, ấm áp hoài niệm" },
+  { id: "bell_arpeggio", name: "Chuông Game Arpeggio", icon: "🔔", desc: "Đa âm ngân vang tươi sáng" },
+  { id: "digital_alarm", name: "Chuông Báo Thức Kêu To", icon: "🚨", desc: "Beep-Beep dồn dập, cực rõ" },
+  { id: "gentle_chime", name: "Giai Điệu Dịu Dàng", icon: "🎵", desc: "Hợp âm du dương êm ái" },
+  { id: "vintage_clock", name: "Đồng Hồ Quả Lắc", icon: "🕰️", desc: "Chuông trầm ấm cổ điển" },
 ];
 
 const THEME_PREVIEWS: Record<ThemeId, { bg: string; accent: string; border: string }> = {
-  glass: { bg: "bg-slate-900/80", accent: "bg-cyan-400", border: "border-cyan-500/30" },
-  pastel: { bg: "bg-amber-950/40", accent: "bg-amber-400", border: "border-amber-500/30" },
-  cyberpunk: { bg: "bg-purple-950/80", accent: "bg-fuchsia-400", border: "border-fuchsia-500/40" },
-  minimalist: { bg: "bg-zinc-900", accent: "bg-zinc-200", border: "border-zinc-700" },
-  ink: { bg: "bg-[#1c1917]", accent: "bg-amber-500", border: "border-stone-700" },
+  glass: { bg: "bg-slate-800/80", accent: "bg-cyan-400", border: "border-cyan-500/30" },
+  pastel: { bg: "bg-amber-900/30", accent: "bg-rose-400", border: "border-rose-500/30" },
+  cyberpunk: { bg: "bg-purple-950/70", accent: "bg-fuchsia-400", border: "border-fuchsia-500/30" },
+  minimalist: { bg: "bg-zinc-800", accent: "bg-zinc-200", border: "border-zinc-700" },
+  ink: { bg: "bg-stone-900", accent: "bg-amber-500", border: "border-stone-700" },
 };
 
 function parseTimerInput(raw: string): { title: string; durationMs: number } {
@@ -163,32 +163,30 @@ function HubTimerRow({
   return (
     <div
       className={cn(
-        "flex items-center justify-between rounded-xl p-3 text-xs border transition-all shadow-sm",
+        "flex items-center justify-between rounded-xl px-3 py-2.5 text-xs border transition-all",
         r.done
-          ? "bg-[#292524]/60 border-[#38332e] text-[#78716c]"
-          : "bg-[#24201e] border-[#44403c] text-white hover:border-[#57534e]",
+          ? "bg-slate-900/40 border-white/5 text-slate-500"
+          : "bg-slate-800/40 border-white/10 text-slate-100 hover:border-white/20 shadow-xs",
       )}
     >
-      <div className="min-w-0 flex-1 space-y-1">
-        <div className="flex items-center gap-2">
-          <span className="text-sm">{r.done ? "✅" : "⏳"}</span>
-          <p className={cn("font-bold truncate text-xs", r.done && "line-through text-[#78716c]")}>
+      <div className="min-w-0 flex-1 space-y-0.5">
+        <div className="flex items-center gap-1.5">
+          <span className="text-xs">{r.done ? "✓" : "⏱"}</span>
+          <p className={cn("font-medium truncate text-xs", r.done && "line-through text-slate-500")}>
             {r.title}
           </p>
           {r.pinToScreen && !r.done ? (
-            <Badge className="bg-amber-500/20 text-amber-400 text-[10px] px-1.5 py-0 border-none font-semibold">
-              📌 Ghim Desktop
-            </Badge>
+            <span className="bg-amber-500/15 text-amber-300 text-[10px] px-1.5 py-0.2 rounded font-semibold border border-amber-500/30">
+              Ghim Desktop
+            </span>
           ) : null}
         </div>
-        <div className="flex items-center gap-2">
-          <p className="font-mono text-xs font-bold text-amber-400">
-            {r.done ? "Đã xong (Chuông đã reo)" : `Còn lại: ${formatCountdown(diff)}`}
-          </p>
-        </div>
+        <p className="font-mono text-xs font-semibold text-amber-400">
+          {r.done ? "Đã xong" : `Còn lại: ${formatCountdown(diff)}`}
+        </p>
       </div>
 
-      <div className="flex items-center gap-1.5 shrink-0 ml-2">
+      <div className="flex items-center gap-1 shrink-0 ml-2">
         {!r.done ? (
           <>
             <button
@@ -198,18 +196,18 @@ function HubTimerRow({
               className={cn(
                 "p-1.5 rounded-lg border transition-colors cursor-pointer text-xs",
                 r.pinToScreen
-                  ? "bg-amber-500/20 text-amber-400 border-amber-500/40"
-                  : "bg-[#1c1917] hover:bg-white/10 text-[#d6d3d1] border-[#44403c]",
+                  ? "bg-amber-500/20 text-amber-300 border-amber-500/40"
+                  : "bg-slate-900/50 hover:bg-white/10 text-slate-400 border-white/10",
               )}
             >
-              <Pin className={cn("size-3.5", r.pinToScreen && "fill-amber-400")} />
+              <Pin className={cn("size-3", r.pinToScreen && "fill-amber-400 text-amber-400")} />
             </button>
             <Button
               size="sm"
               variant="outline"
               type="button"
               onClick={() => onFire(r.id)}
-              className="text-[11px] h-7 px-2.5 border-[#57534e] bg-[#1c1917] hover:bg-amber-500/20 hover:text-amber-400 cursor-pointer"
+              className="text-[10px] h-6.5 px-2 border-white/10 bg-slate-900/50 hover:bg-amber-500/20 hover:text-amber-300 cursor-pointer"
             >
               Báo ngay
             </Button>
@@ -220,7 +218,7 @@ function HubTimerRow({
             variant="ghost"
             type="button"
             onClick={() => onComplete(r.id)}
-            className="text-[11px] h-7 px-2.5 hover:bg-white/10 cursor-pointer"
+            className="text-[10px] h-6.5 px-2 hover:bg-white/10 text-slate-400 cursor-pointer"
           >
             Đóng
           </Button>
@@ -229,9 +227,9 @@ function HubTimerRow({
           type="button"
           onClick={() => onRemove(r.id)}
           title="Xóa hẹn giờ"
-          className="p-1.5 rounded-lg bg-[#1c1917] hover:bg-red-500/20 text-red-400 border border-[#44403c] hover:border-red-500/40 transition-colors cursor-pointer"
+          className="p-1.5 rounded-lg hover:bg-red-500/20 text-slate-400 hover:text-red-400 transition-colors cursor-pointer"
         >
-          <Trash2 className="size-3.5" />
+          <Trash2 className="size-3" />
         </button>
       </div>
     </div>
@@ -278,12 +276,12 @@ export function Hub() {
 
   const dict = DICTIONARY[lang];
 
-  // Initialize position to comfortable center-left on open
+  // Initialize position on open
   useEffect(() => {
     if (open && pos === null && typeof window !== "undefined") {
-      const modalWidth = Math.min(540, window.innerWidth - 32);
+      const modalWidth = Math.min(480, window.innerWidth - 32);
       const initialX = Math.max(16, Math.round((window.innerWidth - modalWidth) / 2));
-      const initialY = Math.max(20, Math.round((window.innerHeight - 640) / 2));
+      const initialY = Math.max(20, Math.round((window.innerHeight - 580) / 2));
       setPos({ x: initialX, y: initialY });
     }
   }, [open, pos]);
@@ -312,7 +310,7 @@ export function Hub() {
   // Drag handlers
   const handlePointerDownHeader = (e: PointerEvent<HTMLElement>) => {
     if ((e.target as HTMLElement).closest("button, input, textarea, a, .no-drag")) return;
-    const currentX = pos?.x ?? Math.max(16, (window.innerWidth - 540) / 2);
+    const currentX = pos?.x ?? Math.max(16, (window.innerWidth - 480) / 2);
     const currentY = pos?.y ?? 40;
     dragRef.current = {
       startX: e.clientX,
@@ -328,10 +326,10 @@ export function Hub() {
     if (!dragRef.current) return;
     const dx = e.clientX - dragRef.current.startX;
     const dy = e.clientY - dragRef.current.startY;
-    const modalWidth = Math.min(540, window.innerWidth - 32);
-    const modalHeight = Math.min(640, window.innerHeight - 32);
+    const modalWidth = Math.min(480, window.innerWidth - 32);
+    const modalHeight = Math.min(580, window.innerHeight - 32);
     const newX = Math.max(8, Math.min(window.innerWidth - modalWidth - 8, dragRef.current.initX + dx));
-    const newY = Math.max(8, Math.min(window.innerHeight - 100, dragRef.current.initY + dy));
+    const newY = Math.max(8, Math.min(window.innerHeight - 80, dragRef.current.initY + dy));
     setPos({ x: newX, y: newY });
   };
 
@@ -341,10 +339,10 @@ export function Hub() {
   };
 
   const handleResetPosition = () => {
-    const modalWidth = Math.min(540, window.innerWidth - 32);
+    const modalWidth = Math.min(480, window.innerWidth - 32);
     setPos({
       x: Math.max(16, Math.round((window.innerWidth - modalWidth) / 2)),
-      y: Math.max(20, Math.round((window.innerHeight - 640) / 2)),
+      y: Math.max(20, Math.round((window.innerHeight - 580) / 2)),
     });
     sounds.playPop(520);
   };
@@ -379,7 +377,7 @@ export function Hub() {
         const parsed = JSON.parse(event.target?.result as string);
         if (parsed.notes && Array.isArray(parsed.notes)) {
           useLumen.setState({ notes: parsed.notes });
-          pushToast("Khôi phục dữ liệu", `Đã nạp thành công ${parsed.notes.length} ghi chú!`);
+          pushToast("Khôi phục dữ liệu", `Đã nạp ${parsed.notes.length} ghi chú!`);
         }
       } catch {
         pushToast("Lỗi nhập dữ liệu", "File JSON không hợp lệ.");
@@ -393,9 +391,9 @@ export function Hub() {
   return (
     <section
       className={cn(
-        "interactive-el fixed z-[90] flex flex-col overflow-hidden bg-[#1c1917] text-[#f5f5f4] shadow-[0_30px_75px_rgba(0,0,0,0.88)] border border-[#44403c] rounded-2xl select-none",
-        "w-[calc(100vw-1.5rem)] max-w-[540px] h-[640px] max-h-[calc(100vh-2rem)]",
-        isDragging && "opacity-95 shadow-[0_35px_90px_rgba(0,0,0,0.95)] ring-2 ring-amber-500/60",
+        "interactive-el fixed z-[90] flex flex-col overflow-hidden bg-slate-900/90 text-slate-100 shadow-[0_24px_60px_rgba(0,0,0,0.75)] border border-white/10 rounded-2xl select-none backdrop-blur-2xl",
+        "w-[calc(100vw-1.5rem)] max-w-[480px] h-[580px] max-h-[calc(100vh-2rem)]",
+        isDragging && "ring-1 ring-amber-500/50 shadow-[0_30px_70px_rgba(0,0,0,0.85)]",
       )}
       style={
         pos
@@ -412,96 +410,90 @@ export function Hub() {
             }
       }
       role="dialog"
-      aria-label="Lumen Hub Settings"
+      aria-label="Lumen Settings"
     >
-      {/* Draggable Header Bar */}
+      {/* Sleek Draggable Header */}
       <header
         onPointerDown={handlePointerDownHeader}
         onPointerMove={handlePointerMoveHeader}
         onPointerUp={handlePointerUpHeader}
         className={cn(
-          "flex items-center justify-between px-4 py-3 border-b border-[#332f2b] bg-[#171412] cursor-grab active:cursor-grabbing transition-colors",
-          isDragging && "bg-[#221c18]",
+          "flex items-center justify-between px-4 py-2.5 border-b border-white/10 bg-slate-950/40 cursor-grab active:cursor-grabbing transition-colors",
+          isDragging && "bg-slate-950/60",
         )}
-        title="Nhấp giữ chuột và kéo để di chuyển bảng cài đặt"
+        title="Kéo thả để di chuyển bảng cài đặt"
       >
-        <div className="flex items-center gap-2.5 min-w-0">
-          <div className="flex items-center justify-center size-7 rounded-lg bg-amber-500/15 text-amber-400 border border-amber-500/30 shrink-0">
-            <GripHorizontal className="size-4" />
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="flex items-center justify-center size-6 rounded-md bg-white/5 text-slate-400 shrink-0 border border-white/5">
+            <GripHorizontal className="size-3.5" />
           </div>
-          <div className="min-w-0">
-            <p className="font-display text-sm font-bold tracking-tight flex items-center gap-1.5 text-white">
-              <span>🦊</span>
-              <span>Lumen Settings</span>
-              <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-amber-500/20 text-amber-400 font-semibold border border-amber-500/30">
-                Kéo di chuyển
-              </span>
-            </p>
-            <p className="text-[11px] text-[#a8a29e] truncate">
-              {dict.appName} · {dict.subtagline}
+          <div className="flex items-center gap-1.5 min-w-0">
+            <span className="text-sm">🦊</span>
+            <p className="font-semibold text-xs tracking-tight text-slate-100">
+              Lumen Settings
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-1 shrink-0 no-drag">
+        <div className="flex items-center gap-0.5 shrink-0 no-drag">
           <button
             type="button"
             onClick={handleResetPosition}
-            className="flex size-7 items-center justify-center rounded-lg hover:bg-white/10 cursor-pointer transition-colors text-[#a8a29e] hover:text-white"
+            className="flex size-6.5 items-center justify-center rounded-lg hover:bg-white/10 cursor-pointer transition-colors text-slate-400 hover:text-slate-200"
             title="Đặt lại vị trí giữa màn hình"
             aria-label="Đặt lại vị trí"
           >
-            <RotateCcw className="size-3.5" />
+            <RotateCcw className="size-3" />
           </button>
           <button
             type="button"
             onClick={() => setHubOpen(false)}
-            className="flex size-7 items-center justify-center rounded-lg hover:bg-red-500/20 hover:text-red-400 cursor-pointer transition-colors text-[#d6d3d1]"
+            className="flex size-6.5 items-center justify-center rounded-lg hover:bg-red-500/20 hover:text-red-400 cursor-pointer transition-colors text-slate-400"
             aria-label={dict.close}
             title={dict.close}
           >
-            <X className="size-4" />
+            <X className="size-3.5" />
           </button>
         </div>
       </header>
 
-      {/* Navigation Tabs */}
+      {/* Pill-Switch Navigation Tabs */}
       <Tabs
         value={activeTab}
         onValueChange={setActiveTab}
         className="flex min-h-0 flex-1 flex-col"
       >
-        <div className="px-3 pt-2.5 pb-2 bg-[#171412] border-b border-[#2d2926]">
-          <TabsList className="grid grid-cols-4 bg-[#262220] p-1 rounded-xl h-10 border border-[#3d3834]">
+        <div className="px-3 pt-2.5 pb-2 bg-slate-950/20 border-b border-white/5">
+          <TabsList className="grid grid-cols-4 bg-slate-950/60 p-0.5 rounded-xl h-8.5 border border-white/10">
             <TabsTrigger
               value="remind"
-              className="text-xs font-bold rounded-lg transition-all data-[state=active]:bg-amber-500 data-[state=active]:text-black data-[state=active]:shadow-md flex items-center justify-center gap-1 text-[#d6d3d1]"
+              className="text-[11px] font-semibold rounded-lg transition-all data-[state=active]:bg-amber-500/20 data-[state=active]:text-amber-300 data-[state=active]:border data-[state=active]:border-amber-500/30 flex items-center justify-center gap-1 text-slate-400"
             >
-              <span>⏰</span>
+              <span>⏱</span>
               <span>Hẹn giờ</span>
               {activeTimersCount > 0 ? (
-                <span className="size-4 rounded-full bg-black/40 text-amber-300 text-[10px] flex items-center justify-center font-bold">
+                <span className="size-3.5 rounded-full bg-amber-500 text-slate-950 text-[9px] flex items-center justify-center font-bold">
                   {activeTimersCount}
                 </span>
               ) : null}
             </TabsTrigger>
             <TabsTrigger
               value="pip"
-              className="text-xs font-bold rounded-lg transition-all data-[state=active]:bg-amber-500 data-[state=active]:text-black data-[state=active]:shadow-md flex items-center justify-center gap-1 text-[#d6d3d1]"
+              className="text-[11px] font-semibold rounded-lg transition-all data-[state=active]:bg-amber-500/20 data-[state=active]:text-amber-300 data-[state=active]:border data-[state=active]:border-amber-500/30 flex items-center justify-center gap-1 text-slate-400"
             >
               <span>🐾</span>
               <span>Thú cưng</span>
             </TabsTrigger>
             <TabsTrigger
               value="look"
-              className="text-xs font-bold rounded-lg transition-all data-[state=active]:bg-amber-500 data-[state=active]:text-black data-[state=active]:shadow-md flex items-center justify-center gap-1 text-[#d6d3d1]"
+              className="text-[11px] font-semibold rounded-lg transition-all data-[state=active]:bg-amber-500/20 data-[state=active]:text-amber-300 data-[state=active]:border data-[state=active]:border-amber-500/30 flex items-center justify-center gap-1 text-slate-400"
             >
               <span>🎨</span>
               <span>Giao diện</span>
             </TabsTrigger>
             <TabsTrigger
               value="about"
-              className="text-xs font-bold rounded-lg transition-all data-[state=active]:bg-amber-500 data-[state=active]:text-black data-[state=active]:shadow-md flex items-center justify-center gap-1 text-[#d6d3d1]"
+              className="text-[11px] font-semibold rounded-lg transition-all data-[state=active]:bg-amber-500/20 data-[state=active]:text-amber-300 data-[state=active]:border data-[state=active]:border-amber-500/30 flex items-center justify-center gap-1 text-slate-400"
             >
               <span>⚙️</span>
               <span>Hệ thống</span>
@@ -509,100 +501,74 @@ export function Hub() {
           </TabsList>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto px-4 py-3.5 space-y-3.5 bg-[#1c1917] scrollbar-thin scrollbar-thumb-[#44403c] scrollbar-track-transparent">
+        <div className="min-h-0 flex-1 overflow-y-auto px-3.5 py-3 space-y-3 custom-scrollbar">
           {/* TAB 1: SMART TIMERS & COUNTDOWN */}
-          <TabsContent value="remind" className="space-y-3.5 mt-0">
-            {/* Quick Add Timer Card */}
-            <div className="rounded-xl bg-[#262220] p-3.5 border border-[#3f3a36] space-y-3 shadow-md">
-              <div className="flex items-center justify-between">
-                <p className="text-xs font-bold text-amber-400 uppercase tracking-wide flex items-center gap-1.5">
-                  <Sparkles className="size-3.5" />
-                  <span>Tạo Hẹn Giờ Thông Minh (Game, Việc, Nấu ăn...)</span>
-                </p>
-                <Badge className="bg-amber-500/15 text-amber-400 text-[10px] border-none">
-                  Ctrl+Shift+T
-                </Badge>
-              </div>
-
-              <form onSubmit={handleSmartSubmit} className="space-y-2.5">
-                <div className="flex gap-2">
+          <TabsContent value="remind" className="space-y-3 mt-0">
+            {/* Quick Smart Input Box */}
+            <div className="rounded-xl bg-slate-800/40 p-3 border border-white/10 space-y-2.5 shadow-xs">
+              <form onSubmit={handleSmartSubmit} className="space-y-2">
+                <div className="flex gap-1.5">
                   <Input
-                    placeholder="Ví dụ: xây nhà trong COC : 2g14p hoặc Nấu canh : 15p..."
+                    placeholder="Ví dụ: xây nhà COC : 2g14p, Nấu canh : 15p..."
                     value={smartInput}
                     onChange={(e) => setSmartInput(e.target.value)}
-                    className="bg-[#191614] border-[#4f4944] focus:border-amber-500 text-xs text-white placeholder:text-[#78716c] h-9"
+                    className="bg-slate-950/60 border-white/10 focus:border-amber-500/50 text-xs text-slate-100 placeholder:text-slate-500 h-8 rounded-lg"
                   />
                   <Button
                     type="submit"
-                    className="cursor-pointer font-bold bg-amber-500 text-black hover:bg-amber-400 text-xs px-4 h-9 shadow-sm shrink-0"
+                    className="cursor-pointer font-semibold bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs px-3 h-8 shadow-xs shrink-0 rounded-lg transition-colors"
                   >
                     + Đặt giờ
                   </Button>
                 </div>
 
                 {/* Preset Chips */}
-                <div className="space-y-1.5">
-                  <span className="text-[10px] font-semibold text-[#a8a29e] uppercase">
-                    Gợi ý mẫu hẹn giờ nhanh:
-                  </span>
-                  <div className="flex flex-wrap gap-1.5">
-                    {[
-                      { label: "🏰 Xây nhà COC: 2g14p", val: "xây nhà trong COC : 2g14p" },
-                      { label: "🍅 Pomodoro: 25p", val: "Tập trung Pomodoro : 25p" },
-                      { label: "☕ Nghỉ ngơi: 5p", val: "Nghỉ ngơi thư giãn : 5p" },
-                      { label: "🍲 Nấu ăn: 15p", val: "Nấu ăn canh súp : 15p" },
-                      { label: "💧 Uống nước: 30p", val: "Uống nước lọc : 30p" },
-                      { label: "⏳ 1 Giờ", val: "Hẹn giờ làm việc : 1g" },
-                    ].map((preset) => (
-                      <button
-                        key={preset.label}
-                        type="button"
-                        onClick={() => setSmartInput(preset.val)}
-                        className="text-[11px] px-2.5 py-1 rounded-lg bg-[#1c1917] hover:bg-amber-500/20 hover:text-amber-400 text-[#d6d3d1] border border-[#44403c] transition-colors cursor-pointer font-medium"
-                      >
-                        {preset.label}
-                      </button>
-                    ))}
-                  </div>
+                <div className="flex flex-wrap gap-1">
+                  {[
+                    { label: "🏰 COC: 2g14p", val: "xây nhà trong COC : 2g14p" },
+                    { label: "🍅 Pomodoro: 25p", val: "Tập trung Pomodoro : 25p" },
+                    { label: "☕ Nghỉ: 5p", val: "Nghỉ ngơi giải lao : 5p" },
+                    { label: "🍲 Nấu ăn: 15p", val: "Nấu ăn canh súp : 15p" },
+                    { label: "⏳ 1 Giờ", val: "Hẹn giờ làm việc : 1g" },
+                  ].map((preset) => (
+                    <button
+                      key={preset.label}
+                      type="button"
+                      onClick={() => setSmartInput(preset.val)}
+                      className="text-[10px] px-2 py-0.5 rounded-md bg-slate-900/60 hover:bg-amber-500/15 hover:text-amber-300 text-slate-300 border border-white/10 transition-colors cursor-pointer"
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
                 </div>
 
-                <div className="flex items-center justify-between pt-2 border-t border-[#38332e]">
-                  <div className="flex items-center gap-1.5">
-                    <Pin className="size-3.5 text-amber-400" />
-                    <span className="text-xs text-[#d6d3d1]">Ghim đồng hồ đếm ngược nổi trên Desktop</span>
-                  </div>
+                <div className="flex items-center justify-between pt-1.5 border-t border-white/5">
+                  <span className="text-[11px] text-slate-400">Ghim đồng hồ nổi trên Desktop</span>
                   <Switch checked={pinToDesktop} onCheckedChange={setPinToDesktop} />
                 </div>
               </form>
             </div>
 
-            {/* Custom Alarm Sound Settings Card */}
-            <div className="rounded-xl bg-[#262220] p-3.5 border border-[#3f3a36] space-y-3 shadow-md">
+            {/* Alarm Audio Customizer */}
+            <div className="rounded-xl bg-slate-800/40 p-3 border border-white/10 space-y-2.5 shadow-xs">
               <div className="flex items-center justify-between">
-                <p className="text-xs font-bold text-white uppercase tracking-wide flex items-center gap-1.5">
+                <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-200">
                   <Volume2 className="size-3.5 text-amber-400" />
-                  <span>Cài đặt âm lượng & Chuông báo thức</span>
-                </p>
+                  <span>Chuông báo thức</span>
+                </div>
                 <button
                   type="button"
                   onClick={handleTestAlarm}
-                  className="flex items-center gap-1.5 text-xs font-bold text-black bg-amber-500 hover:bg-amber-400 px-3 py-1 rounded-lg cursor-pointer transition-all shadow-sm active:scale-95"
+                  className="flex items-center gap-1 text-[11px] font-semibold text-amber-300 hover:text-amber-200 bg-amber-500/15 border border-amber-500/30 px-2 py-0.5 rounded-md cursor-pointer transition-colors"
                 >
-                  <Play className="size-3 fill-black" />
-                  <span>Thử chuông ngay</span>
+                  <Play className="size-2.5 fill-current" />
+                  <span>Thử chuông</span>
                 </button>
               </div>
 
               {/* Volume Slider */}
-              <div className="space-y-1.5 bg-[#1c1917] p-2.5 rounded-xl border border-[#38332e]">
-                <div className="flex items-center justify-between text-xs font-medium">
-                  <span className="text-[#a8a29e] flex items-center gap-1">
-                    <span>🔊</span> Âm lượng chuông báo
-                  </span>
-                  <span className="font-mono font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/30">
-                    {alarmSettings.volume ?? 100}%
-                  </span>
-                </div>
+              <div className="flex items-center gap-2.5 bg-slate-950/40 px-2.5 py-1.5 rounded-lg border border-white/5">
+                <span className="text-[11px] text-slate-400 shrink-0">Âm lượng</span>
                 <input
                   type="range"
                   min="10"
@@ -610,68 +576,54 @@ export function Hub() {
                   step="5"
                   value={alarmSettings.volume ?? 100}
                   onChange={(e) => setAlarmSettings({ volume: parseInt(e.target.value, 10) })}
-                  className="w-full h-2 bg-[#2d2825] rounded-lg appearance-none cursor-pointer accent-amber-500"
+                  className="w-full h-1 bg-slate-700 rounded appearance-none cursor-pointer accent-amber-500"
                 />
+                <span className="font-mono text-[11px] font-semibold text-amber-400 shrink-0">
+                  {alarmSettings.volume ?? 100}%
+                </span>
               </div>
 
-              {/* Alarm Tones Grid */}
-              <div className="space-y-1.5">
-                <span className="text-[11px] text-[#a8a29e] uppercase font-semibold">
-                  Chọn kiểu tiếng chuông báo thức:
-                </span>
-                <div className="grid grid-cols-2 gap-2">
-                  {ALARM_TONES.map((tone) => (
-                    <button
-                      key={tone.id}
-                      type="button"
-                      onClick={() => {
-                        setAlarmSettings({ tone: tone.id });
-                        sounds.playAlarmTone(tone.id, alarmSettings.volume ?? 100);
-                      }}
-                      className={cn(
-                        "flex items-start justify-between rounded-xl bg-[#1c1917] p-2.5 text-left border cursor-pointer transition-all",
-                        (alarmSettings.tone || "bell_arpeggio") === tone.id
-                          ? "border-amber-500 ring-2 ring-amber-500/50 bg-amber-500/10"
-                          : "border-[#38332e] hover:border-[#57534e]",
-                      )}
-                    >
-                      <div className="flex items-start gap-2 min-w-0">
-                        <span className="text-lg leading-none mt-0.5">{tone.icon}</span>
-                        <div className="min-w-0">
-                          <p className="text-xs font-bold text-white truncate">{tone.name}</p>
-                          <p className="text-[10px] text-[#a8a29e] line-clamp-2 leading-tight mt-0.5">
-                            {tone.desc}
-                          </p>
-                        </div>
-                      </div>
-                      {(alarmSettings.tone || "bell_arpeggio") === tone.id ? (
-                        <Check className="size-4 text-amber-400 shrink-0 ml-1" />
-                      ) : null}
-                    </button>
-                  ))}
-                </div>
+              {/* Alarm Tones Selector */}
+              <div className="grid grid-cols-2 gap-1.5">
+                {ALARM_TONES.map((tone) => (
+                  <button
+                    key={tone.id}
+                    type="button"
+                    onClick={() => {
+                      setAlarmSettings({ tone: tone.id });
+                      sounds.playAlarmTone(tone.id, alarmSettings.volume ?? 100);
+                    }}
+                    className={cn(
+                      "flex items-center justify-between rounded-lg bg-slate-950/40 p-2 text-left border cursor-pointer transition-all",
+                      (alarmSettings.tone || "bell_arpeggio") === tone.id
+                        ? "border-amber-500/50 bg-amber-500/10 text-amber-200"
+                        : "border-white/5 hover:border-white/15 text-slate-300",
+                    )}
+                  >
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <span className="text-sm shrink-0">{tone.icon}</span>
+                      <p className="text-[11px] font-medium truncate">{tone.name}</p>
+                    </div>
+                    {(alarmSettings.tone || "bell_arpeggio") === tone.id ? (
+                      <Check className="size-3 text-amber-400 shrink-0" />
+                    ) : null}
+                  </button>
+                ))}
               </div>
             </div>
 
             {/* Active Timers List */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <p className="text-xs font-bold text-[#a8a29e] uppercase tracking-wide flex items-center gap-1.5">
-                  <Clock className="size-3.5" />
-                  <span>Danh sách hẹn giờ đang chạy ({activeTimersCount})</span>
-                </p>
-              </div>
+            <div className="space-y-1.5">
+              <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                Hẹn giờ đang chạy ({activeTimersCount})
+              </p>
 
               {reminders.length === 0 ? (
-                <div className="rounded-xl bg-[#262220] p-6 text-center border border-[#38332e] space-y-1.5">
-                  <p className="text-2xl">⏳</p>
-                  <p className="text-xs font-semibold text-white">Chưa có hẹn giờ nào</p>
-                  <p className="text-[11px] text-[#a8a29e]">
-                    Nhập tên việc và thời gian ở trên để bắt đầu đếm ngược thông minh!
-                  </p>
+                <div className="rounded-xl bg-slate-800/20 p-4 text-center border border-white/5">
+                  <p className="text-[11px] text-slate-500">Chưa có hẹn giờ nào đang chạy.</p>
                 </div>
               ) : (
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   {reminders.map((r) => (
                     <HubTimerRow
                       key={r.id}
@@ -687,15 +639,12 @@ export function Hub() {
             </div>
           </TabsContent>
 
-          {/* TAB 2: VIRTUAL PET STUDIO & WARDROBE & TOYS */}
-          <TabsContent value="pip" className="space-y-3.5 mt-0">
-            {/* Enable Companion Toggle */}
-            <div className="flex items-center justify-between gap-3 rounded-xl bg-[#262220] px-3.5 py-3 border border-[#3f3a36]">
+          {/* TAB 2: VIRTUAL PET STUDIO & WARDROBE */}
+          <TabsContent value="pip" className="space-y-3 mt-0">
+            <div className="flex items-center justify-between gap-3 rounded-xl bg-slate-800/40 px-3 py-2.5 border border-white/10">
               <div>
-                <p className="text-xs font-bold text-white flex items-center gap-1.5">
-                  <span>🐾</span> {dict.pipStudio.enableCompanion}
-                </p>
-                <p className="text-[11px] text-[#a8a29e]">{dict.pipStudio.enableDesc}</p>
+                <p className="text-xs font-semibold text-slate-100">{dict.pipStudio.enableCompanion}</p>
+                <p className="text-[10px] text-slate-400">{dict.pipStudio.enableDesc}</p>
               </div>
               <Switch checked={pip.enabled} onCheckedChange={setPipEnabled} />
             </div>
@@ -703,10 +652,9 @@ export function Hub() {
             {pip.enabled && (
               <>
                 {/* Pet Stage & Happiness Card */}
-                <div className="rounded-xl bg-[#262220] p-3.5 border border-[#3f3a36] space-y-3 shadow-md">
-                  <div className="flex items-center gap-3.5">
-                    <div className="flex size-20 items-center justify-center rounded-xl bg-[#1c1917] border border-[#38332e] shadow-inner relative overflow-hidden shrink-0">
-                      <div className="absolute inset-0 bg-radial from-amber-500/10 to-transparent pointer-events-none" />
+                <div className="rounded-xl bg-slate-800/40 p-3 border border-white/10 space-y-2.5 shadow-xs">
+                  <div className="flex items-center gap-3">
+                    <div className="flex size-16 items-center justify-center rounded-xl bg-slate-950/60 border border-white/10 shrink-0 relative overflow-hidden">
                       <PipFigure
                         walking={false}
                         carrying={pip.carrying}
@@ -715,34 +663,29 @@ export function Hub() {
                         petType={pip.petType}
                         hat={pip.hat}
                         bodyItem={pip.bodyItem}
-                        className="scale-95"
+                        className="scale-90"
                       />
                     </div>
-                    <div className="flex-1 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold uppercase text-[#a8a29e] flex items-center gap-1">
-                          <Heart className="size-3 text-rose-400 fill-rose-400" />
-                          <span>{dict.pipStudio.happiness}</span>
-                        </span>
-                        <span className="text-xs font-mono font-bold text-amber-400 bg-amber-500/15 px-2 py-0.5 rounded border border-amber-500/30">
-                          {pip.happiness}%
-                        </span>
+                    <div className="flex-1 space-y-1.5">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-[11px] font-medium text-slate-400">Vui vẻ (Happiness)</span>
+                        <span className="font-mono text-xs font-bold text-amber-400">{pip.happiness}%</span>
                       </div>
-                      <div className="h-2 w-full overflow-hidden rounded-full bg-[#1c1917] border border-[#38332e]">
+                      <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-950/60">
                         <div
                           className="h-full bg-gradient-to-r from-amber-500 to-emerald-400 transition-all duration-500"
                           style={{ width: `${pip.happiness}%` }}
                         />
                       </div>
-                      <div className="flex items-center justify-between text-[11px] text-[#a8a29e] bg-[#1c1917] px-2.5 py-1 rounded-lg border border-[#38332e]">
-                        <span>🍪 {dict.pipStudio.treatsEaten}: <b className="text-white">{pip.treatsEaten}</b></span>
-                        <span>✨ {dict.pipStudio.mood}: <b className="capitalize text-amber-400">{pip.mood}</b></span>
+                      <div className="flex items-center justify-between text-[10px] text-slate-400">
+                        <span>🍪 Đã ăn: <b className="text-slate-200">{pip.treatsEaten}</b></span>
+                        <span>✨ Mood: <b className="capitalize text-amber-300">{pip.mood}</b></span>
                       </div>
                     </div>
                   </div>
 
-                  {/* 4 Quick Action Buttons */}
-                  <div className="grid grid-cols-2 gap-2 pt-1">
+                  {/* 4 Quick Actions */}
+                  <div className="grid grid-cols-2 gap-1.5 pt-0.5">
                     <Button
                       variant="outline"
                       size="sm"
@@ -750,47 +693,47 @@ export function Hub() {
                         triggerThrowBall();
                         setHubOpen(false);
                       }}
-                      className="flex items-center justify-center gap-1.5 cursor-pointer border-lime-500/40 bg-lime-500/15 text-lime-400 hover:bg-lime-500/25 h-8 text-xs font-bold"
+                      className="flex items-center justify-center gap-1.5 cursor-pointer border-lime-500/30 bg-lime-500/10 text-lime-300 hover:bg-lime-500/20 h-7 text-[11px] font-semibold"
                     >
                       <span>🎾</span>
-                      <span>Ném bóng bắt đồ</span>
+                      <span>Ném bóng</span>
                     </Button>
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={petPip}
-                      className="flex items-center justify-center gap-1.5 cursor-pointer border-rose-500/40 bg-rose-500/15 text-rose-400 hover:bg-rose-500/25 h-8 text-xs font-bold"
+                      className="flex items-center justify-center gap-1.5 cursor-pointer border-rose-500/30 bg-rose-500/10 text-rose-300 hover:bg-rose-500/20 h-7 text-[11px] font-semibold"
                     >
-                      <Heart className="size-3.5 fill-rose-400" />
+                      <Heart className="size-3 fill-current" />
                       <span>{dict.pipStudio.petPip}</span>
                     </Button>
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={feedPip}
-                      className="flex items-center justify-center gap-1.5 cursor-pointer border-amber-500/40 bg-amber-500/15 text-amber-400 hover:bg-amber-500/25 h-8 text-xs font-bold"
+                      className="flex items-center justify-center gap-1.5 cursor-pointer border-amber-500/30 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20 h-7 text-[11px] font-semibold"
                     >
-                      <Cookie className="size-3.5 fill-amber-400" />
+                      <Cookie className="size-3 fill-current" />
                       <span>{dict.pipStudio.feedSnack}</span>
                     </Button>
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={dancePip}
-                      className="flex items-center justify-center gap-1.5 cursor-pointer border-indigo-500/40 bg-indigo-500/15 text-indigo-300 hover:bg-indigo-500/25 h-8 text-xs font-bold"
+                      className="flex items-center justify-center gap-1.5 cursor-pointer border-indigo-500/30 bg-indigo-500/10 text-indigo-300 hover:bg-indigo-500/20 h-7 text-[11px] font-semibold"
                     >
-                      <Sparkles className="size-3.5" />
+                      <Sparkles className="size-3" />
                       <span>{dict.pipStudio.danceParty}</span>
                     </Button>
                   </div>
                 </div>
 
-                {/* Pet Species Selection */}
-                <div className="space-y-2">
-                  <p className="text-xs font-bold tracking-wide text-[#a8a29e] uppercase">
+                {/* Pet Species */}
+                <div className="space-y-1.5">
+                  <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
                     Loài thú cưng (Pet Species)
                   </p>
-                  <div className="grid grid-cols-1 gap-1.5">
+                  <div className="grid grid-cols-1 gap-1">
                     {PET_TYPES.map((pt) => (
                       <button
                         key={pt.id}
@@ -800,23 +743,20 @@ export function Hub() {
                           sounds.playPop(560);
                         }}
                         className={cn(
-                          "flex items-center justify-between rounded-xl bg-[#262220] px-3 py-2 text-left border transition-all cursor-pointer",
+                          "flex items-center justify-between rounded-xl bg-slate-800/30 px-3 py-1.5 text-left border transition-all cursor-pointer",
                           pip.petType === pt.id
-                            ? "ring-2 ring-amber-500 bg-amber-500/15 border-amber-500"
-                            : "border-[#3f3a36] hover:border-[#57534e]",
+                            ? "border-amber-500/50 bg-amber-500/10 text-amber-200"
+                            : "border-white/5 hover:border-white/15 text-slate-300",
                         )}
                       >
-                        <div className="flex items-center gap-2.5 min-w-0">
-                          <span className="text-xl shrink-0">{pt.icon}</span>
-                          <div className="min-w-0">
-                            <p className="text-xs font-bold text-white">{pt.name}</p>
-                            <p className="text-[11px] text-[#a8a29e] truncate">{pt.desc}</p>
-                          </div>
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="text-base shrink-0">{pt.icon}</span>
+                          <span className="text-xs font-semibold">{pt.name}</span>
                         </div>
                         {pip.petType === pt.id ? (
-                          <Badge className="bg-amber-500 text-black font-bold text-[10px] shrink-0 ml-2">
+                          <span className="text-[10px] bg-amber-500/20 text-amber-300 px-1.5 py-0.2 rounded font-semibold border border-amber-500/30">
                             Active
-                          </Badge>
+                          </span>
                         ) : null}
                       </button>
                     ))}
@@ -824,11 +764,11 @@ export function Hub() {
                 </div>
 
                 {/* Pet Wardrobe: Hats */}
-                <div className="space-y-2">
-                  <p className="text-xs font-bold tracking-wide text-[#a8a29e] uppercase">
-                    🎩 Mũ & Phụ kiện đầu (Hats & Caps)
+                <div className="space-y-1.5">
+                  <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                    🎩 Mũ & Phụ kiện đầu
                   </p>
-                  <div className="grid grid-cols-3 gap-1.5">
+                  <div className="grid grid-cols-3 gap-1">
                     {HATS.map((h) => (
                       <button
                         key={h.id}
@@ -838,25 +778,25 @@ export function Hub() {
                           sounds.playPop(580);
                         }}
                         className={cn(
-                          "flex items-center gap-1.5 rounded-xl bg-[#262220] p-2 text-left border transition-all cursor-pointer text-xs",
+                          "flex items-center gap-1.5 rounded-lg bg-slate-800/30 p-1.5 text-left border transition-all cursor-pointer text-xs",
                           (pip.hat || "none") === h.id
-                            ? "ring-2 ring-amber-500 bg-amber-500/15 border-amber-500 text-amber-400 font-bold"
-                            : "border-[#3f3a36] hover:border-[#57534e] text-[#d6d3d1]",
+                            ? "border-amber-500/50 bg-amber-500/10 text-amber-300 font-semibold"
+                            : "border-white/5 hover:border-white/15 text-slate-400",
                         )}
                       >
-                        <span className="text-base">{h.icon}</span>
-                        <span className="truncate text-[11px]">{h.name}</span>
+                        <span className="text-sm">{h.icon}</span>
+                        <span className="truncate text-[10px]">{h.name}</span>
                       </button>
                     ))}
                   </div>
                 </div>
 
-                {/* Pet Wardrobe: Body Items */}
-                <div className="space-y-2">
-                  <p className="text-xs font-bold tracking-wide text-[#a8a29e] uppercase">
-                    🎒 Trang phục & Đồ đeo (Body Outfits)
+                {/* Pet Wardrobe: Outfits */}
+                <div className="space-y-1.5">
+                  <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                    🎒 Trang phục & Đồ đeo
                   </p>
-                  <div className="grid grid-cols-3 gap-1.5">
+                  <div className="grid grid-cols-3 gap-1">
                     {BODY_ITEMS.map((b) => (
                       <button
                         key={b.id}
@@ -866,14 +806,14 @@ export function Hub() {
                           sounds.playPop(580);
                         }}
                         className={cn(
-                          "flex items-center gap-1.5 rounded-xl bg-[#262220] p-2 text-left border transition-all cursor-pointer text-xs",
+                          "flex items-center gap-1.5 rounded-lg bg-slate-800/30 p-1.5 text-left border transition-all cursor-pointer text-xs",
                           (pip.bodyItem || "backpack") === b.id
-                            ? "ring-2 ring-amber-500 bg-amber-500/15 border-amber-500 text-amber-400 font-bold"
-                            : "border-[#3f3a36] hover:border-[#57534e] text-[#d6d3d1]",
+                            ? "border-amber-500/50 bg-amber-500/10 text-amber-300 font-semibold"
+                            : "border-white/5 hover:border-white/15 text-slate-400",
                         )}
                       >
-                        <span className="text-base">{b.icon}</span>
-                        <span className="truncate text-[11px]">{b.name}</span>
+                        <span className="text-sm">{b.icon}</span>
+                        <span className="truncate text-[10px]">{b.name}</span>
                       </button>
                     ))}
                   </div>
@@ -883,12 +823,11 @@ export function Hub() {
           </TabsContent>
 
           {/* TAB 3: LOOK & THEMES */}
-          <TabsContent value="look" className="space-y-3.5 mt-0">
+          <TabsContent value="look" className="space-y-3 mt-0">
             {/* Language Selector */}
-            <div className="space-y-2">
-              <p className="text-xs font-bold tracking-wide text-[#a8a29e] uppercase flex items-center gap-1.5">
-                <Globe className="size-3.5 text-amber-500" />
-                <span>{dict.look.language}</span>
+            <div className="space-y-1.5">
+              <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                Ngôn ngữ (Language)
               </p>
               <div className="grid grid-cols-2 gap-2">
                 <button
@@ -898,17 +837,17 @@ export function Hub() {
                     sounds.playPop(520);
                   }}
                   className={cn(
-                    "flex items-center justify-between rounded-xl bg-[#262220] px-3.5 py-2.5 text-left border cursor-pointer transition-all",
+                    "flex items-center justify-between rounded-xl bg-slate-800/30 px-3 py-2 text-left border cursor-pointer transition-all",
                     lang === "vi"
-                      ? "ring-2 ring-amber-500 border-amber-500 bg-amber-500/15"
-                      : "border-[#3f3a36] hover:border-[#57534e]",
+                      ? "border-amber-500/50 bg-amber-500/10 text-amber-200"
+                      : "border-white/5 hover:border-white/15 text-slate-400",
                   )}
                 >
-                  <div className="flex items-center gap-2">
-                    <span className="text-base">🇻🇳</span>
-                    <span className="text-xs font-bold text-white">Tiếng Việt</span>
+                  <div className="flex items-center gap-1.5">
+                    <span>🇻🇳</span>
+                    <span className="text-xs font-semibold">Tiếng Việt</span>
                   </div>
-                  {lang === "vi" ? <Badge className="bg-amber-500 text-black font-bold">Active</Badge> : null}
+                  {lang === "vi" ? <span className="size-1.5 rounded-full bg-amber-400" /> : null}
                 </button>
                 <button
                   type="button"
@@ -917,29 +856,29 @@ export function Hub() {
                     sounds.playPop(520);
                   }}
                   className={cn(
-                    "flex items-center justify-between rounded-xl bg-[#262220] px-3.5 py-2.5 text-left border cursor-pointer transition-all",
+                    "flex items-center justify-between rounded-xl bg-slate-800/30 px-3 py-2 text-left border cursor-pointer transition-all",
                     lang === "en"
-                      ? "ring-2 ring-amber-500 border-amber-500 bg-amber-500/15"
-                      : "border-[#3f3a36] hover:border-[#57534e]",
+                      ? "border-amber-500/50 bg-amber-500/10 text-amber-200"
+                      : "border-white/5 hover:border-white/15 text-slate-400",
                   )}
                 >
-                  <div className="flex items-center gap-2">
-                    <span className="text-base">🇬🇧</span>
-                    <span className="text-xs font-bold text-white">English</span>
+                  <div className="flex items-center gap-1.5">
+                    <span>🇬🇧</span>
+                    <span className="text-xs font-semibold">English</span>
                   </div>
-                  {lang === "en" ? <Badge className="bg-amber-500 text-black font-bold">Active</Badge> : null}
+                  {lang === "en" ? <span className="size-1.5 rounded-full bg-amber-400" /> : null}
                 </button>
               </div>
             </div>
 
             {/* Themes Grid */}
-            <div className="space-y-2">
-              <p className="text-xs font-bold tracking-wide text-[#a8a29e] uppercase">
-                {dict.look.theme}
+            <div className="space-y-1.5">
+              <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                Chủ đề không gian
               </p>
-              <div className="space-y-1.5">
+              <div className="space-y-1">
                 {THEMES.map((t) => {
-                  const preview = THEME_PREVIEWS[t.id] || { bg: "bg-[#1c1917]", accent: "bg-amber-500", border: "border-stone-700" };
+                  const preview = THEME_PREVIEWS[t.id] || { bg: "bg-slate-800", accent: "bg-amber-500", border: "border-slate-700" };
                   return (
                     <button
                       key={t.id}
@@ -949,99 +888,94 @@ export function Hub() {
                         sounds.playPop(540);
                       }}
                       className={cn(
-                        "flex w-full items-center justify-between rounded-xl bg-[#262220] px-3.5 py-2.5 text-left border cursor-pointer transition-all",
+                        "flex w-full items-center justify-between rounded-xl bg-slate-800/30 px-3 py-2 text-left border cursor-pointer transition-all",
                         theme === t.id
-                          ? "ring-2 ring-amber-500 border-amber-500 bg-amber-500/15"
-                          : "border-[#3f3a36] hover:border-[#57534e]",
+                          ? "border-amber-500/50 bg-amber-500/10 text-amber-200"
+                          : "border-white/5 hover:border-white/15 text-slate-300",
                       )}
                     >
-                      <div className="flex items-center gap-3">
-                        <div className={cn("size-6 rounded-lg border flex items-center justify-center shadow-sm", preview.bg, preview.border)}>
-                          <div className={cn("size-2 rounded-full", preview.accent)} />
+                      <div className="flex items-center gap-2.5">
+                        <div className={cn("size-5 rounded-md border flex items-center justify-center", preview.bg, preview.border)}>
+                          <div className={cn("size-1.5 rounded-full", preview.accent)} />
                         </div>
-                        <div>
-                          <p className="text-xs font-bold text-white">{t.name}</p>
-                          <p className="text-[10px] text-[#a8a29e]">{t.line}</p>
-                        </div>
+                        <span className="text-xs font-medium">{t.name}</span>
                       </div>
-                      {theme === t.id ? <Badge className="bg-amber-500 text-black font-bold">Active</Badge> : null}
+                      {theme === t.id ? (
+                        <span className="text-[10px] bg-amber-500/20 text-amber-300 px-1.5 py-0.2 rounded font-semibold border border-amber-500/30">
+                          Active
+                        </span>
+                      ) : null}
                     </button>
                   );
                 })}
               </div>
             </div>
 
-            {/* Always On Top & Audio Toggles */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between gap-3 rounded-xl bg-[#262220] px-3.5 py-3 border border-[#3f3a36]">
-                <div className="flex items-center gap-2.5">
-                  <Pin className="size-4 text-amber-500" />
-                  <div>
-                    <p className="text-xs font-bold text-white">{dict.look.alwaysOnTop}</p>
-                    <p className="text-[11px] text-[#a8a29e]">{dict.look.alwaysOnTopDesc}</p>
-                  </div>
+            {/* Always on top & audio switches */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between gap-3 rounded-xl bg-slate-800/30 px-3 py-2.5 border border-white/5">
+                <div>
+                  <p className="text-xs font-medium text-slate-200">{dict.look.alwaysOnTop}</p>
+                  <p className="text-[10px] text-slate-400">{dict.look.alwaysOnTopDesc}</p>
                 </div>
                 <Switch checked={alwaysOnTop} onCheckedChange={handleAlwaysOnTopChange} />
               </div>
 
-              <div className="flex items-center justify-between gap-3 rounded-xl bg-[#262220] px-3.5 py-3 border border-[#3f3a36]">
-                <div className="flex items-center gap-2.5">
-                  {pip.soundEnabled ? <Volume2 className="size-4 text-amber-500" /> : <VolumeX className="size-4 text-[#a8a29e]" />}
-                  <div>
-                    <p className="text-xs font-bold text-white">{dict.look.proceduralAudio}</p>
-                    <p className="text-[11px] text-[#a8a29e]">{dict.look.audioDesc}</p>
-                  </div>
+              <div className="flex items-center justify-between gap-3 rounded-xl bg-slate-800/30 px-3 py-2.5 border border-white/5">
+                <div>
+                  <p className="text-xs font-medium text-slate-200">{dict.look.proceduralAudio}</p>
+                  <p className="text-[10px] text-slate-400">{dict.look.audioDesc}</p>
                 </div>
                 <Switch checked={pip.soundEnabled} onCheckedChange={(val) => toggleSound(val)} />
               </div>
             </div>
           </TabsContent>
 
-          {/* TAB 4: SYSTEM & TELEMETRY & BACKUP */}
-          <TabsContent value="about" className="space-y-3.5 text-xs text-[#a8a29e] mt-0">
-            {/* Live Performance Telemetry Card */}
-            <div className="rounded-xl bg-[#262220] p-3.5 space-y-2.5 border border-[#3f3a36]">
-              <p className="font-bold text-white flex items-center gap-1.5 text-xs">
-                <Activity className="size-3.5 text-emerald-400" />
-                <span>Giám Sát Hiệu Năng Thời Gian Thực (Telemetry)</span>
+          {/* TAB 4: SYSTEM & TELEMETRY */}
+          <TabsContent value="about" className="space-y-3 text-xs text-slate-400 mt-0">
+            {/* Live Performance Telemetry */}
+            <div className="rounded-xl bg-slate-800/40 p-3 space-y-2 border border-white/10">
+              <p className="font-semibold text-slate-200 flex items-center gap-1.5 text-xs">
+                <Activity className="size-3 text-emerald-400" />
+                <span>Giám sát hiệu năng</span>
               </p>
               <div className="grid grid-cols-3 gap-2 text-center font-mono">
-                <div className="bg-[#1c1917] p-2 rounded-xl border border-[#38332e]">
-                  <p className="text-[10px] text-[#a8a29e]">Bộ Nhớ RAM</p>
-                  <p className="text-xs font-bold text-emerald-400 mt-0.5">~38 MB</p>
+                <div className="bg-slate-950/50 p-2 rounded-lg border border-white/5">
+                  <p className="text-[9px] text-slate-500">RAM</p>
+                  <p className="text-xs font-bold text-emerald-400">~38 MB</p>
                 </div>
-                <div className="bg-[#1c1917] p-2 rounded-xl border border-[#38332e]">
-                  <p className="text-[10px] text-[#a8a29e]">Khung Hình</p>
-                  <p className="text-xs font-bold text-amber-400 mt-0.5">120 FPS</p>
+                <div className="bg-slate-950/50 p-2 rounded-lg border border-white/5">
+                  <p className="text-[9px] text-slate-500">FPS</p>
+                  <p className="text-xs font-bold text-amber-400">120 FPS</p>
                 </div>
-                <div className="bg-[#1c1917] p-2 rounded-xl border border-[#38332e]">
-                  <p className="text-[10px] text-[#a8a29e]">Tải CPU</p>
-                  <p className="text-xs font-bold text-blue-400 mt-0.5">&lt; 0.4%</p>
+                <div className="bg-slate-950/50 p-2 rounded-lg border border-white/5">
+                  <p className="text-[9px] text-slate-500">CPU</p>
+                  <p className="text-xs font-bold text-sky-400">&lt; 0.4%</p>
                 </div>
               </div>
             </div>
 
-            {/* Local Backup & LAN Export */}
-            <div className="rounded-xl bg-[#262220] p-3.5 space-y-2.5 border border-[#3f3a36]">
-              <p className="font-bold text-white text-xs">Sao lưu & Đồng bộ cục bộ (Local Sync)</p>
+            {/* Local Backup */}
+            <div className="rounded-xl bg-slate-800/40 p-3 space-y-2 border border-white/10">
+              <p className="font-semibold text-slate-200 text-xs">Sao lưu & Khôi phục</p>
               <div className="flex gap-2">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={handleExportBackup}
-                  className="flex-1 flex items-center justify-center gap-1.5 cursor-pointer border-[#4f4944] bg-[#1c1917] text-white hover:bg-white/10 h-8 text-xs font-medium"
+                  className="flex-1 flex items-center justify-center gap-1.5 cursor-pointer border-white/10 bg-slate-950/50 text-slate-200 hover:bg-white/10 h-7.5 text-xs"
                 >
-                  <Download className="size-3.5" />
-                  <span>Xuất file JSON</span>
+                  <Download className="size-3" />
+                  <span>Xuất JSON</span>
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => fileInputRef.current?.click()}
-                  className="flex-1 flex items-center justify-center gap-1.5 cursor-pointer border-[#4f4944] bg-[#1c1917] text-white hover:bg-white/10 h-8 text-xs font-medium"
+                  className="flex-1 flex items-center justify-center gap-1.5 cursor-pointer border-white/10 bg-slate-950/50 text-slate-200 hover:bg-white/10 h-7.5 text-xs"
                 >
-                  <Upload className="size-3.5" />
-                  <span>Nhập file JSON</span>
+                  <Upload className="size-3" />
+                  <span>Nhập JSON</span>
                 </Button>
                 <input
                   ref={fileInputRef}
@@ -1053,47 +987,35 @@ export function Hub() {
               </div>
             </div>
 
-            {/* Shortcuts Cheat Sheet */}
-            <div className="rounded-xl bg-[#262220] p-3.5 space-y-2 border border-[#3f3a36]">
-              <p className="font-bold text-white text-xs mb-1">{dict.about.shortcutsTitle}:</p>
-              <div className="space-y-1.5 text-[11px]">
+            {/* Shortcuts */}
+            <div className="rounded-xl bg-slate-800/40 p-3 space-y-1.5 border border-white/10">
+              <p className="font-semibold text-slate-200 text-xs mb-1">Phím tắt nhanh:</p>
+              <div className="space-y-1 text-[11px]">
                 <div className="flex items-center justify-between">
-                  <span>Tạo ghi chú nhanh:</span>
-                  <span className="font-mono bg-[#1c1917] px-2 py-0.5 rounded border border-[#38332e] text-amber-400 font-bold">
+                  <span>Ghi chú nhanh:</span>
+                  <span className="font-mono bg-slate-950/60 px-1.5 py-0.2 rounded border border-white/5 text-amber-300 font-semibold">
                     Ctrl + Shift + N
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span>Hẹn giờ nhanh thông minh:</span>
-                  <span className="font-mono bg-[#1c1917] px-2 py-0.5 rounded border border-[#38332e] text-amber-400 font-bold">
+                  <span>Hẹn giờ nhanh:</span>
+                  <span className="font-mono bg-slate-950/60 px-1.5 py-0.2 rounded border border-white/5 text-amber-300 font-semibold">
                     Ctrl + Shift + T
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span>Tạo ghi chú mới trên bàn:</span>
-                  <span className="font-mono bg-[#1c1917] px-2 py-0.5 rounded border border-[#38332e] text-white">
-                    Nhấp đúp chuột
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span>Kéo thả di chuyển tự do:</span>
-                  <span className="font-mono bg-[#1c1917] px-2 py-0.5 rounded border border-[#38332e] text-white">
-                    Chuột giữ & Kéo
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
                   <span>Đóng cửa sổ / Modal:</span>
-                  <span className="font-mono bg-[#1c1917] px-2 py-0.5 rounded border border-[#38332e] text-white">
+                  <span className="font-mono bg-slate-950/60 px-1.5 py-0.2 rounded border border-white/5 text-slate-300">
                     Escape
                   </span>
                 </div>
               </div>
             </div>
 
-            {/* Reset Button */}
+            {/* Reset */}
             <Button
               variant="outline"
-              className="w-full cursor-pointer border-[#4f4944] bg-[#262220] text-red-400 hover:bg-red-500/15 hover:text-red-300 hover:border-red-500/30 text-xs h-9"
+              className="w-full cursor-pointer border-white/10 bg-slate-800/30 text-red-400 hover:bg-red-500/10 hover:text-red-300 text-xs h-8"
               type="button"
               onClick={resetDemo}
             >
