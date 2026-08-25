@@ -50,8 +50,6 @@
     }
   },
   "plugins": {
-    "global-shortcut": {},
-    "notification": {},
     "shell": {
       "open": true
     }
