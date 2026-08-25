@@ -27,7 +27,8 @@ function FloatingTimerCard({ timer }: { timer: Reminder }) {
   const [remaining, setRemaining] = useState(Math.max(0, timer.fireAt - Date.now()));
   const [minimal, setMinimal] = useState(false);
   const [pos, setPos] = useState({ x: 24, y: 80 });
-  const isDragging = useRef(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const isDraggingRef = useRef(false);
   const dragOffset = useRef({ dx: 0, dy: 0 });
 
   useEffect(() => {
@@ -40,7 +41,8 @@ function FloatingTimerCard({ timer }: { timer: Reminder }) {
 
   const onPointerDown = (e: PointerEvent<HTMLDivElement>) => {
     if ((e.target as HTMLElement).closest("button")) return;
-    isDragging.current = true;
+    isDraggingRef.current = true;
+    setIsDragging(true);
     dragOffset.current = {
       dx: e.clientX - pos.x,
       dy: e.clientY - pos.y,
@@ -49,7 +51,7 @@ function FloatingTimerCard({ timer }: { timer: Reminder }) {
   };
 
   const onPointerMove = (e: PointerEvent<HTMLDivElement>) => {
-    if (!isDragging.current) return;
+    if (!isDraggingRef.current) return;
     setPos({
       x: e.clientX - dragOffset.current.dx,
       y: e.clientY - dragOffset.current.dy,
@@ -57,7 +59,8 @@ function FloatingTimerCard({ timer }: { timer: Reminder }) {
   };
 
   const onPointerUp = () => {
-    isDragging.current = false;
+    isDraggingRef.current = false;
+    setIsDragging(false);
   };
 
   const total = timer.durationMs || 1;
@@ -69,11 +72,18 @@ function FloatingTimerCard({ timer }: { timer: Reminder }) {
     return (
       <div
         className={cn(
-          "interactive-el fixed z-[85] flex items-center gap-2 rounded-xl px-2.5 py-1.5 select-none cursor-grab active:cursor-grabbing",
-          "bg-[#14161D]/80 hover:bg-[#14161D]/95 text-[#F4F5F7] border border-white/10 backdrop-blur-md transition-all duration-140 group shadow-lg",
+          "interactive-el fixed z-[85] flex items-center gap-2 rounded-xl px-2.5 py-1.5 select-none touch-none",
+          isDragging
+            ? "!transition-none cursor-grabbing ring-1 ring-[#F5A623] scale-105 shadow-2xl"
+            : "cursor-grab transition-all duration-140 shadow-lg",
+          "bg-[#14161D]/80 hover:bg-[#14161D]/95 text-[#F4F5F7] border border-white/10 backdrop-blur-md group",
           isFinished && "bg-[#EF4444]/90 animate-pulse border-red-400",
         )}
-        style={{ left: `${pos.x}px`, top: `${pos.y}px` }}
+        style={{
+          left: `${pos.x}px`,
+          top: `${pos.y}px`,
+          transition: isDragging ? "none" : undefined,
+        }}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
@@ -114,12 +124,19 @@ function FloatingTimerCard({ timer }: { timer: Reminder }) {
   return (
     <div
       className={cn(
-        "interactive-el fixed z-[85] flex flex-col gap-1.5 rounded-2xl p-3 select-none cursor-grab active:cursor-grabbing shadow-[0_20px_45px_rgba(0,0,0,0.6)] border backdrop-blur-2xl transition-all duration-160 w-64",
+        "interactive-el fixed z-[85] flex flex-col gap-1.5 rounded-2xl p-3 select-none touch-none w-64 shadow-[0_20px_45px_rgba(0,0,0,0.6)] border backdrop-blur-2xl",
+        isDragging
+          ? "!transition-none cursor-grabbing ring-2 ring-[#F5A623] scale-[1.02]"
+          : "cursor-grab transition-all duration-160",
         isFinished
           ? "bg-[#EF4444]/90 text-white border-red-400 animate-pulse ring-2 ring-red-400"
           : "bg-[#1D2029]/95 text-[#F4F5F7] border-white/10",
       )}
-      style={{ left: `${pos.x}px`, top: `${pos.y}px` }}
+      style={{
+        left: `${pos.x}px`,
+        top: `${pos.y}px`,
+        transition: isDragging ? "none" : undefined,
+      }}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}

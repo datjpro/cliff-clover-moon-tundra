@@ -299,7 +299,7 @@ export function Companion() {
 
       <div
         ref={elRef}
-        className="interactive-el group fixed top-0 left-0 z-50 p-0 select-none cursor-grab active:cursor-grabbing will-change-transform"
+        className="interactive-el group fixed top-0 left-0 z-50 p-0 select-none cursor-grab active:cursor-grabbing will-change-transform touch-none !transition-none"
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}

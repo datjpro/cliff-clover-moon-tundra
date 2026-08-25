@@ -40,7 +40,14 @@ export function StickyNote({ note, stacked }: Props) {
   const bringNote = useLumen((s) => s.bringNote);
   const toggleNoteCollapse = useLumen((s) => s.toggleNoteCollapse);
   const toggleNotePin = useLumen((s) => s.toggleNotePin);
-  const drag = useRef<{ dx: number; dy: number } | null>(null);
+  const drag = useRef<{
+    dx: number;
+    dy: number;
+    parentLeft: number;
+    parentTop: number;
+    parentWidth: number;
+    parentHeight: number;
+  } | null>(null);
   const rotateDrag = useRef<{ startAngle: number; initRot: number; centerX: number; centerY: number } | null>(null);
 
   const [colorPickerOpen, setColorPickerOpen] = useState(false);
@@ -51,16 +58,20 @@ export function StickyNote({ note, stacked }: Props) {
   const [isDragging, setIsDragging] = useState(false);
   const [isRotating, setIsRotating] = useState(false);
 
-  // Position Drag Handlers
+  // High-Performance Position Drag Handlers (Cached Parent Bounds, Zero Layout Reflow)
   const onPointerDown = (e: PointerEvent<HTMLElement>) => {
     if (stacked || note.pinned) return;
     if ((e.target as HTMLElement).closest("textarea,input,button,.no-drag")) return;
     bringNote(note.id);
     sounds.playPop(540);
-    const parent = (e.currentTarget.parentElement as HTMLElement).getBoundingClientRect();
+    const parent = ((e.currentTarget.parentElement as HTMLElement) || document.body).getBoundingClientRect();
     drag.current = {
-      dx: ((e.clientX - parent.left) / parent.width) * 100 - note.x,
-      dy: ((e.clientY - parent.top) / parent.height) * 100 - note.y,
+      parentLeft: parent.left,
+      parentTop: parent.top,
+      parentWidth: parent.width || window.innerWidth,
+      parentHeight: parent.height || window.innerHeight,
+      dx: ((e.clientX - parent.left) / (parent.width || window.innerWidth)) * 100 - note.x,
+      dy: ((e.clientY - parent.top) / (parent.height || window.innerHeight)) * 100 - note.y,
     };
     setIsDragging(true);
     e.currentTarget.setPointerCapture(e.pointerId);
@@ -68,11 +79,11 @@ export function StickyNote({ note, stacked }: Props) {
 
   const onPointerMove = (e: PointerEvent<HTMLElement>) => {
     if (!drag.current) return;
-    const parent = (e.currentTarget.parentElement as HTMLElement).getBoundingClientRect();
-    const maxX = parent.width < 640 ? 48 : 90;
-    const maxY = parent.height < 700 ? 58 : 88;
-    const x = Math.max(1, Math.min(maxX, ((e.clientX - parent.left) / parent.width) * 100 - drag.current.dx));
-    const y = Math.max(2, Math.min(maxY, ((e.clientY - parent.top) / parent.height) * 100 - drag.current.dy));
+    const { parentLeft, parentTop, parentWidth, parentHeight, dx, dy } = drag.current;
+    const maxX = parentWidth < 640 ? 48 : 90;
+    const maxY = parentHeight < 700 ? 58 : 88;
+    const x = Math.max(1, Math.min(maxX, ((e.clientX - parentLeft) / parentWidth) * 100 - dx));
+    const y = Math.max(2, Math.min(maxY, ((e.clientY - parentTop) / parentHeight) * 100 - dy));
     updateNote(note.id, { x, y });
   };
 
@@ -81,7 +92,7 @@ export function StickyNote({ note, stacked }: Props) {
     setIsDragging(false);
   };
 
-  // Interactive Rotation Drag Handlers
+  // High-Performance Interactive Rotation Drag Handlers (Direct Angle Tracking)
   const onRotatePointerDown = (e: PointerEvent<HTMLElement>) => {
     e.stopPropagation();
     const targetEl = e.currentTarget.closest("article") as HTMLElement;
@@ -176,6 +187,8 @@ export function StickyNote({ note, stacked }: Props) {
 
   const currentPalette = NOTE_PALETTE.find((p) => p.id === note.tint) || NOTE_PALETTE[0];
 
+  const isTransformActive = isDragging || isRotating;
+
   const style = stacked
     ? undefined
     : {
@@ -184,6 +197,7 @@ export function StickyNote({ note, stacked }: Props) {
         transform: note.collapsed ? "none" : `rotate(${note.rot}deg)`,
         zIndex: (note.pinned ? 90 : 10) + note.z,
         opacity: note.opacity ?? 1,
+        transition: isTransformActive ? "none" : undefined,
       };
 
   // Minimized Capsule Pill Mode
@@ -191,7 +205,10 @@ export function StickyNote({ note, stacked }: Props) {
     return (
       <div
         className={cn(
-          "absolute flex items-center gap-2 rounded-full px-3 py-1.5 shadow-[0_4px_16px_rgba(0,0,0,0.2)] border border-white/10 cursor-grab active:cursor-grabbing select-none transition-all duration-160 hover:scale-105 bg-[#1D2029]/95 text-white backdrop-blur-md",
+          "absolute flex items-center gap-2 rounded-full px-3 py-1.5 shadow-[0_4px_16px_rgba(0,0,0,0.2)] border border-white/10 select-none bg-[#1D2029]/95 text-white backdrop-blur-md touch-none",
+          isDragging
+            ? "!transition-none cursor-grabbing ring-2 ring-[#F5A623] scale-105"
+            : "transition-transform duration-140 cursor-grab hover:scale-105",
         )}
         style={style}
         onPointerDown={onPointerDown}
@@ -222,9 +239,11 @@ export function StickyNote({ note, stacked }: Props) {
   return (
     <article
       className={cn(
-        "relative rounded-2xl transition-all duration-180 select-none flex flex-col overflow-hidden group",
+        "relative rounded-2xl select-none flex flex-col overflow-hidden group touch-none",
         "shadow-[0_1px_2px_rgba(0,0,0,0.08),0_6px_20px_rgba(0,0,0,0.16)] border border-black/10",
-        (isDragging || isRotating) && "shadow-[0_4px_8px_rgba(0,0,0,0.12),0_16px_40px_rgba(0,0,0,0.28)] scale-[1.02] ring-1 ring-[#F5A623]/40",
+        isTransformActive
+          ? "!transition-none shadow-[0_6px_14px_rgba(0,0,0,0.15),0_20px_45px_rgba(0,0,0,0.3)] ring-2 ring-[#F5A623] cursor-grabbing will-change-transform scale-[1.02]"
+          : "transition-shadow transition-colors duration-150",
         stacked ? "relative w-full" : "absolute w-64 sm:w-72 cursor-grab active:cursor-grabbing",
         `note-${note.tint}`,
         note.pinned && "ring-2 ring-[#F5A623] shadow-xl",
@@ -566,6 +585,13 @@ export function StickyNote({ note, stacked }: Props) {
           )}
         </form>
 
+        {/* Real-time Angle Feedback Bubble during Rotation */}
+        {isRotating && (
+          <div className="no-drag absolute top-2 right-2 z-30 flex items-center gap-1 rounded-full bg-[#1D2029] text-[#F5A623] px-2 py-0.5 text-[11px] font-mono font-bold shadow-xl border border-[#F5A623]/40 animate-in zoom-in-95 pointer-events-none">
+            <span>{Math.round(note.rot || 0)}°</span>
+          </div>
+        )}
+
         {/* Subtle Interactive Corner Rotate Handle (Bottom-Right) */}
         {!stacked && !note.pinned && (
           <div
@@ -573,10 +599,15 @@ export function StickyNote({ note, stacked }: Props) {
             onPointerMove={onRotatePointerMove}
             onPointerUp={onRotatePointerUp}
             onPointerCancel={onRotatePointerUp}
-            className="no-drag absolute bottom-1.5 right-1.5 size-5.5 flex items-center justify-center rounded-full bg-black/10 hover:bg-black/25 text-[#23262F]/60 hover:text-[#23262F] opacity-0 group-hover:opacity-100 transition-all cursor-grab active:cursor-grabbing z-20"
+            className={cn(
+              "no-drag absolute bottom-1.5 right-1.5 size-6 flex items-center justify-center rounded-full transition-all cursor-grab active:cursor-grabbing z-20 touch-none select-none",
+              isRotating
+                ? "bg-[#F5A623] text-[#14161D] shadow-lg scale-110 opacity-100 ring-2 ring-[#1D2029]"
+                : "bg-black/10 hover:bg-black/25 text-[#23262F]/70 hover:text-[#23262F] opacity-0 group-hover:opacity-100 hover:scale-110",
+            )}
             title="Kéo chuột để xoay góc nghiêng ghi chú"
           >
-            <RotateCw className="size-3" />
+            <RotateCw className="size-3.5" />
           </div>
         )}
       </div>
