@@ -58,11 +58,17 @@ pub fn run() {
             let timer_i = MenuItem::with_id(app, "timer", "⏰ Quick Timer (Alt+T)", true, None::<&str>)?;
             let hub_i = MenuItem::with_id(app, "hub", "⚙️ Settings Hub (Alt+S)", true, None::<&str>)?;
             let quit_i = MenuItem::with_id(app, "quit", "✕ Quit Lumen", true, None::<&str>)?;
-
             let menu = Menu::with_items(app, &[&show_i, &capture_i, &timer_i, &hub_i, &quit_i])?;
 
-            let _tray = TrayIconBuilder::new()
+            let mut tray_builder = TrayIconBuilder::with_id("lumen-tray-icon")
                 .menu(&menu)
+                .tooltip("Lumen — Desktop Spatial Companion");
+
+            if let Some(icon) = app.default_window_icon() {
+                tray_builder = tray_builder.icon(icon.clone());
+            }
+
+            let _tray = tray_builder
                 .on_menu_event(|app, event| match event.id.as_ref() {
                     "show" => {
                         if let Some(window) = app.get_webview_window("main") {

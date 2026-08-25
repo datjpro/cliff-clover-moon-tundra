@@ -28,10 +28,6 @@
     ],
     "security": {
       "csp": "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: http: https:;"
-    },
-    "trayIcon": {
-      "iconPath": "icons/icon.png",
-      "tooltip": "Lumen — Desktop Spatial Companion"
     }
   },
   "bundle": {
