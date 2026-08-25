@@ -37,6 +37,9 @@
   "bundle": {
     "active": true,
     "targets": "all",
+    "resources": [
+      "WebView2Loader.dll"
+    ],
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
@@ -46,8 +49,7 @@
     ],
     "windows": {
       "nsis": {
-        "installerIcon": "icons/icon.ico",
-        "headerImage": "icons/icon.png"
+        "installerIcon": "icons/icon.ico"
       }
     }
   },
