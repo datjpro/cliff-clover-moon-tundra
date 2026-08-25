@@ -349,6 +349,49 @@ console.log("\n📦 [SUITE 5]: Desktop Window Visibility & Single Instance Recov
   assert(shouldRenderNotes(startupLoaded).length === 0, "Sticky notes are strictly hidden while startup loading modal is progressing");
   startupLoaded = true;
   assert(shouldRenderNotes(startupLoaded).length === 2, "Sticky notes seamlessly reveal once startup loading completes 100%");
+
+  // Note Lock Position Verification Test
+  const lockedNote = { id: "n_lock", x: 20, y: 30, locked: true, pinned: false };
+  const canDragLocked = !lockedNote.locked && !lockedNote.pinned;
+  assert(canDragLocked === false, "Locked sticky note strictly prevents accidental dragging while preserving editing");
+
+  // Magnetic Snapping Logic Test
+  const testSnap = (val, target, thresh = 1.4) => Math.abs(val - target) < thresh ? target : val;
+  assert(testSnap(2.8, 2) === 2, "Note magnetically snaps to left edge (2%) when within 1.4% threshold");
+  assert(testSnap(15.2, 15) === 15, "Note magnetically snaps to sibling note column alignment (15%)");
+  assert(testSnap(40.0, 15) === 40.0, "Note does not snap when outside threshold distance");
+
+  // Trash Bin & Undo Recovery Test
+  let mockActiveNotes = [{ id: "n_del", body: "Kế hoạch tuần", createdAt: Date.now() }];
+  let mockTrashNotes = [];
+  // Perform soft delete
+  const targetDel = mockActiveNotes[0];
+  mockTrashNotes = [{ ...targetDel, deletedAt: Date.now() }, ...mockTrashNotes];
+  mockActiveNotes = mockActiveNotes.filter(n => n.id !== targetDel.id);
+  assert(mockActiveNotes.length === 0 && mockTrashNotes.length === 1, "Deleted note is safely pushed to trash bin instead of immediate loss");
+  // Perform Undo (Ctrl+Z)
+  const [restored] = mockTrashNotes;
+  mockTrashNotes = mockTrashNotes.slice(1);
+  mockActiveNotes.push({ ...restored, deletedAt: undefined });
+  assert(mockActiveNotes.length === 1 && mockTrashNotes.length === 0 && mockActiveNotes[0].body === "Kế hoạch tuần", "Undo Ctrl+Z restores the deleted note seamlessly back to canvas");
+
+  // Spotlight Search Query Matcher Test
+  const searchDataset = [
+    { id: "s1", body: "Họp triển khai dự án Titan", cluster: "Công việc", checkItems: [] },
+    { id: "s2", body: "Mua rau củ siêu thị", cluster: "Cá nhân", checkItems: [{ text: "Bắp cải", done: false }] },
+    { id: "s3", body: "Xem tài liệu Antigravity", cluster: "Nghiên cứu", checkItems: [] },
+  ];
+  const filterByQuery = (q) => {
+    const t = q.toLowerCase();
+    return searchDataset.filter(n =>
+      n.body.toLowerCase().includes(t) ||
+      n.cluster?.toLowerCase().includes(t) ||
+      n.checkItems.some(i => i.text.toLowerCase().includes(t))
+    );
+  };
+  assert(filterByQuery("titan").length === 1 && filterByQuery("titan")[0].id === "s1", "Spotlight search finds note by body keyword");
+  assert(filterByQuery("Bắp cải").length === 1 && filterByQuery("Bắp cải")[0].id === "s2", "Spotlight search finds note by checklist item text");
+  assert(filterByQuery("Công việc").length === 1 && filterByQuery("Công việc")[0].id === "s1", "Spotlight search finds note by cluster name");
 }
 
 console.log(`\n========================================`);

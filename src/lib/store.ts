@@ -133,6 +133,16 @@ type LumenState = {
   toggleSound: (enabled?: boolean) => void;
   selectedCluster: string | null;
   setSelectedCluster: (cluster: string | null) => void;
+  trashNotes: Note[];
+  searchOpen: boolean;
+  setSearchOpen: (open: boolean) => void;
+  highlightNoteId: string | null;
+  setHighlightNoteId: (id: string | null) => void;
+  toggleNoteLock: (id: string) => void;
+  restoreNote: (id: string) => void;
+  undoDeleteNote: () => void;
+  emptyTrash: () => void;
+  permanentDeleteNote: (id: string) => void;
   requestNoteFromPip: () => void;
   resetDemo: () => void;
   appLoaded: boolean;
@@ -230,6 +240,25 @@ export const useLumen = create<LumenState>()(
         sounds.playPop(520);
         set({ selectedCluster });
       },
+      trashNotes: [],
+      searchOpen: false,
+      setSearchOpen: (searchOpen) => {
+        sounds.playPop(580);
+        set({
+          searchOpen,
+          hubOpen: searchOpen ? false : get().hubOpen,
+          captureOpen: searchOpen ? false : get().captureOpen,
+          quickTimerOpen: searchOpen ? false : get().quickTimerOpen,
+        });
+      },
+      highlightNoteId: null,
+      setHighlightNoteId: (highlightNoteId) => set({ highlightNoteId }),
+      toggleNoteLock: (id) => {
+        sounds.playPop(550);
+        set({
+          notes: get().notes.map((n) => (n.id === id ? { ...n, locked: !n.locked } : n)),
+        });
+      },
       dismissOnboarding: () => set({ onboarding: false }),
       addNote: (partial) => {
         const id = partial?.id ?? uid();
@@ -248,6 +277,7 @@ export const useLumen = create<LumenState>()(
           createdAt: Date.now(),
           collapsed: false,
           pinned: false,
+          locked: false,
           cluster: partial?.cluster ?? get().selectedCluster ?? undefined,
         };
         sounds.playPop(640);
@@ -291,7 +321,65 @@ export const useLumen = create<LumenState>()(
       },
       removeNote: (id) => {
         sounds.playPop(380);
-        set({ notes: get().notes.filter((n) => n.id !== id) });
+        const target = get().notes.find((n) => n.id === id);
+        if (!target) return;
+        const deletedNote: Note = { ...target, deletedAt: Date.now() };
+        const remainingNotes = get().notes.filter((n) => n.id !== id);
+        const updatedTrash = [deletedNote, ...(get().trashNotes || [])].slice(0, 50);
+        set({ notes: remainingNotes, trashNotes: updatedTrash });
+        const isVi = get().lang === "vi";
+        get().pushToast(
+          isVi ? "Đã chuyển vào thùng rác" : "Moved to Trash",
+          isVi ? `Ghi chú "${target.body.trim().slice(0, 18) || "trống"}..." đã được lưu (Ctrl+Z để hoàn tác)` : `Note saved to trash (Ctrl+Z to undo)`,
+        );
+      },
+      undoDeleteNote: () => {
+        const trash = get().trashNotes || [];
+        if (trash.length === 0) return;
+        const [lastDeleted, ...remainingTrash] = trash;
+        const restoredNote: Note = { ...lastDeleted, deletedAt: undefined, z: get().maxZ + 1 };
+        set({
+          notes: [...get().notes, restoredNote],
+          trashNotes: remainingTrash,
+          maxZ: get().maxZ + 1,
+        });
+        sounds.playChime();
+        const isVi = get().lang === "vi";
+        get().pushToast(
+          isVi ? "Đã hoàn tác khôi phục ghi chú" : "Note Restored",
+          isVi ? "Ghi chú vừa xóa đã được đưa trở lại màn hình" : "Restored note to canvas",
+        );
+      },
+      restoreNote: (id) => {
+        const target = (get().trashNotes || []).find((n) => n.id === id);
+        if (!target) return;
+        const restoredNote: Note = { ...target, deletedAt: undefined, z: get().maxZ + 1 };
+        set({
+          notes: [...get().notes, restoredNote],
+          trashNotes: (get().trashNotes || []).filter((n) => n.id !== id),
+          maxZ: get().maxZ + 1,
+        });
+        sounds.playChime();
+        const isVi = get().lang === "vi";
+        get().pushToast(
+          isVi ? "Đã khôi phục ghi chú" : "Note Restored",
+          isVi ? "Đã đưa ghi chú trở lại không gian làm việc" : "Note restored to workspace",
+        );
+      },
+      permanentDeleteNote: (id) => {
+        sounds.playPop(340);
+        set({
+          trashNotes: (get().trashNotes || []).filter((n) => n.id !== id),
+        });
+      },
+      emptyTrash: () => {
+        sounds.playPop(340);
+        set({ trashNotes: [] });
+        const isVi = get().lang === "vi";
+        get().pushToast(
+          isVi ? "Đã dọn sạch thùng rác" : "Trash Emptied",
+          isVi ? "Đã xóa vĩnh viễn tất cả ghi chú trong thùng rác" : "All trash notes permanently removed",
+        );
       },
       bringNote: (id) => {
         const z = get().maxZ + 1;

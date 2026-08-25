@@ -273,6 +273,10 @@ export function Hub() {
   const addNote = useLumen((s) => s.addNote);
   const updateNote = useLumen((s) => s.updateNote);
   const removeNote = useLumen((s) => s.removeNote);
+  const trashNotes = useLumen((s) => s.trashNotes || []);
+  const restoreNote = useLumen((s) => s.restoreNote);
+  const emptyTrash = useLumen((s) => s.emptyTrash);
+  const permanentDeleteNote = useLumen((s) => s.permanentDeleteNote);
 
   const [clusterSearch, setClusterSearch] = useState("");
   const txtImportRef = useRef<HTMLInputElement>(null);
@@ -549,43 +553,55 @@ export function Hub() {
         className="flex min-h-0 flex-1 flex-col"
       >
         <div className="px-3.5 pt-2.5 pb-2 bg-[#14161D]/30 border-b border-white/5">
-          <TabsList className="grid grid-cols-5 bg-[#14161D] p-1 rounded-xl h-10 border border-white/6 gap-1">
+          <TabsList className="grid grid-cols-6 bg-[#14161D] p-1 rounded-xl h-10 border border-white/6 gap-1">
             <TabsTrigger
               value="remind"
-              className="text-[11.5px] font-semibold rounded-lg transition-all duration-180 data-[state=active]:bg-[#F5A623] data-[state=active]:text-[#14161D] data-[state=active]:shadow-sm flex items-center justify-center gap-1.5 text-[#8B90A0] px-1 py-1"
+              className="text-[11px] font-semibold rounded-lg transition-all duration-180 data-[state=active]:bg-[#F5A623] data-[state=active]:text-[#14161D] data-[state=active]:shadow-sm flex items-center justify-center gap-1 text-[#8B90A0] px-1 py-1"
             >
               <span>⏱</span>
               <span className="truncate">Hẹn giờ</span>
               {activeTimersCount > 0 ? (
-                <span className="size-4 rounded-full bg-[#14161D] text-[#F5A623] text-[9.5px] flex items-center justify-center font-bold shrink-0 border border-[#F5A623]/30">
+                <span className="size-3.5 rounded-full bg-[#14161D] text-[#F5A623] text-[9px] flex items-center justify-center font-bold shrink-0 border border-[#F5A623]/30">
                   {activeTimersCount}
                 </span>
               ) : null}
             </TabsTrigger>
             <TabsTrigger
               value="clusters"
-              className="text-[11.5px] font-semibold rounded-lg transition-all duration-180 data-[state=active]:bg-[#F5A623] data-[state=active]:text-[#14161D] data-[state=active]:shadow-sm flex items-center justify-center gap-1.5 text-[#8B90A0] px-1 py-1"
+              className="text-[11px] font-semibold rounded-lg transition-all duration-180 data-[state=active]:bg-[#F5A623] data-[state=active]:text-[#14161D] data-[state=active]:shadow-sm flex items-center justify-center gap-1 text-[#8B90A0] px-1 py-1"
             >
               <span>🗂</span>
               <span className="truncate">Cụm Note</span>
             </TabsTrigger>
             <TabsTrigger
+              value="trash"
+              className="text-[11px] font-semibold rounded-lg transition-all duration-180 data-[state=active]:bg-[#F5A623] data-[state=active]:text-[#14161D] data-[state=active]:shadow-sm flex items-center justify-center gap-1 text-[#8B90A0] px-1 py-1"
+            >
+              <span>🗑</span>
+              <span className="truncate">Thùng rác</span>
+              {trashNotes && trashNotes.length > 0 ? (
+                <span className="size-3.5 rounded-full bg-red-500/20 text-[#EF4444] text-[9px] flex items-center justify-center font-bold shrink-0 border border-red-500/30">
+                  {trashNotes.length}
+                </span>
+              ) : null}
+            </TabsTrigger>
+            <TabsTrigger
               value="pip"
-              className="text-[11.5px] font-semibold rounded-lg transition-all duration-180 data-[state=active]:bg-[#F5A623] data-[state=active]:text-[#14161D] data-[state=active]:shadow-sm flex items-center justify-center gap-1.5 text-[#8B90A0] px-1 py-1"
+              className="text-[11px] font-semibold rounded-lg transition-all duration-180 data-[state=active]:bg-[#F5A623] data-[state=active]:text-[#14161D] data-[state=active]:shadow-sm flex items-center justify-center gap-1 text-[#8B90A0] px-1 py-1"
             >
               <span>🐾</span>
               <span className="truncate">Thú cưng</span>
             </TabsTrigger>
             <TabsTrigger
               value="look"
-              className="text-[11.5px] font-semibold rounded-lg transition-all duration-180 data-[state=active]:bg-[#F5A623] data-[state=active]:text-[#14161D] data-[state=active]:shadow-sm flex items-center justify-center gap-1.5 text-[#8B90A0] px-1 py-1"
+              className="text-[11px] font-semibold rounded-lg transition-all duration-180 data-[state=active]:bg-[#F5A623] data-[state=active]:text-[#14161D] data-[state=active]:shadow-sm flex items-center justify-center gap-1 text-[#8B90A0] px-1 py-1"
             >
               <span>🎨</span>
               <span className="truncate">Giao diện</span>
             </TabsTrigger>
             <TabsTrigger
               value="about"
-              className="text-[11.5px] font-semibold rounded-lg transition-all duration-180 data-[state=active]:bg-[#F5A623] data-[state=active]:text-[#14161D] data-[state=active]:shadow-sm flex items-center justify-center gap-1.5 text-[#8B90A0] px-1 py-1"
+              className="text-[11px] font-semibold rounded-lg transition-all duration-180 data-[state=active]:bg-[#F5A623] data-[state=active]:text-[#14161D] data-[state=active]:shadow-sm flex items-center justify-center gap-1 text-[#8B90A0] px-1 py-1"
             >
               <span>⚙️</span>
               <span className="truncate">Hệ thống</span>
@@ -904,7 +920,88 @@ export function Hub() {
             </div>
           </TabsContent>
 
-          {/* TAB 3: VIRTUAL PET STUDIO & WARDROBE */}
+          {/* TAB 3: TRASH & RECOVERY BIN */}
+          <TabsContent value="trash" className="space-y-3 mt-0">
+            <div className="flex items-center justify-between gap-2 p-2.5 rounded-2xl bg-[#262A35]/50 border border-white/6">
+              <div>
+                <h4 className="text-xs font-bold text-[#F4F5F7]">Thùng rác ghi chú</h4>
+                <p className="text-[10px] text-[#8B90A0]">
+                  Lưu trữ {trashNotes?.length || 0} ghi chú đã xóa gần đây (Ctrl+Z để hoàn tác tức thì)
+                </p>
+              </div>
+              {trashNotes && trashNotes.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => emptyTrash()}
+                  className="px-2.5 py-1.5 rounded-xl bg-red-500/15 hover:bg-red-500/25 text-[#EF4444] text-[11px] font-semibold transition-colors cursor-pointer flex items-center gap-1.5"
+                >
+                  <Trash2 className="size-3" />
+                  <span>Dọn sạch</span>
+                </button>
+              )}
+            </div>
+
+            {/* Trash Items List */}
+            <div className="space-y-2 max-h-96 overflow-y-auto note-scrollbar">
+              {(!trashNotes || trashNotes.length === 0) ? (
+                <div className="py-12 text-center text-[#8B90A0] flex flex-col items-center gap-2">
+                  <Trash2 className="size-8 text-white/20" />
+                  <p className="text-xs">Thùng rác trống</p>
+                  <p className="text-[10px] text-[#8B90A0]/60">Các ghi chú bạn xóa sẽ xuất hiện ở đây để khôi phục khi cần</p>
+                </div>
+              ) : (
+                trashNotes.map((n) => (
+                  <div
+                    key={n.id}
+                    className="p-3 rounded-2xl bg-[#14161D]/70 border border-white/6 space-y-2 hover:border-white/12 transition-all"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-start gap-2 min-w-0 flex-1">
+                        <span className={cn("size-2.5 rounded-full mt-1 shrink-0", `note-${n.tint}`)} />
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs text-[#F4F5F7] font-medium line-clamp-3 leading-relaxed">
+                            {n.body.trim() || "(Ghi chú không có nội dung)"}
+                          </p>
+                          <div className="flex items-center gap-2 mt-1.5 text-[10px] text-[#8B90A0]">
+                            {n.cluster && (
+                              <span className="text-[#F5A623] bg-[#F5A623]/10 px-1.5 py-0.2 rounded border border-[#F5A623]/20">
+                                {n.cluster}
+                              </span>
+                            )}
+                            {n.deletedAt && (
+                              <span>Xóa lúc: {new Date(n.deletedAt).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}</span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-1 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => restoreNote(n.id)}
+                          className="px-2.5 py-1 rounded-xl bg-[#F5A623] hover:bg-[#D6871A] text-[#14161D] text-[11px] font-bold transition-all shadow-xs cursor-pointer flex items-center gap-1"
+                          title="Khôi phục ghi chú này lên Desktop"
+                        >
+                          <RotateCcw className="size-3" />
+                          <span>Khôi phục</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => permanentDeleteNote(n.id)}
+                          className="p-1.5 rounded-xl hover:bg-red-500/15 text-[#8B90A0] hover:text-[#EF4444] transition-colors cursor-pointer"
+                          title="Xóa vĩnh viễn"
+                        >
+                          <Trash2 className="size-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </TabsContent>
+
+          {/* TAB 4: VIRTUAL PET STUDIO & WARDROBE */}
           <TabsContent value="pip" className="space-y-3 mt-0">
             <div className="flex items-center justify-between gap-3 rounded-2xl bg-[#262A35]/50 px-3 py-2.5 border border-white/6">
               <div>

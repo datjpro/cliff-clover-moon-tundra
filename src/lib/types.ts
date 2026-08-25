@@ -39,8 +39,10 @@ export type Note = {
   z: number;
   createdAt: number;
   pinned?: boolean;
+  locked?: boolean; // Khóa cố định vị trí ghi chú chống kéo nhầm
   collapsed?: boolean;
   cluster?: string; // Tên cụm / nhóm ghi chú (VD: "Công việc", "Dự án Alpha", "Game")
+  deletedAt?: number; // Thời gian chuyển vào thùng rác
 };
 
 export type Reminder = {

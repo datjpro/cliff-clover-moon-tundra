@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type PointerEvent } from "react";
-import { Clock, Eye, EyeOff, Folder, LayoutGrid, Plus, Settings, Sparkles, X } from "lucide-react";
+import { Clock, Eye, EyeOff, Folder, LayoutGrid, Plus, Search, Settings, Sparkles, X } from "lucide-react";
 import { sounds } from "@/lib/audio";
 import {
   closeOrQuitDesktopApp,
@@ -19,8 +19,10 @@ import { MissedRemindersModal } from "./missed-reminders-modal";
 import { Onboarding } from "./onboarding";
 import { QuickCapture } from "./quick-capture";
 import { QuickTimer, triggerOpenQuickTimer } from "./quick-timer";
+import { SpotlightSearch } from "./spotlight-search";
 import { StickyNote } from "./sticky-note";
 import { ToastStack } from "./toasts";
+import { cn } from "@/lib/utils";
 
 // Floating Quick Tray Menu & Hover-Revealed Paper Well Dock
 function FloatingTrayMenu() {
@@ -35,6 +37,7 @@ function FloatingTrayMenu() {
   const setCaptureOpen = useLumen((s) => s.setCaptureOpen);
   const setQuickTimerOpen = useLumen((s) => s.setQuickTimerOpen);
   const setHubOpen = useLumen((s) => s.setHubOpen);
+  const setSearchOpen = useLumen((s) => s.setSearchOpen);
   const tidyNotes = useLumen((s) => s.tidyNotes);
   const pipEnabled = useLumen((s) => s.pip.enabled);
   const setPipEnabled = useLumen((s) => s.setPipEnabled);
@@ -120,6 +123,22 @@ function FloatingTrayMenu() {
                 <span className="font-medium text-[#F4F5F7]">{isVi ? "Đặt giờ nhanh" : "Quick Timer"}</span>
               </div>
               <span className="text-[10px] text-[#8B90A0] font-mono">Alt+T</span>
+            </button>
+
+            {/* Spotlight Search */}
+            <button
+              type="button"
+              onClick={() => {
+                setSearchOpen(true);
+                setOpen(false);
+              }}
+              className="flex items-center justify-between px-2.5 h-9 rounded-xl hover:bg-[#262A35] transition-colors duration-120 text-left cursor-pointer group"
+            >
+              <div className="flex items-center gap-2.5">
+                <Search className="size-4.5 text-[#F5A623] group-hover:scale-110 transition-transform duration-120" />
+                <span className="font-medium text-[#F4F5F7]">{isVi ? "Tìm kiếm nhanh" : "Spotlight"}</span>
+              </div>
+              <span className="text-[10px] text-[#8B90A0] font-mono">Alt+F</span>
             </button>
 
             {/* Toggle Pet Hide/Show */}
@@ -262,6 +281,9 @@ export function DesktopScene() {
   const setQuickTimerOpen = useLumen((s) => s.setQuickTimerOpen);
   const hubOpen = useLumen((s) => s.hubOpen);
   const setHubOpen = useLumen((s) => s.setHubOpen);
+  const searchOpen = useLumen((s) => s.searchOpen);
+  const setSearchOpen = useLumen((s) => s.setSearchOpen);
+  const undoDeleteNote = useLumen((s) => s.undoDeleteNote);
   const fireReminder = useLumen((s) => s.fireReminder);
 
   useEffect(() => {
@@ -269,7 +291,7 @@ export function DesktopScene() {
   }, [markHydrated]);
 
   // Click-Through Mouse Event Controller (100% transparent click-through for desktop background & apps)
-  const isAnyModalOpen = captureOpen || quickTimerOpen || hubOpen;
+  const isAnyModalOpen = captureOpen || quickTimerOpen || hubOpen || searchOpen;
 
   useEffect(() => {
     if (!isDesktopApp()) return;
@@ -305,6 +327,22 @@ export function DesktopScene() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const key = e.key.toLowerCase();
+      const targetTag = (document.activeElement?.tagName || "").toLowerCase();
+      const isTyping = targetTag === "input" || targetTag === "textarea";
+
+      // Undo Delete Note: Ctrl+Z / Cmd+Z (when not typing in textarea)
+      if ((e.ctrlKey || e.metaKey) && key === "z" && !e.shiftKey && !isTyping) {
+        e.preventDefault();
+        undoDeleteNote();
+        return;
+      }
+
+      // Spotlight Search: Alt+F, Ctrl+F (when not typing)
+      if (e.altKey && key === "f") {
+        e.preventDefault();
+        setSearchOpen(!useLumen.getState().searchOpen);
+        return;
+      }
 
       // Quick Note: Alt+N, Alt+Q (Zero collision with Chrome/Edge Incognito)
       if ((e.altKey && key === "n") || (e.altKey && key === "q")) {
@@ -340,6 +378,7 @@ export function DesktopScene() {
         setCaptureOpen(false);
         setQuickTimerOpen(false);
         setHubOpen(false);
+        setSearchOpen(false);
       }
     };
     window.addEventListener("keydown", onKey);
@@ -478,6 +517,10 @@ export function DesktopScene() {
     });
   };
 
+  const availableClusters = Array.from(
+    new Set(notes.map((n) => n.cluster).filter((c): c is string => Boolean(c))),
+  );
+
   // Filter notes by active cluster if selected
   const visibleNotes =
     layout === "tray"
@@ -495,21 +538,43 @@ export function DesktopScene() {
       onDrop={handleDrop}
       className="fixed inset-0 h-screen w-screen bg-transparent text-fg select-none overflow-hidden pointer-events-none"
     >
-      {/* Active Cluster Filter Chip (Top Center) */}
-      {selectedCluster && (
-        <div className="interactive-el absolute top-3 left-1/2 -translate-x-1/2 z-[85] flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#1D2029]/95 text-[#F4F5F7] border border-[#F5A623]/40 shadow-xl backdrop-blur-md animate-in fade-in zoom-in-95 pointer-events-auto">
-          <Folder className="size-3.5 text-[#F5A623]" />
-          <span className="text-xs font-semibold">
-            Đang lọc: <span className="text-[#F5A623]">{selectedCluster}</span> ({visibleNotes.length} note)
-          </span>
+      {/* Interactive Cluster Switcher Dock (Top Center) */}
+      {availableClusters.length > 0 && (
+        <div className="interactive-el absolute top-3 left-1/2 -translate-x-1/2 z-[85] flex items-center gap-1 p-1 rounded-2xl bg-[#1D2029]/95 text-[#F4F5F7] border border-white/10 shadow-2xl backdrop-blur-xl animate-in fade-in zoom-in-95 pointer-events-auto max-w-[90vw] overflow-x-auto note-scrollbar">
           <button
             type="button"
             onClick={() => setSelectedCluster(null)}
-            className="size-4.5 rounded-full bg-white/10 hover:bg-white/20 text-[#8B90A0] hover:text-white flex items-center justify-center cursor-pointer transition-colors"
-            title="Bỏ lọc cụm (Hiện tất cả)"
+            className={cn(
+              "px-2.5 py-1 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 shrink-0",
+              !selectedCluster
+                ? "bg-[#F5A623] text-[#14161D] shadow-xs"
+                : "text-[#8B90A0] hover:text-white hover:bg-white/10",
+            )}
           >
-            <X className="size-3" />
+            <span>Tất cả</span>
+            <span className="text-[10px] opacity-75 font-mono">({notes.length})</span>
           </button>
+          {availableClusters.map((clusterName) => {
+            const count = notes.filter((n) => n.cluster === clusterName).length;
+            const isActive = selectedCluster === clusterName;
+            return (
+              <button
+                key={clusterName}
+                type="button"
+                onClick={() => setSelectedCluster(isActive ? null : clusterName)}
+                className={cn(
+                  "px-2.5 py-1 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 shrink-0",
+                  isActive
+                    ? "bg-[#F5A623] text-[#14161D] shadow-xs"
+                    : "text-[#8B90A0] hover:text-white hover:bg-white/10",
+                )}
+              >
+                <Folder className="size-3" />
+                <span className="max-w-[120px] truncate">{clusterName}</span>
+                <span className="text-[10px] opacity-75 font-mono">({count})</span>
+              </button>
+            );
+          })}
         </div>
       )}
 
@@ -540,6 +605,7 @@ export function DesktopScene() {
       <MissedRemindersModal />
       <QuickCapture />
       <QuickTimer />
+      <SpotlightSearch />
       <Hub />
       {appLoaded && <Onboarding />}
       {appLoaded && <FloatingTrayMenu />}

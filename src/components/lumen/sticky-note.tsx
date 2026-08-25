@@ -8,6 +8,7 @@ import {
   Download,
   Folder,
   FolderPlus,
+  Lock,
   MoreHorizontal,
   Pin,
   Plus,
@@ -16,6 +17,7 @@ import {
   Scaling,
   Square,
   Trash2,
+  Unlock,
   X,
 } from "lucide-react";
 import { sounds } from "@/lib/audio";
@@ -44,6 +46,8 @@ export function StickyNote({ note, stacked }: Props) {
   const bringNote = useLumen((s) => s.bringNote);
   const toggleNoteCollapse = useLumen((s) => s.toggleNoteCollapse);
   const toggleNotePin = useLumen((s) => s.toggleNotePin);
+  const toggleNoteLock = useLumen((s) => s.toggleNoteLock);
+  const highlightNoteId = useLumen((s) => s.highlightNoteId);
   const drag = useRef<{
     dx: number;
     dy: number;
@@ -169,9 +173,9 @@ export function StickyNote({ note, stacked }: Props) {
     };
   }, []);
 
-  // High-Performance Position Drag Handlers (Cached Parent Bounds, Zero Layout Reflow)
+  // High-Performance Position Drag Handlers (Cached Parent Bounds, Magnetic Edge/Sibling Snapping)
   const onPointerDown = (e: PointerEvent<HTMLElement>) => {
-    if (stacked || note.pinned) return;
+    if (stacked || note.pinned || note.locked) return;
     if ((e.target as HTMLElement).closest("textarea,input,button,.no-drag")) return;
     bringNote(note.id);
     sounds.playPop(540);
@@ -193,8 +197,29 @@ export function StickyNote({ note, stacked }: Props) {
     const { parentLeft, parentTop, parentWidth, parentHeight, dx, dy } = drag.current;
     const maxX = parentWidth < 640 ? 48 : 90;
     const maxY = parentHeight < 700 ? 58 : 88;
-    const x = Math.max(1, Math.min(maxX, ((e.clientX - parentLeft) / parentWidth) * 100 - dx));
-    const y = Math.max(2, Math.min(maxY, ((e.clientY - parentTop) / parentHeight) * 100 - dy));
+    let x = Math.max(1, Math.min(maxX, ((e.clientX - parentLeft) / parentWidth) * 100 - dx));
+    let y = Math.max(2, Math.min(maxY, ((e.clientY - parentTop) / parentHeight) * 100 - dy));
+
+    // Smart Magnetic Snapping (Screen Edges & Sibling Alignments)
+    const SNAP_THRESH = 1.4;
+    if (Math.abs(x - 2) < SNAP_THRESH) x = 2;
+    else if (Math.abs(x - (maxX - 2)) < SNAP_THRESH) x = maxX - 2;
+
+    if (Math.abs(y - 3) < SNAP_THRESH) y = 3;
+    else if (Math.abs(y - (maxY - 3)) < SNAP_THRESH) y = maxY - 3;
+
+    for (const other of allNotes) {
+      if (other.id === note.id || other.collapsed) continue;
+      if (Math.abs(x - other.x) < SNAP_THRESH) {
+        x = other.x;
+        break;
+      }
+      if (Math.abs(y - other.y) < SNAP_THRESH) {
+        y = other.y;
+        break;
+      }
+    }
+
     updateNote(note.id, { x, y });
   };
 
@@ -422,6 +447,7 @@ export function StickyNote({ note, stacked }: Props) {
         stacked ? "relative w-full" : "absolute w-64 sm:w-72",
         `note-${note.tint}`,
         note.pinned && "ring-2 ring-[#F5A623] shadow-xl",
+        highlightNoteId === note.id && "ring-4 ring-[#F5A623] shadow-[0_0_35px_rgba(245,166,35,0.75)] animate-pulse",
       )}
       style={style}
       onPointerDown={onPointerDown}
@@ -430,7 +456,10 @@ export function StickyNote({ note, stacked }: Props) {
       onPointerCancel={onPointerUp}
     >
       {/* Dark Integrated Header Bar (~34px height) - acts as smooth drag handle */}
-      <header className="relative z-30 h-8.5 px-3 flex items-center justify-between bg-[#1D2029]/95 text-white backdrop-blur-md border-b border-white/5 shrink-0 select-none touch-none cursor-grab active:cursor-grabbing rounded-t-2xl">
+      <header className={cn(
+        "relative z-30 h-8.5 px-3 flex items-center justify-between bg-[#1D2029]/95 text-white backdrop-blur-md border-b border-white/5 shrink-0 select-none touch-none rounded-t-2xl",
+        note.locked ? "cursor-default" : "cursor-grab active:cursor-grabbing",
+      )}>
         {/* Color Dot Button (Opens 4-color popover) */}
         <div className="relative no-drag" ref={colorPickerRef}>
           <button
@@ -478,27 +507,56 @@ export function StickyNote({ note, stacked }: Props) {
           )}
         </div>
 
-        {/* Center: Cluster Pill Badge */}
-        {note.cluster ? (
+        {/* Center: Cluster Pill Badge & Lock Indicator */}
+        <div className="flex items-center gap-1.5 min-w-0">
+          {note.cluster && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                bringNote(note.id);
+                setClusterPickerOpen(true);
+              }}
+              className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/10 hover:bg-white/20 text-[#F5A623] text-[10px] font-semibold border border-white/10 transition-colors cursor-pointer truncate"
+              title="Nhóm / Cụm ghi chú (Click để đổi)"
+            >
+              <Folder className="size-2.5 shrink-0" />
+              <span className="max-w-[75px] truncate">{note.cluster}</span>
+            </button>
+          )}
+
+          {note.locked && (
+            <span
+              className="flex items-center gap-1 text-[10px] text-[#F5A623] bg-[#F5A623]/15 px-1.5 py-0.5 rounded-md border border-[#F5A623]/30 shrink-0 select-none"
+              title="Vị trí ghi chú đã được khóa cố định"
+            >
+              <Lock className="size-2.5" />
+              <span>Khóa</span>
+            </span>
+          )}
+        </div>
+
+        {/* Right Header Actions: Lock + Pin + Direct Trash (Delete) + Kebab (…) */}
+        <div className="flex items-center gap-0.5 no-drag">
+          {/* Lock / Unlock Quick Button */}
           <button
             type="button"
+            title={note.locked ? "Mở khóa vị trí" : "Khóa vị trí ghi chú"}
             onClick={(e) => {
               e.stopPropagation();
               bringNote(note.id);
-              setClusterPickerOpen(true);
+              toggleNoteLock(note.id);
             }}
-            className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/10 hover:bg-white/20 text-[#F5A623] text-[10px] font-semibold border border-white/10 transition-colors cursor-pointer"
-            title="Nhóm / Cụm ghi chú (Click để đổi)"
+            className={cn(
+              "flex size-6 items-center justify-center rounded-md transition-colors cursor-pointer",
+              note.locked
+                ? "bg-[#F5A623]/20 text-[#F5A623]"
+                : "text-[#8B90A0] hover:text-white hover:bg-white/10",
+            )}
           >
-            <Folder className="size-2.5" />
-            <span className="max-w-[90px] truncate">{note.cluster}</span>
+            {note.locked ? <Lock className="size-3" /> : <Unlock className="size-3" />}
           </button>
-        ) : (
-          <div className="flex-1" />
-        )}
 
-        {/* Right Header Actions: Pin + Direct Trash (Delete) + Kebab (…) */}
-        <div className="flex items-center gap-0.5 no-drag">
           {/* Pin Button */}
           <button
             type="button"
@@ -535,7 +593,7 @@ export function StickyNote({ note, stacked }: Props) {
           <div className="relative no-drag" ref={menuRef}>
             <button
               type="button"
-              title="Tùy chọn khác (Thu gọn, Góc xoay, Sao chép, Xóa)"
+              title="Tùy chọn khác (Thu gọn, Khóa, Góc xoay, Sao chép, Xóa)"
               onPointerDown={(e) => e.stopPropagation()}
               onClick={(e) => {
                 e.stopPropagation();
@@ -575,7 +633,31 @@ export function StickyNote({ note, stacked }: Props) {
                   <span>Thu gọn ghi chú</span>
                 </button>
 
-                {/* 2. Change Cluster / Group */}
+                {/* 2. Lock / Unlock Position */}
+                <button
+                  type="button"
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleNoteLock(note.id);
+                    setMenuOpen(false);
+                  }}
+                  className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl text-[#F4F5F7] hover:bg-[#262A35] hover:text-white transition-colors text-left cursor-pointer"
+                >
+                  {note.locked ? (
+                    <>
+                      <Unlock className="size-3.5 text-[#F5A623]" />
+                      <span>Mở khóa vị trí</span>
+                    </>
+                  ) : (
+                    <>
+                      <Lock className="size-3.5 text-[#F5A623]" />
+                      <span>Khóa vị trí ghi chú</span>
+                    </>
+                  )}
+                </button>
+
+                {/* 3. Change Cluster / Group */}
                 <button
                   type="button"
                   onPointerDown={(e) => e.stopPropagation()}
@@ -591,7 +673,7 @@ export function StickyNote({ note, stacked }: Props) {
                   <span>Đổi Cụm / Nhóm</span>
                 </button>
 
-                {/* 3. Rotation & Font Options */}
+                {/* 4. Rotation & Font Options */}
                 <button
                   type="button"
                   onPointerDown={(e) => e.stopPropagation()}
@@ -607,7 +689,7 @@ export function StickyNote({ note, stacked }: Props) {
                   <span>Độ xoay & Phông chữ</span>
                 </button>
 
-                {/* 4. Copy Content */}
+                {/* 5. Copy Content */}
                 <button
                   type="button"
                   onPointerDown={(e) => e.stopPropagation()}
@@ -623,7 +705,7 @@ export function StickyNote({ note, stacked }: Props) {
 
                 <div className="h-px bg-white/10 my-1" />
 
-                {/* 5. Delete Note */}
+                {/* 6. Delete Note */}
                 <button
                   type="button"
                   onPointerDown={(e) => e.stopPropagation()}
