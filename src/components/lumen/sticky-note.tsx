@@ -94,7 +94,7 @@ export function StickyNote({ note, stacked }: Props) {
 
   const onResizePointerMove = (e: PointerEvent<HTMLDivElement>) => {
     if (!isResizing || !resizeDrag.current) return;
-    const deltaX = resizeDrag.current.startX - e.clientX;
+    const deltaX = e.clientX - resizeDrag.current.startX;
     const deltaY = e.clientY - resizeDrag.current.startY;
     const newW = Math.min(600, Math.max(220, Math.round(resizeDrag.current.startW + deltaX)));
     const newH = Math.min(800, Math.max(160, Math.round(resizeDrag.current.startH + deltaY)));
@@ -293,12 +293,21 @@ export function StickyNote({ note, stacked }: Props) {
     : {
         left: `${note.x}%`,
         top: `${note.y}%`,
-        transform: note.collapsed ? "none" : `rotate(${note.rot}deg)`,
+        transform: `rotate(${note.rot}deg)`,
         zIndex: (note.pinned ? 90 : 10) + note.z + (isElevated ? 250 : 0),
         opacity: note.opacity ?? 1,
         width: note.width ? `${note.width}px` : undefined,
         minHeight: note.height ? `${note.height}px` : undefined,
         transition: isTransformActive || isResizing ? "none" : undefined,
+      };
+
+  const pillStyle = stacked
+    ? undefined
+    : {
+        left: `${note.x}%`,
+        top: `${note.y}%`,
+        zIndex: (note.pinned ? 90 : 10) + note.z,
+        opacity: note.opacity ?? 1,
       };
 
   // Minimized Capsule Pill Mode
@@ -311,7 +320,7 @@ export function StickyNote({ note, stacked }: Props) {
             ? "!transition-none cursor-grabbing ring-2 ring-[#F5A623] scale-105"
             : "transition-transform duration-140 cursor-grab hover:scale-105",
         )}
-        style={style}
+        style={pillStyle}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
@@ -932,7 +941,7 @@ export function StickyNote({ note, stacked }: Props) {
           </div>
         )}
 
-        {/* Subtle Interactive Corner Resize Handle (Bottom-Left) */}
+        {/* Ergonomic Standard Corner Resize Handle (Bottom-Right) */}
         {!stacked && (
           <div
             onPointerDown={onResizePointerDown}
@@ -941,33 +950,14 @@ export function StickyNote({ note, stacked }: Props) {
             onPointerCancel={onResizePointerUp}
             onDoubleClick={onResetSize}
             className={cn(
-              "no-drag absolute bottom-1.5 left-1.5 size-6 flex items-center justify-center rounded-full transition-all cursor-nwse-resize z-20 touch-none select-none",
+              "no-drag absolute bottom-1.5 right-1.5 size-5 flex items-center justify-center rounded-lg transition-all cursor-se-resize z-20 touch-none select-none",
               isResizing
                 ? "bg-[#F5A623] text-[#14161D] shadow-lg scale-110 opacity-100 ring-2 ring-[#1D2029]"
-                : "bg-black/10 hover:bg-black/25 text-[#23262F]/70 hover:text-[#23262F] opacity-0 group-hover:opacity-100 hover:scale-110",
+                : "text-[#23262F]/30 hover:text-[#23262F] hover:bg-black/10 opacity-0 group-hover:opacity-100 hover:scale-110",
             )}
-            title="Kéo để co giãn kích thước note (Nhấp đúp để tự động vừa vặn)"
+            title="Kéo góc này để co giãn kích thước ghi chú (Nhấp đúp để tự động vừa vặn)"
           >
             <Scaling className="size-3" />
-          </div>
-        )}
-
-        {/* Subtle Interactive Corner Rotate Handle (Bottom-Right) */}
-        {!stacked && !note.pinned && (
-          <div
-            onPointerDown={onRotatePointerDown}
-            onPointerMove={onRotatePointerMove}
-            onPointerUp={onRotatePointerUp}
-            onPointerCancel={onRotatePointerUp}
-            className={cn(
-              "no-drag absolute bottom-1.5 right-1.5 size-6 flex items-center justify-center rounded-full transition-all cursor-grab active:cursor-grabbing z-20 touch-none select-none",
-              isRotating
-                ? "bg-[#F5A623] text-[#14161D] shadow-lg scale-110 opacity-100 ring-2 ring-[#1D2029]"
-                : "bg-black/10 hover:bg-black/25 text-[#23262F]/70 hover:text-[#23262F] opacity-0 group-hover:opacity-100 hover:scale-110",
-            )}
-            title="Kéo chuột để xoay góc nghiêng ghi chú"
-          >
-            <RotateCw className="size-3.5" />
           </div>
         )}
       </div>

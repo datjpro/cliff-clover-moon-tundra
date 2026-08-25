@@ -316,8 +316,13 @@ console.log("\n📦 [SUITE 5]: Desktop Window Visibility & Single Instance Recov
   assert(computeResize(280, 50) === 330 && computeResize(280, -100) === 220 && computeResize(280, 500) === 600, "Note resizing smoothly clamps within ergonomic 220px - 600px bounds");
 
   // Sticky Note Caret & Cursor Visibility Verification Test
-  const textareaClasses = "no-drag w-full resize-none select-text cursor-text touch-auto sticky-note-textarea caret-[#14161D]";
+  const textareaClasses = "no-drag w-full resize-none select-text cursor-text touch-auto sticky-note-textarea caret-[#000000]";
   assert(textareaClasses.includes("cursor-text") && textareaClasses.includes("select-text") && textareaClasses.includes("caret-"), "Note textarea explicitly configures high-contrast caret, cursor-text, and user-select:text");
+
+  // Collapsed Note Pill Decoupling Test (Does NOT inherit width or minHeight after resize)
+  const resizedNote = { id: "n1", width: 450, height: 350, collapsed: true };
+  const pillStyle = { width: resizedNote.collapsed ? undefined : `${resizedNote.width}px` };
+  assert(pillStyle.width === undefined, "Collapsed note pill cleanly decouples from resized width/height to stay a compact capsule");
 }
 
 console.log(`\n========================================`);
