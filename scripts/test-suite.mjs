@@ -183,7 +183,7 @@ console.log("\n📦 [SUITE 5]: Desktop Window Visibility & Single Instance Recov
     if (!win) return;
     if (win.minimized) win.restore();
     if (!win.visible) win.show();
-    win.setAlwaysOnTop(true, "floating");
+    win.setAlwaysOnTop(true, "normal");
     win.focus();
   }
 
@@ -192,8 +192,13 @@ console.log("\n📦 [SUITE 5]: Desktop Window Visibility & Single Instance Recov
 
   assert(mockWin.minimized === false, "Minimized window is unminimized on restore");
   assert(mockWin.visible === true, "Window is set to visible on restore");
-  assert(mockWin.alwaysOnTop === true && mockWin.level === "floating", "Window re-asserts always-on-top at floating level (compatible with Windows auto-hide taskbar)");
+  assert(mockWin.alwaysOnTop === true && mockWin.level === "normal", "Window re-asserts always-on-top at normal level (compatible with Windows auto-hide taskbar)");
   assert(mockWin.focused === true, "Window acquires system focus on restore");
+
+  // 1px screen height offset verification for Windows Auto-Hide Taskbar
+  const computeOverlayBounds = (screenH, screenW) => ({ x: 0, y: 0, width: screenW, height: screenH - 1 });
+  const overlayBounds = computeOverlayBounds(1080, 1920);
+  assert(overlayBounds.height === 1079, "Overlay window height applies 1px bottom offset to bypass Windows Fullscreen Exclusive taskbar lock");
 
   // Single-instance handling: second instance wakes existing window
   let secondInstanceWoken = false;

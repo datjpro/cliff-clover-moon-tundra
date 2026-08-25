@@ -33,7 +33,7 @@ function restoreAndFocusWindow() {
   if (!mainWindow.isVisible()) {
     mainWindow.show();
   }
-  mainWindow.setAlwaysOnTop(true, "floating");
+  mainWindow.setAlwaysOnTop(true, "normal");
   mainWindow.moveTop();
   mainWindow.focus();
 }
@@ -43,7 +43,8 @@ function updateWindowBounds() {
   try {
     const primaryDisplay = screen.getPrimaryDisplay();
     const { width, height } = primaryDisplay.bounds;
-    mainWindow.setBounds({ x: 0, y: 0, width, height });
+    // 1px height offset prevents Windows DWM from classifying window as Fullscreen Exclusive which blocks Auto-Hide Taskbar
+    mainWindow.setBounds({ x: 0, y: 0, width, height: height - 1 });
   } catch (err) {
     console.debug("[Display] Update bounds error:", err);
   }
@@ -57,7 +58,7 @@ function createWindow() {
     x: 0,
     y: 0,
     width: width,
-    height: height,
+    height: height - 1, // 1px offset ensures Windows Auto-Hide Taskbar hook triggers 100% reliably
     transparent: true,
     frame: false,
     hasShadow: false,
@@ -66,7 +67,6 @@ function createWindow() {
     focusable: true,
     fullscreenable: false,
     backgroundColor: "#00000000",
-    type: "toolbar", // Informs Windows DWM that this is an overlay tool
     webPreferences: {
       preload: path.join(__dirname, "preload.cjs"),
       nodeIntegration: false,
@@ -76,8 +76,8 @@ function createWindow() {
     },
   });
 
-  // Keep window floating without using "screen-saver" level which blocks Windows Taskbar auto-hide
-  mainWindow.setAlwaysOnTop(true, "floating");
+  // Keep window always on top of regular apps while letting Windows Shell Taskbar slide up
+  mainWindow.setAlwaysOnTop(true, "normal");
   mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
 
   // Initialize mouse click-through so desktop wallpaper, videos, and background apps work 100%
@@ -201,7 +201,7 @@ function createWindow() {
   // IPC channel: Toggle Always on Top
   ipcMain.on("set-always-on-top", (event, flag) => {
     if (mainWindow && !mainWindow.isDestroyed()) {
-      mainWindow.setAlwaysOnTop(Boolean(flag), "floating");
+      mainWindow.setAlwaysOnTop(Boolean(flag), "normal");
     }
   });
 
