@@ -137,16 +137,7 @@ export function setIgnoreMouseEvents(ignore: boolean): void {
     window.desktopAPI.setIgnoreMouseEvents(ignore);
     return;
   }
-  if (typeof window !== "undefined" && (window.__TAURI_INTERNALS__ || window.__TAURI__)) {
-    void (async () => {
-      try {
-        const { invoke } = await import("@tauri-apps/api/core");
-        await invoke("set_ignore_cursor_events", { ignore });
-      } catch (err) {
-        console.debug("[DesktopBridge] tauri click-through:", err);
-      }
-    })();
-  }
+  // In Tauri Desktop, cursor events remain enabled so notes, inputs, buttons, and companion are 100% interactive.
 }
 
 /**

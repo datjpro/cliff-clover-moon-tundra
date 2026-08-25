@@ -7,77 +7,20 @@ import { uid } from "./utils";
 
 const SEED_NOTES: Note[] = [
   {
-    id: "seed-1",
-    body: "Ghi chú số 1: Mục tiêu tuần này 🚀\n- Hoàn thiện ứng dụng Lumen siêu nhẹ\n- Chạy nền tiết kiệm <40MB RAM\n- Tương tác mượt mà cùng chú Cáo",
-    x: 12,
-    y: 12,
-    rot: -1.5,
+    id: "seed-intro",
+    body: "Chào mừng bạn đến với Lumen! 🦊\n\nKhông gian ghi chú sống động cùng chú Cáo đồng hành trên Desktop.\n\n• Nhấp đúp vào màn hình để tạo note mới\n• Kéo thả tự do để sắp xếp ghi chú\n• Alt+N: Ghi chú nhanh | Alt+T: Hẹn giờ",
+    x: 38,
+    y: 25,
+    rot: -0.5,
     tint: "cream",
-    z: 2,
-    createdAt: 1,
-    collapsed: false,
-    cluster: "Công việc",
-  },
-  {
-    id: "seed-2",
-    body: "Ghi chú số 2: Ý tưởng phát triển 💡\n- Đồng hồ đếm ngược thông minh (COC, nấu ăn)\n- Giao diện Glassmorphism tối giản\n- Phím tắt nhanh Alt+N",
-    x: 64,
-    y: 10,
-    rot: 1.2,
-    tint: "sage",
     z: 1,
-    createdAt: 2,
-    collapsed: false,
-    cluster: "Ý tưởng",
-  },
-  {
-    id: "seed-3",
-    body: "Chào mừng bạn đến với Lumen! 🦊\nKhông gian ghi chú không gian sống động ngay trên Desktop.\n\n• Nhấp đúp chuột để tạo nhanh note mới\n• Kéo thả tự do di chuyển khắp màn hình",
-    x: 36,
-    y: 26,
-    rot: 0,
-    tint: "cream",
-    z: 3,
-    createdAt: 3,
+    createdAt: Date.now(),
     collapsed: false,
     cluster: "Hướng dẫn",
   },
-  {
-    id: "seed-4",
-    body: "Ghi chú số 3: Tối ưu UI/UX ✨\n- Màn hình trong suốt phủ toàn Desktop\n- Sắp xếp note tự động bằng nút Sắp xếp\n- Âm thanh chuông báo thức rõ ràng",
-    x: 18,
-    y: 46,
-    rot: 1.8,
-    tint: "mist",
-    z: 4,
-    createdAt: 4,
-    collapsed: false,
-    cluster: "Công việc",
-  },
-  {
-    id: "seed-5",
-    body: "Ghi chú số 4: Bạn đồng hành Cáo nhỏ 🐾\n- Vuốt ve & thưởng bánh quy\n- Ném bóng để Cáo chạy đuổi bắt\n- Tự động nhảy múa khi chuông reo",
-    x: 62,
-    y: 52,
-    rot: -1.8,
-    tint: "blush",
-    z: 5,
-    createdAt: 5,
-    collapsed: false,
-    cluster: "Thú cưng",
-  },
 ];
 
-const SEED_TIMERS: Reminder[] = [
-  {
-    id: "timer-1",
-    title: "Xây nhà trong COC (Clash of Clans)",
-    durationMs: 2 * 3600 * 1000 + 14 * 60 * 1000,
-    fireAt: Date.now() + (2 * 3600 * 1000 + 14 * 60 * 1000),
-    done: false,
-    pinToScreen: true,
-  },
-];
+const SEED_TIMERS: Reminder[] = [];
 
 type LumenState = {
   hydrated: boolean;
