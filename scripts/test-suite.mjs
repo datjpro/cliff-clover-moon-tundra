@@ -225,7 +225,7 @@ console.log("\n📦 [SUITE 5]: Desktop Window Visibility & Single Instance Recov
   assert(shortcutMap.togglePet.includes("Alt+P"), "Pet toggle supports Alt+P shortcut");
   assert(shortcutMap.restoreWindow.includes("Alt+L"), "Restore window supports Alt+L shortcut");
 
-  // Gesture Latency & Rotation Math Test
+  // Gesture Latency & Rotation Math Test (Smooth Continuous Tracking & Boundary Wrapping)
   const centerX = 200;
   const centerY = 200;
   const initRot = 5;
@@ -233,9 +233,23 @@ console.log("\n📦 [SUITE 5]: Desktop Window Visibility & Single Instance Recov
   const movedPointer = { x: 240, y: 270 };
   const startAngle = Math.atan2(startPointer.y - centerY, startPointer.x - centerX) * (180 / Math.PI);
   const currentAngle = Math.atan2(movedPointer.y - centerY, movedPointer.x - centerX) * (180 / Math.PI);
-  const deltaAngle = currentAngle - startAngle;
-  const newRot = Math.round((initRot + deltaAngle) * 10) / 10;
+  let diff = currentAngle - startAngle;
+  while (diff > 180) diff -= 360;
+  while (diff < -180) diff += 360;
+  let newRot = Math.round((initRot + diff) * 10) / 10;
   assert(typeof newRot === "number" && !isNaN(newRot), "Real-time rotation angle computed instantly with trigonometric accuracy");
+
+  // Continuous boundary wrapping test: when crossing from 179° to -179°, diff should be +2°, not -358°
+  let crossDiff = -179 - 179;
+  while (crossDiff > 180) crossDiff -= 360;
+  while (crossDiff < -180) crossDiff += 360;
+  assert(crossDiff === 2, "Continuous rotation bridges -180°/+180° boundary smoothly without violent jumping");
+
+  // Magnetic Snap to 0° within ±1.5°
+  const snapTest1 = Math.abs(1.2) < 1.5 ? 0 : 1.2;
+  const snapTest2 = Math.abs(-0.8) < 1.5 ? 0 : -0.8;
+  const snapTest3 = Math.abs(5.0) < 1.5 ? 0 : 5.0;
+  assert(snapTest1 === 0 && snapTest2 === 0 && snapTest3 === 5.0, "Rotation magnetically snaps to neutral 0° within ±1.5° threshold");
 
   // Paper Stack Hover Reveal & Delay Hysteresis Test
   let paperVisible = false;

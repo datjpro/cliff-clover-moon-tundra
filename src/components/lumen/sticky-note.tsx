@@ -52,7 +52,13 @@ export function StickyNote({ note, stacked }: Props) {
     parentWidth: number;
     parentHeight: number;
   } | null>(null);
-  const rotateDrag = useRef<{ startAngle: number; initRot: number; centerX: number; centerY: number } | null>(null);
+  const rotateDrag = useRef<{
+    lastAngle: number;
+    accumulatedRot: number;
+    centerX: number;
+    centerY: number;
+    rafId: number | null;
+  } | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const colorPickerRef = useRef<HTMLDivElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -154,6 +160,15 @@ export function StickyNote({ note, stacked }: Props) {
     };
   }, [menuOpen, colorPickerOpen, clusterPickerOpen]);
 
+  // Teardown pending rAF animation frames on unmount
+  useEffect(() => {
+    return () => {
+      if (rotateDrag.current?.rafId) {
+        cancelAnimationFrame(rotateDrag.current.rafId);
+      }
+    };
+  }, []);
+
   // High-Performance Position Drag Handlers (Cached Parent Bounds, Zero Layout Reflow)
   const onPointerDown = (e: PointerEvent<HTMLElement>) => {
     if (stacked || note.pinned) return;
@@ -188,42 +203,79 @@ export function StickyNote({ note, stacked }: Props) {
     setIsDragging(false);
   };
 
-  // High-Performance Interactive Rotation Drag Handlers (Direct Angle Tracking)
-  const onRotatePointerDown = (e: PointerEvent<HTMLElement>) => {
+  // High-Performance Smooth Interactive Rotation Handlers (Continuous Angle Tracking & Magnetic Snap)
+  const onRotatePointerDown = (e: PointerEvent<HTMLDivElement>) => {
     e.stopPropagation();
-    const targetEl = e.currentTarget.closest("article") as HTMLElement;
-    if (!targetEl) return;
-    const rect = targetEl.getBoundingClientRect();
+    bringNote(note.id);
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+
+    const card = (e.currentTarget.closest("article") as HTMLElement) || null;
+    const rect = card ? card.getBoundingClientRect() : { left: 0, top: 0, width: 280, height: 220 };
     const centerX = rect.left + rect.width / 2;
     const centerY = rect.top + rect.height / 2;
     const startAngle = Math.atan2(e.clientY - centerY, e.clientX - centerX) * (180 / Math.PI);
+
     rotateDrag.current = {
-      startAngle,
-      initRot: note.rot || 0,
+      lastAngle: startAngle,
+      accumulatedRot: note.rot || 0,
       centerX,
       centerY,
+      rafId: null,
     };
     setIsRotating(true);
-    e.currentTarget.setPointerCapture(e.pointerId);
+    sounds.playPop(560);
   };
 
-  const onRotatePointerMove = (e: PointerEvent<HTMLElement>) => {
-    if (!rotateDrag.current) return;
-    const currentAngle =
-      Math.atan2(
-        e.clientY - rotateDrag.current.centerY,
-        e.clientX - rotateDrag.current.centerX,
-      ) *
-      (180 / Math.PI);
-    const deltaAngle = currentAngle - rotateDrag.current.startAngle;
-    let newRot = Math.round((rotateDrag.current.initRot + deltaAngle) * 10) / 10;
-    newRot = Math.max(-60, Math.min(60, newRot));
-    updateNote(note.id, { rot: newRot });
+  const onRotatePointerMove = (e: PointerEvent<HTMLDivElement>) => {
+    if (!isRotating || !rotateDrag.current) return;
+    const { centerX, centerY, lastAngle, accumulatedRot } = rotateDrag.current;
+    const currentAngle = Math.atan2(e.clientY - centerY, e.clientX - centerX) * (180 / Math.PI);
+
+    // Calculate shortest angular difference (smoothly bridges across the ±180° atan2 discontinuity)
+    let diff = currentAngle - lastAngle;
+    while (diff > 180) diff -= 360;
+    while (diff < -180) diff += 360;
+
+    const newAccumulated = accumulatedRot + diff;
+    rotateDrag.current.lastAngle = currentAngle;
+    rotateDrag.current.accumulatedRot = newAccumulated;
+
+    // Smoothly clamp within ±60° range for natural desktop sticky note tilt
+    let clampedRot = Math.max(-60, Math.min(60, newAccumulated));
+
+    // Magnetic snap to exactly 0° when within ±1.5°
+    if (Math.abs(clampedRot) < 1.5) {
+      clampedRot = 0;
+    }
+
+    const finalRot = Math.round(clampedRot * 10) / 10;
+
+    // Throttle rendering to rAF for 60/120 FPS sub-16ms budget
+    if (rotateDrag.current.rafId) {
+      cancelAnimationFrame(rotateDrag.current.rafId);
+    }
+    rotateDrag.current.rafId = requestAnimationFrame(() => {
+      updateNote(note.id, { rot: finalRot });
+    });
   };
 
-  const onRotatePointerUp = () => {
+  const onRotatePointerUp = (e: PointerEvent<HTMLDivElement>) => {
+    if (!isRotating) return;
+    try {
+      (e.target as HTMLElement).releasePointerCapture(e.pointerId);
+    } catch {}
+    if (rotateDrag.current?.rafId) {
+      cancelAnimationFrame(rotateDrag.current.rafId);
+    }
     rotateDrag.current = null;
     setIsRotating(false);
+    sounds.playPop(620);
+  };
+
+  const onResetRotation = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    updateNote(note.id, { rot: 0 });
+    sounds.playChime();
   };
 
   const addCheckItem = () => {
@@ -352,7 +404,7 @@ export function StickyNote({ note, stacked }: Props) {
         "interactive-el relative rounded-2xl flex flex-col overflow-visible group",
         "shadow-[0_1px_2px_rgba(0,0,0,0.08),0_6px_20px_rgba(0,0,0,0.16)] border border-black/10",
         isTransformActive
-          ? "!transition-none shadow-[0_6px_14px_rgba(0,0,0,0.15),0_20px_45px_rgba(0,0,0,0.3)] ring-2 ring-[#F5A623] cursor-grabbing will-change-transform scale-[1.02]"
+          ? "!transition-none shadow-[0_6px_14px_rgba(0,0,0,0.15),0_20px_45px_rgba(0,0,0,0.3)] ring-2 ring-[#F5A623] will-change-transform"
           : "transition-shadow transition-colors duration-150",
         stacked ? "relative w-full" : "absolute w-64 sm:w-72",
         `note-${note.tint}`,
@@ -908,13 +960,13 @@ export function StickyNote({ note, stacked }: Props) {
           </div>
         )}
 
-        {/* Add Checkbox Item Form: Always separated from bottom-right resize corner */}
+        {/* Add Checkbox Item Form: Offset with clearance from bottom-right corner actions */}
         <form
           onSubmit={(e) => {
             e.preventDefault();
             addCheckItem();
           }}
-          className="no-drag mt-2 flex items-center gap-1 opacity-65 hover:opacity-100 transition-opacity shrink-0 mr-5"
+          className="no-drag mt-2 flex items-center gap-1 opacity-65 hover:opacity-100 transition-opacity shrink-0 mr-14"
         >
           <input
             type="text"
@@ -933,30 +985,51 @@ export function StickyNote({ note, stacked }: Props) {
           )}
         </form>
 
-        {/* Real-time Angle Feedback Bubble during Rotation */}
-        {isRotating && (
-          <div className="no-drag absolute top-2 right-2 z-30 flex items-center gap-1 rounded-full bg-[#1D2029] text-[#F5A623] px-2 py-0.5 text-[11px] font-mono font-bold shadow-xl border border-[#F5A623]/40 animate-in zoom-in-95 pointer-events-none">
-            <span>{Math.round(note.rot || 0)}°</span>
-          </div>
-        )}
-
-        {/* Ergonomic Standard Corner Resize Handle (Bottom-Right) */}
+        {/* Ergonomic Bottom-Right Corner Controls: Smooth Rotation Handle + Corner Resize Handle */}
         {!stacked && (
-          <div
-            onPointerDown={onResizePointerDown}
-            onPointerMove={onResizePointerMove}
-            onPointerUp={onResizePointerUp}
-            onPointerCancel={onResizePointerUp}
-            onDoubleClick={onResetSize}
-            className={cn(
-              "no-drag absolute bottom-1 right-1 size-5 flex items-center justify-center rounded-lg transition-all cursor-se-resize z-20 touch-none select-none",
-              isResizing
-                ? "bg-[#F5A623] text-[#14161D] shadow-lg scale-110 opacity-100 ring-2 ring-[#1D2029]"
-                : "text-[#23262F]/30 hover:text-[#23262F] hover:bg-black/10 opacity-0 group-hover:opacity-100 hover:scale-110",
+          <div className="no-drag absolute bottom-1 right-1 flex items-center gap-0.5 z-20">
+            {/* Real-time Angle Feedback Badge during Rotation */}
+            {isRotating && (
+              <div className="flex items-center gap-0.5 rounded-md bg-[#1D2029] text-[#F5A623] px-1.5 py-0.5 text-[10px] font-mono font-bold shadow-lg border border-[#F5A623]/40 animate-in zoom-in-95 pointer-events-none select-none mr-0.5">
+                <span>{Math.round(note.rot || 0)}°</span>
+              </div>
             )}
-            title="Kéo góc này để co giãn kích thước ghi chú (Nhấp đúp để tự động vừa vặn)"
-          >
-            <Scaling className="size-3" />
+
+            {/* Smooth Rotation Handle (Next to Resize Handle) */}
+            <div
+              onPointerDown={onRotatePointerDown}
+              onPointerMove={onRotatePointerMove}
+              onPointerUp={onRotatePointerUp}
+              onPointerCancel={onRotatePointerUp}
+              onDoubleClick={onResetRotation}
+              className={cn(
+                "size-5 flex items-center justify-center rounded-lg transition-all cursor-grab active:cursor-grabbing touch-none select-none",
+                isRotating
+                  ? "bg-[#F5A623] text-[#14161D] shadow-lg scale-110 opacity-100 ring-2 ring-[#1D2029]"
+                  : "text-[#23262F]/30 hover:text-[#23262F] hover:bg-black/10 opacity-0 group-hover:opacity-100 hover:scale-110",
+              )}
+              title="Kéo để xoay nghiêng ghi chú (Nhấp đúp để đặt lại 0°)"
+            >
+              <RotateCw className="size-3" />
+            </div>
+
+            {/* Corner Resize Handle */}
+            <div
+              onPointerDown={onResizePointerDown}
+              onPointerMove={onResizePointerMove}
+              onPointerUp={onResizePointerUp}
+              onPointerCancel={onResizePointerUp}
+              onDoubleClick={onResetSize}
+              className={cn(
+                "size-5 flex items-center justify-center rounded-lg transition-all cursor-se-resize touch-none select-none",
+                isResizing
+                  ? "bg-[#F5A623] text-[#14161D] shadow-lg scale-110 opacity-100 ring-2 ring-[#1D2029]"
+                  : "text-[#23262F]/30 hover:text-[#23262F] hover:bg-black/10 opacity-0 group-hover:opacity-100 hover:scale-110",
+              )}
+              title="Kéo góc này để co giãn kích thước ghi chú (Nhấp đúp để tự động vừa vặn)"
+            >
+              <Scaling className="size-3" />
+            </div>
           </div>
         )}
       </div>
