@@ -1,4 +1,4 @@
-import { useEffect, useState, type PointerEvent } from "react";
+import { useEffect, useRef, useState, type PointerEvent } from "react";
 import { Clock, Eye, EyeOff, LayoutGrid, Plus, Settings, Sparkles, X } from "lucide-react";
 import { sounds } from "@/lib/audio";
 import {
@@ -20,64 +20,65 @@ import { QuickTimer, triggerOpenQuickTimer } from "./quick-timer";
 import { StickyNote } from "./sticky-note";
 import { ToastStack } from "./toasts";
 
-function PaperWell() {
-  const request = useLumen((s) => s.requestNoteFromPip);
-  const addNote = useLumen((s) => s.addNote);
-  const enabled = useLumen((s) => s.pip.enabled);
-
-  const handleClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    sounds.playPop(620);
-    // 1. Immediately spawn a new sticky note
-    addNote({
-      x: Math.max(10, Math.min(80, 50 + (Math.random() - 0.5) * 30)),
-      y: Math.max(10, Math.min(75, 40 + (Math.random() - 0.5) * 25)),
-      body: "",
-      tint: "cream",
-    });
-    // 2. If Pip is enabled, ask Pip to deliver
-    if (enabled) {
-      request();
-    }
-  };
-
-  return (
-    <button
-      type="button"
-      onClick={handleClick}
-      className="interactive-el fixed right-[4%] bottom-20 z-[20] w-16 cursor-pointer hover:scale-110 active:scale-95 transition-transform"
-      aria-label="Paper stack — Lấy giấy ghi chú"
-      title="Nhấp để lấy giấy ghi chú mới"
-    >
-      <span className="relative block h-20">
-        <span className="absolute inset-x-1 top-3 h-14 rotate-[-8deg] rounded-sm bg-[#bae6fd] shadow-md" />
-        <span className="absolute inset-x-0.5 top-2 h-14 rotate-[4deg] rounded-sm bg-[#bbf7d0] shadow-md" />
-        <span className="absolute inset-x-0 top-0 h-14 rounded-sm bg-[#fef08a] shadow-lg border border-amber-300" />
-      </span>
-      <span className="mt-1 block text-center text-[10px] font-bold tracking-wide text-white uppercase bg-black/60 rounded px-1">
-        📝 Paper
-      </span>
-    </button>
-  );
-}
-
-// Floating Quick Tray Menu (Modern Glassmorphism & Tokenized System)
+// Floating Quick Tray Menu & Hover-Revealed Paper Well Dock
 function FloatingTrayMenu() {
   const [open, setOpen] = useState(false);
+  const [paperVisible, setPaperVisible] = useState(false);
+  const leaveTimerRef = useRef<NodeJS.Timeout | null>(null);
+
   const lang = useLumen((s) => s.lang);
   const layout = useLumen((s) => s.layout);
   const setLayout = useLumen((s) => s.setLayout);
+  const addNote = useLumen((s) => s.addNote);
   const setCaptureOpen = useLumen((s) => s.setCaptureOpen);
   const setQuickTimerOpen = useLumen((s) => s.setQuickTimerOpen);
   const setHubOpen = useLumen((s) => s.setHubOpen);
   const tidyNotes = useLumen((s) => s.tidyNotes);
   const pipEnabled = useLumen((s) => s.pip.enabled);
   const setPipEnabled = useLumen((s) => s.setPipEnabled);
+  const requestNoteFromPip = useLumen((s) => s.requestNoteFromPip);
 
   const isVi = lang === "vi";
 
+  const handleMouseEnter = () => {
+    if (leaveTimerRef.current) {
+      clearTimeout(leaveTimerRef.current);
+      leaveTimerRef.current = null;
+    }
+    setPaperVisible(true);
+  };
+
+  const handleMouseLeave = () => {
+    if (leaveTimerRef.current) {
+      clearTimeout(leaveTimerRef.current);
+    }
+    // 500ms delay hysteresis so user has ample time to move cursor to the paper stack
+    leaveTimerRef.current = setTimeout(() => {
+      setPaperVisible(false);
+    }, 500);
+  };
+
+  const handlePaperClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    sounds.playPop(620);
+    addNote({
+      x: Math.max(10, Math.min(80, 50 + (Math.random() - 0.5) * 30)),
+      y: Math.max(10, Math.min(75, 40 + (Math.random() - 0.5) * 25)),
+      body: "",
+      tint: "cream",
+    });
+    if (pipEnabled) {
+      requestNoteFromPip();
+    }
+  };
+
   return (
-    <div className="interactive-el fixed right-6 bottom-5 z-[85] flex flex-col items-end gap-2 select-none">
+    <div
+      className="interactive-el fixed right-6 bottom-5 z-[85] flex flex-col items-end gap-2 select-none"
+      onPointerEnter={handleMouseEnter}
+      onPointerLeave={handleMouseLeave}
+    >
+      {/* 1. Full Glassmorphism Tray Menu */}
       {open ? (
         <div className="animate-in fade-in slide-in-from-bottom-2 w-64 rounded-2xl bg-[#1D2029]/90 text-[#F4F5F7] p-2 shadow-[0_20px_50px_rgba(0,0,0,0.65)] border border-white/6 backdrop-blur-2xl">
           <div className="flex flex-col gap-1 text-xs font-medium">
@@ -207,12 +208,35 @@ function FloatingTrayMenu() {
         </div>
       ) : null}
 
-      {/* Tiny Custom Pet Icon Trigger at Corner of Desktop */}
+      {/* 2. Hover-Revealed Paper Stack (Hidden by default, pops out on hover with 500ms leave delay buffer) */}
+      {!open && paperVisible ? (
+        <div
+          className="animate-in fade-in slide-in-from-bottom-3 zoom-in-95 duration-200 mb-1 flex flex-col items-center cursor-pointer group"
+          onPointerEnter={handleMouseEnter}
+          onPointerLeave={handleMouseLeave}
+          onClick={handlePaperClick}
+          title="Nhấp để lấy giấy ghi chú mới"
+          aria-label="Lấy giấy ghi chú"
+        >
+          <div className="relative h-16 w-14 hover:scale-110 active:scale-95 transition-transform duration-150">
+            <span className="absolute inset-x-1 top-2.5 h-11 rotate-[-8deg] rounded-md bg-[#bae6fd] shadow-md border border-sky-300/40" />
+            <span className="absolute inset-x-0.5 top-1.5 h-11 rotate-[4deg] rounded-md bg-[#bbf7d0] shadow-md border border-emerald-300/40" />
+            <span className="absolute inset-x-0 top-0 h-11 rounded-md bg-[#fef08a] shadow-xl border border-amber-300 flex items-center justify-center">
+              <span className="text-xs font-bold text-amber-900">📝</span>
+            </span>
+          </div>
+          <span className="mt-1 rounded-full bg-[#1D2029]/95 px-2 py-0.5 text-[9px] font-bold text-[#F5A623] shadow-md border border-white/10 tracking-wide uppercase">
+            + Lấy giấy
+          </span>
+        </div>
+      ) : null}
+
+      {/* 3. Tiny Custom Pet Icon Trigger at Corner of Desktop */}
       <button
         type="button"
         onClick={() => setOpen(!open)}
         className="flex size-10 items-center justify-center rounded-2xl bg-[#1D2029]/95 hover:bg-[#1D2029] text-white shadow-2xl border border-white/10 backdrop-blur-xl hover:scale-110 active:scale-95 transition-transform duration-140 cursor-pointer"
-        title="Lumen Overlay Menu"
+        title="Lumen Overlay Menu (Chỉ chuột để hiện khay giấy)"
       >
         <span className="text-xl">🦊</span>
       </button>
@@ -406,7 +430,6 @@ export function DesktopScene() {
       data-transparent="true"
       className="fixed inset-0 h-screen w-screen bg-transparent text-fg select-none overflow-hidden pointer-events-none"
     >
-      <PaperWell />
       {visibleNotes.map((n) => (
         <StickyNote key={n.id} note={n} />
       ))}

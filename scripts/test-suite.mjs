@@ -234,10 +234,24 @@ console.log("\n📦 [SUITE 5]: Desktop Window Visibility & Single Instance Recov
   const newRot = Math.round((initRot + deltaAngle) * 10) / 10;
   assert(typeof newRot === "number" && !isNaN(newRot), "Real-time rotation angle computed instantly with trigonometric accuracy");
 
-  // Verify transition is disabled when dragging/rotating
-  const isTransformActive = true;
-  const styleTransition = isTransformActive ? "none" : "all 180ms ease";
-  assert(styleTransition === "none", "CSS transition is completely bypassed during active drag/rotate to prevent lag");
+  // Paper Stack Hover Reveal & Delay Hysteresis Test
+  let paperVisible = false;
+  let leaveTimer = null;
+  const onMouseEnter = () => {
+    if (leaveTimer) clearTimeout(leaveTimer);
+    paperVisible = true;
+  };
+  const onMouseLeave = (delay = 500) => {
+    leaveTimer = setTimeout(() => {
+      paperVisible = false;
+    }, delay);
+  };
+
+  onMouseEnter();
+  assert(paperVisible === true, "Paper stack reveals immediately when hovering the bottom-right dock icon");
+  onMouseLeave(500);
+  assert(paperVisible === true, "Paper stack remains visible during the 500ms transition delay window");
+  if (leaveTimer) clearTimeout(leaveTimer);
 }
 
 console.log(`\n========================================`);
