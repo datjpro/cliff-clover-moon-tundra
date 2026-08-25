@@ -4,7 +4,8 @@ const path = require("path");
 // Prevent Windows DWM & Chromium from occluding and pausing background video players (YouTube, media players)
 app.commandLine.appendSwitch("disable-backgrounding-occluded-windows", "true");
 app.commandLine.appendSwitch("disable-renderer-backgrounding", "true");
-app.commandLine.appendSwitch("disable-features", "CalculateNativeWinOcclusion");
+app.commandLine.appendSwitch("disable-background-timer-throttling", "true");
+app.commandLine.appendSwitch("disable-features", "CalculateNativeWinOcclusion,IntensiveWakeUpThrottling,ThrottleDisplayableMips");
 
 let mainWindow = null;
 let tray = null;
