@@ -291,43 +291,19 @@ export function DesktopScene() {
     void Promise.resolve(useLumen.persist.rehydrate()).then(() => markHydrated());
   }, [markHydrated]);
 
-  // Click-Through Mouse Event Controller (100% transparent click-through for desktop background & apps)
   const isAnyModalOpen = captureOpen || quickTimerOpen || hubOpen || searchOpen;
 
+  // Zero-Flicker DWM Mouse Controller: Keep transparent mouse pass-through steady
+  // to avoid calling Win32 SetWindowLongPtr on every mousemove, which causes Windows DWM
+  // to lock swapchains and freeze background video players (YouTube, media players)
   useEffect(() => {
     if (!isDesktopApp()) return;
 
     if (isAnyModalOpen) {
       setIgnoreMouseEvents(false);
-      return;
+    } else {
+      setIgnoreMouseEvents(true);
     }
-
-    setIgnoreMouseEvents(true);
-    let currentIgnore = true;
-
-    const handlePointerMove = (e: MouseEvent) => {
-      const target = e.target as HTMLElement | null;
-      if (!target) return;
-
-      // When cursor is within the bottom 4px of screen, ensure mouse pass-through is active
-      // so Windows OS can detect the cursor hitting the screen edge and smoothly pop up the auto-hidden Taskbar
-      const isAtScreenBottomEdge = e.clientY >= window.innerHeight - 4;
-
-      const isInteractive = Boolean(
-        !isAtScreenBottomEdge &&
-        target.closest(
-          "article, .interactive-el, section[role='dialog'], form, button, input, textarea, .group, [role='dialog'], [tabindex]",
-        ),
-      );
-      const shouldIgnore = !isInteractive;
-      if (shouldIgnore !== currentIgnore) {
-        currentIgnore = shouldIgnore;
-        setIgnoreMouseEvents(shouldIgnore);
-      }
-    };
-
-    window.addEventListener("mousemove", handlePointerMove, { passive: true });
-    return () => window.removeEventListener("mousemove", handlePointerMove);
   }, [isAnyModalOpen]);
 
   // Global & In-App Keyboard Shortcuts
