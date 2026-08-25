@@ -66,14 +66,15 @@ function FloatingTrayMenu() {
   const handlePaperClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     sounds.playPop(620);
-    addNote({
-      x: Math.max(10, Math.min(80, 50 + (Math.random() - 0.5) * 30)),
-      y: Math.max(10, Math.min(75, 40 + (Math.random() - 0.5) * 25)),
-      body: "",
-      tint: "cream",
-    });
     if (pipEnabled) {
       requestNoteFromPip();
+    } else {
+      addNote({
+        x: Math.max(10, Math.min(80, 50 + (Math.random() - 0.5) * 30)),
+        y: Math.max(10, Math.min(75, 40 + (Math.random() - 0.5) * 25)),
+        body: "",
+        tint: "cream",
+      });
     }
   };
 

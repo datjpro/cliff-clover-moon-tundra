@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type PointerEvent } from "react";
 import { Cookie, EyeOff, Heart, Moon, Sparkles, StickyNote as NoteIcon, Sun } from "lucide-react";
+import { sounds } from "@/lib/audio";
 import { useLumen } from "@/lib/store";
 import type { PawPrint } from "@/lib/types";
 import { uid } from "@/lib/utils";
@@ -166,6 +167,15 @@ export function Companion() {
         }
       }
 
+      // Handle Paper Fetch: Target the bottom-right Paper Well Dock
+      if (p.mood === "fetch" && target.current.kind !== "well") {
+        target.current = {
+          x: Math.max(60, scrW - 95),
+          y: Math.max(60, scrH - 95),
+          kind: "well",
+        };
+      }
+
       // Select next wander destination
       if (
         p.mood === "wander" &&
@@ -184,7 +194,12 @@ export function Companion() {
       const t = target.current;
       const d = dist(pos.current.x, pos.current.y, t.x, t.y);
       const isMovingNow = d > 2 && p.mood !== "sleep" && p.mood !== "eating" && !menuOpen;
-      const currentSpeed = p.mood === "chasing_ball" ? SPEED * 1.8 : SPEED;
+      const currentSpeed =
+        p.mood === "chasing_ball"
+          ? SPEED * 2.2
+          : p.mood === "fetch" || p.mood === "deliver"
+          ? SPEED * 1.85
+          : SPEED;
 
       if (isMovingNow) {
         const step = currentSpeed * dt;
@@ -246,28 +261,35 @@ export function Companion() {
           setStridePhase(0);
         }
 
+        // Reached Paper Well Dock -> Grab paper and carry to canvas
         if (p.mood === "fetch" && t.kind === "well") {
+          sounds.playPop(700);
           target.current = {
-            x: 80 + Math.random() * (scrW - 200),
-            y: 80 + Math.random() * (scrH - 240),
+            x: Math.max(80, Math.min(scrW - 280, scrW * 0.45 + (Math.random() - 0.5) * 180)),
+            y: Math.max(80, Math.min(scrH - 260, scrH * 0.38 + (Math.random() - 0.5) * 150)),
             kind: "drop",
           };
           state.setPip({
             mood: "deliver",
             carrying: true,
             moving: true,
-            speech: lang === "vi" ? "Pip lấy được giấy rồi! Đang mang đến..." : "Got one! Bringing it over...",
+            speech: lang === "vi" ? "Pip lấy được giấy rồi! Đang kéo ra..." : "Got one! Bringing it over...",
           });
         } else if (p.mood === "deliver" && t.kind === "drop") {
+          sounds.playPop(520);
           const noteXPct = (pos.current.x / scrW) * 100;
           const noteYPct = (pos.current.y / scrH) * 100;
           state.addNote({
-            x: clamp(noteXPct - 5, 4, 82),
-            y: clamp(noteYPct - 5, 6, 78),
+            x: clamp(noteXPct - 5, 6, 78),
+            y: clamp(noteYPct - 5, 8, 72),
             tint: "cream",
             rot: (Math.random() - 0.5) * 4,
-            body: lang === "vi" ? "Từ Pip — ghi lại ý tưởng mới tại đây ✨" : "From Pip — write your next big idea here ✨",
+            body: "",
           });
+          state.pushToast(
+            lang === "vi" ? "Ghi chú từ thú cưng" : "Note from Pip",
+            lang === "vi" ? "Pip vừa kéo 1 tờ giấy mới ra cho bạn ✨" : "Pip delivered a fresh note ✨",
+          );
           waitUntil.current = now + 2400;
           target.current = { x: pos.current.x, y: pos.current.y, kind: "idle" };
           state.setPip({

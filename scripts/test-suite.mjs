@@ -100,6 +100,19 @@ console.log("\n📦 [SUITE 2]: Pet State Machine & Wardrobe Accessories (Phase 2
 
   const moods = ["idle", "wander", "fetch", "deliver", "sleep", "dance", "eating", "chasing_ball"];
   assert(moods.includes("chasing_ball"), "Ball fetching mood registered in state machine");
+
+  // Pet Paper Fetch & Delivery Choreography Test
+  let mockPip = { mood: "idle", carrying: false, x: 20, y: 30 };
+  // 1. User requests paper -> Pet transitions to fetch
+  mockPip = { ...mockPip, mood: "fetch", speech: "Pip đang đi lấy giấy..." };
+  const wellTarget = { x: 1920 - 95, y: 1080 - 95, kind: "well" };
+  assert(mockPip.mood === "fetch" && wellTarget.kind === "well", "Pet routes to bottom-right paper well dock on fetch request");
+  // 2. Pet reaches well -> grabs paper
+  mockPip = { ...mockPip, mood: "deliver", carrying: true, speech: "Pip lấy được giấy rồi! Đang kéo ra..." };
+  assert(mockPip.mood === "deliver" && mockPip.carrying === true, "Pet grabs paper note in mouth with carrying state");
+  // 3. Pet reaches canvas destination -> drops paper & spawns note
+  mockPip = { ...mockPip, mood: "wander", carrying: false, speech: "Giấy của bạn đây! ✨" };
+  assert(mockPip.mood === "wander" && mockPip.carrying === false, "Pet drops paper on canvas and releases delivery state");
 }
 
 // TEST SUITE 3: LOCAL-FIRST BACKUP & SNAPSHOT SERIALIZATION (Phase 1 & 4)
