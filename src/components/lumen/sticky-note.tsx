@@ -55,6 +55,7 @@ export function StickyNote({ note, stacked }: Props) {
   const rotateDrag = useRef<{ startAngle: number; initRot: number; centerX: number; centerY: number } | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const colorPickerRef = useRef<HTMLDivElement | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   const allNotes = useLumen((s) => s.notes);
   const existingClusters = Array.from(
@@ -339,12 +340,12 @@ export function StickyNote({ note, stacked }: Props) {
   return (
     <article
       className={cn(
-        "relative rounded-2xl select-none flex flex-col overflow-visible group touch-none",
+        "interactive-el relative rounded-2xl flex flex-col overflow-visible group",
         "shadow-[0_1px_2px_rgba(0,0,0,0.08),0_6px_20px_rgba(0,0,0,0.16)] border border-black/10",
         isTransformActive
           ? "!transition-none shadow-[0_6px_14px_rgba(0,0,0,0.15),0_20px_45px_rgba(0,0,0,0.3)] ring-2 ring-[#F5A623] cursor-grabbing will-change-transform scale-[1.02]"
           : "transition-shadow transition-colors duration-150",
-        stacked ? "relative w-full" : "absolute w-64 sm:w-72 cursor-grab active:cursor-grabbing",
+        stacked ? "relative w-full" : "absolute w-64 sm:w-72",
         `note-${note.tint}`,
         note.pinned && "ring-2 ring-[#F5A623] shadow-xl",
       )}
@@ -354,8 +355,8 @@ export function StickyNote({ note, stacked }: Props) {
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerUp}
     >
-      {/* Dark Integrated Header Bar (~34px height) - relative z-30 ensures popovers float above body */}
-      <header className="relative z-30 h-8.5 px-3 flex items-center justify-between bg-[#1D2029]/95 text-white backdrop-blur-md border-b border-white/5 shrink-0 select-none rounded-t-2xl">
+      {/* Dark Integrated Header Bar (~34px height) - acts as smooth drag handle */}
+      <header className="relative z-30 h-8.5 px-3 flex items-center justify-between bg-[#1D2029]/95 text-white backdrop-blur-md border-b border-white/5 shrink-0 select-none touch-none cursor-grab active:cursor-grabbing rounded-t-2xl">
         {/* Color Dot Button (Opens 4-color popover) */}
         <div className="relative no-drag" ref={colorPickerRef}>
           <button
@@ -731,7 +732,15 @@ export function StickyNote({ note, stacked }: Props) {
       )}
 
       {/* Note Body Area (Pastel Background + #23262F Text) - relative z-0 keeps content below header popovers */}
-      <div className="relative z-0 p-3.5 flex flex-col text-[#23262F] rounded-b-2xl">
+      <div
+        className="relative z-0 p-3.5 flex flex-col text-[#23262F] rounded-b-2xl cursor-text select-text"
+        onClick={(e) => {
+          const tag = (e.target as HTMLElement).tagName;
+          if (tag !== "TEXTAREA" && tag !== "INPUT" && tag !== "BUTTON" && !(e.target as HTMLElement).closest("button,input,form,.no-drag")) {
+            textareaRef.current?.focus();
+          }
+        }}
+      >
         {/* Note Customization Drawer (Rotation, Opacity, Font) */}
         {showOptions && !showDeleteConfirm && (
           <div
@@ -845,6 +854,7 @@ export function StickyNote({ note, stacked }: Props) {
 
         {/* Main Textarea */}
         <textarea
+          ref={textareaRef}
           value={note.body}
           onChange={(e) => updateNote(note.id, { body: e.target.value })}
           onFocus={() => bringNote(note.id)}
@@ -852,7 +862,7 @@ export function StickyNote({ note, stacked }: Props) {
           rows={note.checkItems?.length ? 2 : 4}
           suppressHydrationWarning
           className={cn(
-            "no-drag w-full resize-none bg-transparent text-[13px] font-normal leading-relaxed text-[#23262F] outline-none placeholder:text-[#23262F]/40 select-text cursor-text touch-auto sticky-note-textarea caret-[#14161D] focus:caret-[#14161D] selection:bg-[#F5A623]/30 selection:text-[#14161D] note-scrollbar",
+            "no-drag w-full resize-none bg-transparent text-[13px] font-normal leading-relaxed text-[#23262F] outline-none placeholder:text-[#23262F]/40 select-text cursor-text touch-auto sticky-note-textarea caret-[#000000] focus:caret-[#000000] selection:bg-[#F5A623]/30 selection:text-[#000000] note-scrollbar",
             note.fontFamily === "handwriting" && "font-handwriting text-base leading-snug",
             note.fontFamily === "mono" && "font-mono text-xs leading-normal",
           )}

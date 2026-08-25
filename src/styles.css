@@ -285,27 +285,38 @@ section[role="dialog"],
 textarea,
 input[type="text"],
 input[type="search"] {
-  caret-color: #14161D !important;
   cursor: text !important;
   user-select: text !important;
   -webkit-user-select: text !important;
 }
 
+/* Modal dark inputs get amber accent caret */
 section[role="dialog"] textarea,
 section[role="dialog"] input,
-form textarea,
-form input {
+.modal-dark textarea,
+.modal-dark input {
   caret-color: #F5A623 !important;
 }
 
-.sticky-note-textarea {
-  caret-color: #14161D !important;
+/* Sticky notes on pastel backgrounds ALWAYS have pitch black high-contrast caret */
+.sticky-note-textarea,
+article textarea,
+article input[type="text"] {
+  caret-color: #000000 !important;
   cursor: text !important;
   user-select: text !important;
   -webkit-user-select: text !important;
 }
 
-.sticky-note-textarea::selection {
+.sticky-note-textarea:focus,
+article textarea:focus,
+article input[type="text"]:focus {
+  caret-color: #000000 !important;
+  cursor: text !important;
+}
+
+.sticky-note-textarea::selection,
+article textarea::selection {
   background-color: rgba(245, 166, 35, 0.35);
-  color: #14161D;
+  color: #000000;
 }
