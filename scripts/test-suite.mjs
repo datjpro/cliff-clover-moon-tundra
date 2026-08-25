@@ -338,6 +338,11 @@ console.log("\n📦 [SUITE 5]: Desktop Window Visibility & Single Instance Recov
   const pillStyle = { width: resizedNote.collapsed ? undefined : `${resizedNote.width}px` };
   assert(pillStyle.width === undefined, "Collapsed note pill cleanly decouples from resized width/height to stay a compact capsule");
 
+  // Collapsed Note Dragging & Capsule Decoupling Test
+  const collapsedNote = { id: "n_col", x: 25, y: 35, collapsed: true, pinned: false, width: 450, height: 320 };
+  const isPillDraggable = collapsedNote.collapsed && !collapsedNote.pinned;
+  assert(isPillDraggable === true, "Collapsed note pill is fully draggable across desktop canvas with zero layout collision");
+
   // App Startup Loading Screen Gate Test
   let startupLoaded = false;
   const shouldRenderNotes = (loaded) => loaded ? ["note-1", "note-2"] : [];

@@ -198,7 +198,12 @@ export function StickyNote({ note, stacked }: Props) {
     updateNote(note.id, { x, y });
   };
 
-  const onPointerUp = () => {
+  const onPointerUp = (e?: PointerEvent<HTMLElement>) => {
+    if (e) {
+      try {
+        (e.target as HTMLElement).releasePointerCapture(e.pointerId);
+      } catch {}
+    }
     drag.current = null;
     setIsDragging(false);
   };
@@ -360,6 +365,7 @@ export function StickyNote({ note, stacked }: Props) {
         top: `${note.y}%`,
         zIndex: (note.pinned ? 90 : 10) + note.z,
         opacity: note.opacity ?? 1,
+        transition: isDragging ? "none" : undefined,
       };
 
   // Minimized Capsule Pill Mode
@@ -367,10 +373,11 @@ export function StickyNote({ note, stacked }: Props) {
     return (
       <div
         className={cn(
-          "absolute flex items-center gap-2 rounded-full px-3 py-1.5 shadow-[0_4px_16px_rgba(0,0,0,0.2)] border border-white/10 select-none bg-[#1D2029]/95 text-white backdrop-blur-md touch-none",
+          "interactive-el absolute flex items-center gap-2 rounded-full px-3 py-1.5 shadow-[0_6px_20px_rgba(0,0,0,0.35)] border border-white/15 select-none bg-[#1D2029]/95 text-white backdrop-blur-md touch-none",
           isDragging
-            ? "!transition-none cursor-grabbing ring-2 ring-[#F5A623] scale-105"
-            : "transition-transform duration-140 cursor-grab hover:scale-105",
+            ? "!transition-none cursor-grabbing ring-2 ring-[#F5A623] shadow-[0_12px_28px_rgba(0,0,0,0.5)] z-[100]"
+            : "transition-all duration-140 cursor-grab hover:scale-105 hover:border-white/30 hover:bg-[#262A35]/95",
+          note.pinned && "ring-1 ring-[#F5A623]/60",
         )}
         style={pillStyle}
         onPointerDown={onPointerDown}
@@ -378,8 +385,14 @@ export function StickyNote({ note, stacked }: Props) {
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerUp}
         onDoubleClick={() => toggleNoteCollapse(note.id)}
+        title={note.pinned ? "Ghi chú đang ghim (Nhấp đúp để mở rộng)" : "Kéo để di chuyển • Nhấp đúp để mở rộng ghi chú"}
       >
-        <span className="size-2 rounded-full shadow-xs" style={{ backgroundColor: currentPalette.dot }} />
+        <span className="size-2 rounded-full shadow-xs shrink-0" style={{ backgroundColor: currentPalette.dot }} />
+        {note.cluster && (
+          <span className="text-[10px] px-1.5 py-0.5 rounded bg-white/10 text-[#F5A623] font-semibold tracking-wide shrink-0">
+            {note.cluster}
+          </span>
+        )}
         <span className="max-w-[150px] sm:max-w-[200px] truncate text-xs font-medium text-[#F4F5F7]">
           {note.body.trim() || note.checkItems?.[0]?.text || "Ghi chú đã thu gọn"}
         </span>
@@ -390,7 +403,7 @@ export function StickyNote({ note, stacked }: Props) {
             toggleNoteCollapse(note.id);
           }}
           title="Mở rộng ghi chú"
-          className="flex size-5 items-center justify-center rounded-full hover:bg-white/10 text-[#8B90A0] hover:text-white transition-colors cursor-pointer"
+          className="flex size-5 items-center justify-center rounded-full hover:bg-white/20 text-[#8B90A0] hover:text-white transition-colors cursor-pointer shrink-0"
         >
           <ChevronDown className="size-3" />
         </button>
