@@ -14,6 +14,41 @@ if (process.platform === "darwin" && app.dock) {
   app.dock.hide();
 }
 
+// Single Instance Lock: If user launches app again while running, bring window to front!
+const gotTheLock = app.requestSingleInstanceLock();
+if (!gotTheLock) {
+  app.quit();
+} else {
+  app.on("second-instance", () => {
+    restoreAndFocusWindow();
+  });
+}
+
+function restoreAndFocusWindow() {
+  if (!mainWindow || mainWindow.isDestroyed()) return;
+
+  if (mainWindow.isMinimized()) {
+    mainWindow.restore();
+  }
+  if (!mainWindow.isVisible()) {
+    mainWindow.show();
+  }
+  mainWindow.setAlwaysOnTop(true, "screen-saver");
+  mainWindow.moveTop();
+  mainWindow.focus();
+}
+
+function updateWindowBounds() {
+  if (!mainWindow || mainWindow.isDestroyed()) return;
+  try {
+    const primaryDisplay = screen.getPrimaryDisplay();
+    const { width, height } = primaryDisplay.bounds;
+    mainWindow.setBounds({ x: 0, y: 0, width, height });
+  } catch (err) {
+    console.debug("[Display] Update bounds error:", err);
+  }
+}
+
 function createWindow() {
   const primaryDisplay = screen.getPrimaryDisplay();
   const { width, height } = primaryDisplay.bounds;
@@ -31,7 +66,7 @@ function createWindow() {
     focusable: true,
     fullscreenable: false,
     backgroundColor: "#00000000",
-    type: "toolbar", // Informs Windows DWM that this is an overlay tool, preventing background app occlusion/freeze
+    type: "toolbar", // Informs Windows DWM that this is an overlay tool
     webPreferences: {
       preload: path.join(__dirname, "preload.cjs"),
       nodeIntegration: false,
@@ -42,7 +77,7 @@ function createWindow() {
   });
 
   // Keep window floating without using "screen-saver" level which suspends media playback
-  mainWindow.setAlwaysOnTop(true, "status");
+  mainWindow.setAlwaysOnTop(true, "screen-saver");
   mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
 
   // Initialize mouse click-through so desktop wallpaper, videos, and background apps work 100%
@@ -55,20 +90,63 @@ function createWindow() {
     }, 1500);
   });
 
-  // Global hotkey Ctrl+Shift+N to open quick capture from background
+  // Re-sync window bounds if display resolution or connected monitors change
+  screen.on("display-metrics-changed", updateWindowBounds);
+  screen.on("display-added", updateWindowBounds);
+  screen.on("display-removed", updateWindowBounds);
+
+  // Global hotkeys to restore window and trigger actions
   globalShortcut.register("CommandOrControl+Shift+N", () => {
-    if (!mainWindow) return;
-    mainWindow.show();
-    mainWindow.focus();
-    mainWindow.webContents.send("open-quick-capture");
+    restoreAndFocusWindow();
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send("open-quick-capture");
+    }
   });
 
-  // Global hotkey Ctrl+Shift+T to open quick timer from background
   globalShortcut.register("CommandOrControl+Shift+T", () => {
-    if (!mainWindow) return;
-    mainWindow.show();
-    mainWindow.focus();
-    mainWindow.webContents.send("open-quick-timer");
+    restoreAndFocusWindow();
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send("open-quick-timer");
+    }
+  });
+
+  globalShortcut.register("CommandOrControl+Shift+L", () => {
+    restoreAndFocusWindow();
+  });
+
+  globalShortcut.register("CommandOrControl+Shift+H", () => {
+    restoreAndFocusWindow();
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send("open-app-settings");
+    }
+  });
+
+  globalShortcut.register("CommandOrControl+Shift+A", () => {
+    restoreAndFocusWindow();
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send("arrange-notes");
+    }
+  });
+
+  // IPC Channels: Window Visibility & Controls
+  ipcMain.on("restore-window", () => {
+    restoreAndFocusWindow();
+  });
+
+  ipcMain.on("show-window", () => {
+    restoreAndFocusWindow();
+  });
+
+  ipcMain.on("hide-window", () => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.hide();
+    }
+  });
+
+  ipcMain.on("minimize-window", () => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.minimize();
+    }
   });
 
   // IPC channel: Toggle Mouse Click-Through on transparent screen areas
@@ -85,8 +163,34 @@ function createWindow() {
   // IPC channel: Toggle Always on Top
   ipcMain.on("set-always-on-top", (event, flag) => {
     if (mainWindow && !mainWindow.isDestroyed()) {
-      mainWindow.setAlwaysOnTop(Boolean(flag), "status");
+      mainWindow.setAlwaysOnTop(Boolean(flag), "screen-saver");
     }
+  });
+
+  // IPC channel: Switch to Corner Widget Mode
+  ipcMain.on("switch-to-corner-mode", () => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      const primaryDisplay = screen.getPrimaryDisplay();
+      const { width: screenW, height: screenH } = primaryDisplay.bounds;
+      mainWindow.setBounds({
+        x: screenW - 360,
+        y: screenH - 460,
+        width: 340,
+        height: 440,
+      });
+      restoreAndFocusWindow();
+    }
+  });
+
+  // IPC channel: Switch to Full Workspace / Transparent Overlay Mode
+  ipcMain.on("switch-to-full-mode", () => {
+    updateWindowBounds();
+    restoreAndFocusWindow();
+  });
+
+  ipcMain.on("switch-to-transparent-screen-mode", () => {
+    updateWindowBounds();
+    restoreAndFocusWindow();
   });
 
   // IPC channel: Quit App
@@ -94,7 +198,7 @@ function createWindow() {
     app.quit();
   });
 
-  // Create System Tray Icon (Pure Background Daemon)
+  // Create System Tray Icon
   try {
     const iconPath = path.join(__dirname, "../src-tauri/icons/32x32.png");
     tray = new Tray(iconPath);
@@ -104,11 +208,18 @@ function createWindow() {
         label: "🦊 Lumen Workspace",
         enabled: false,
       },
+      {
+        label: "🌟 Hiện Ứng Dụng (Khôi Phục Cửa Sổ)",
+        click: () => {
+          restoreAndFocusWindow();
+        },
+      },
       { type: "separator" },
       {
         label: "📝 + Thêm Ghi Chú Mới (Ctrl+Shift+N)",
         click: () => {
-          if (mainWindow) {
+          restoreAndFocusWindow();
+          if (mainWindow && !mainWindow.isDestroyed()) {
             mainWindow.webContents.send("open-quick-capture");
           }
         },
@@ -116,7 +227,8 @@ function createWindow() {
       {
         label: "⏰ + Đặt Giờ Nhanh (Ctrl+Shift+T)",
         click: () => {
-          if (mainWindow) {
+          restoreAndFocusWindow();
+          if (mainWindow && !mainWindow.isDestroyed()) {
             mainWindow.webContents.send("open-quick-timer");
           }
         },
@@ -124,7 +236,8 @@ function createWindow() {
       {
         label: "🪟 Sắp Xếp Ghi Chú Gọn Gàng",
         click: () => {
-          if (mainWindow) {
+          restoreAndFocusWindow();
+          if (mainWindow && !mainWindow.isDestroyed()) {
             mainWindow.webContents.send("arrange-notes");
           }
         },
@@ -132,7 +245,8 @@ function createWindow() {
       {
         label: "👁️ Ẩn / Hiện Tất Cả Ghi Chú",
         click: () => {
-          if (mainWindow) {
+          restoreAndFocusWindow();
+          if (mainWindow && !mainWindow.isDestroyed()) {
             mainWindow.webContents.send("toggle-show-hide-all");
           }
         },
@@ -141,15 +255,17 @@ function createWindow() {
       {
         label: "🐾 Bật / Tắt Thú Cưng",
         click: () => {
-          if (mainWindow) {
+          restoreAndFocusWindow();
+          if (mainWindow && !mainWindow.isDestroyed()) {
             mainWindow.webContents.send("toggle-pet");
           }
         },
       },
       {
-        label: "⚙️ Cài Đặt Hệ Thống",
+        label: "⚙️ Cài Đặt Hệ Thống (Ctrl+Shift+H)",
         click: () => {
-          if (mainWindow) {
+          restoreAndFocusWindow();
+          if (mainWindow && !mainWindow.isDestroyed()) {
             mainWindow.webContents.send("open-app-settings");
           }
         },
@@ -167,9 +283,14 @@ function createWindow() {
     tray.setContextMenu(contextMenu);
 
     tray.on("click", () => {
-      if (mainWindow) {
+      restoreAndFocusWindow();
+      if (mainWindow && !mainWindow.isDestroyed()) {
         mainWindow.webContents.send("open-quick-capture");
       }
+    });
+
+    tray.on("double-click", () => {
+      restoreAndFocusWindow();
     });
   } catch (err) {
     console.debug("[Tray] System tray initialization fallback:", err);
@@ -182,6 +303,8 @@ app.whenReady().then(() => {
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) {
       createWindow();
+    } else {
+      restoreAndFocusWindow();
     }
   });
 });

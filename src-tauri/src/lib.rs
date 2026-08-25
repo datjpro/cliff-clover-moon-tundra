@@ -1,7 +1,7 @@
 use tauri::{
     menu::{Menu, MenuItem},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
-    AppHandle, Manager, Runtime,
+    Manager, Runtime,
 };
 
 #[tauri::command]
@@ -13,6 +13,9 @@ fn set_ignore_cursor_events<R: Runtime>(window: tauri::WebviewWindow<R>, ignore:
 
 #[tauri::command]
 fn show_window<R: Runtime>(window: tauri::WebviewWindow<R>) -> Result<(), String> {
+    if window.is_minimized().unwrap_or(false) {
+        let _ = window.unminimize();
+    }
     window.show().map_err(|e| e.to_string())?;
     window.set_focus().map_err(|e| e.to_string())
 }
@@ -24,10 +27,14 @@ fn hide_window<R: Runtime>(window: tauri::WebviewWindow<R>) -> Result<(), String
 
 #[tauri::command]
 fn toggle_window<R: Runtime>(window: tauri::WebviewWindow<R>) -> Result<(), String> {
+    let is_minimized = window.is_minimized().unwrap_or(false);
     let is_visible = window.is_visible().unwrap_or(true);
-    if is_visible {
+    if is_visible && !is_minimized {
         window.hide().map_err(|e| e.to_string())
     } else {
+        if is_minimized {
+            let _ = window.unminimize();
+        }
         window.show().map_err(|e| e.to_string())?;
         window.set_focus().map_err(|e| e.to_string())
     }
@@ -46,9 +53,9 @@ pub fn run() {
         ])
         .setup(|app| {
             // System Tray Menu Setup
-            let show_i = MenuItem::with_id(app, "show", "Show / Hide Lumen", true, None::<&str>)?;
-            let capture_i = MenuItem::with_id(app, "capture", "Quick Note (Ctrl+Shift+N)", true, None::<&str>)?;
-            let quit_i = MenuItem::with_id(app, "quit", "Quit Lumen", true, None::<&str>)?;
+            let show_i = MenuItem::with_id(app, "show", "🌟 Show / Hide Lumen", true, None::<&str>)?;
+            let capture_i = MenuItem::with_id(app, "capture", "📝 Quick Note (Ctrl+Shift+N)", true, None::<&str>)?;
+            let quit_i = MenuItem::with_id(app, "quit", "✕ Quit Lumen", true, None::<&str>)?;
 
             let menu = Menu::with_items(app, &[&show_i, &capture_i, &quit_i])?;
 
@@ -62,6 +69,9 @@ pub fn run() {
                     }
                     "capture" => {
                         if let Some(window) = app.get_webview_window("main") {
+                            if window.is_minimized().unwrap_or(false) {
+                                let _ = window.unminimize();
+                            }
                             let _ = window.show();
                             let _ = window.set_focus();
                             let _ = window.emit("open-quick-capture", ());
@@ -92,3 +102,4 @@ pub fn run() {
         .run(tauri::generate_context!())
         .expect("error while running lumen desktop native shell");
 }
+

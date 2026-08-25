@@ -8,12 +8,15 @@ declare global {
     desktopAPI?: {
       minimize: () => void;
       hide: () => void;
+      restore: () => void;
+      show: () => void;
       quit: () => void;
       setAlwaysOnTop: (flag: boolean) => void;
       setIgnoreMouseEvents: (ignore: boolean) => void;
       switchToCornerMode: () => void;
       switchToFullMode: () => void;
       switchToTransparentScreenMode: () => void;
+      on: (channel: string, callback: (...args: unknown[]) => void) => () => void;
     };
     __TAURI_INTERNALS__?: unknown;
     __TAURI__?: unknown;
@@ -24,6 +27,104 @@ declare global {
 export function isDesktopApp(): boolean {
   if (typeof window === "undefined") return false;
   return Boolean(window.desktopAPI || window.__TAURI_INTERNALS__ || window.__TAURI__);
+}
+
+/**
+ * Restore Desktop Window from minimized or occluded state, bring to top and focus
+ */
+export async function restoreDesktopWindow(): Promise<void> {
+  if (typeof window !== "undefined" && window.desktopAPI?.restore) {
+    window.desktopAPI.restore();
+    return;
+  }
+  if (typeof window !== "undefined" && (window.__TAURI_INTERNALS__ || window.__TAURI__)) {
+    try {
+      const { getCurrentWindow } = await import("@tauri-apps/api/window");
+      const win = getCurrentWindow();
+      if (await win.isMinimized()) {
+        await win.unminimize();
+      }
+      await win.show();
+      await win.setFocus();
+    } catch (err) {
+      console.debug("[DesktopBridge] restore error:", err);
+    }
+  }
+}
+
+/**
+ * Show and focus Desktop Window
+ */
+export async function showDesktopWindow(): Promise<void> {
+  if (typeof window !== "undefined" && window.desktopAPI?.show) {
+    window.desktopAPI.show();
+    return;
+  }
+  if (typeof window !== "undefined" && (window.__TAURI_INTERNALS__ || window.__TAURI__)) {
+    try {
+      const { getCurrentWindow } = await import("@tauri-apps/api/window");
+      const win = getCurrentWindow();
+      await win.show();
+      await win.setFocus();
+    } catch (err) {
+      console.debug("[DesktopBridge] show error:", err);
+    }
+  }
+}
+
+/**
+ * Unified listener for native IPC desktop events (Works seamlessly across Electron & Tauri v2)
+ * Returns a teardown function for symmetrical cleanup.
+ */
+export function listenToDesktopEvent(
+  eventName: string,
+  callback: (...args: unknown[]) => void,
+): () => void {
+  if (typeof window === "undefined") {
+    return () => {};
+  }
+
+  // 1. Electron IPC Bridge
+  if (window.desktopAPI?.on) {
+    return window.desktopAPI.on(eventName, callback);
+  }
+
+  // 2. Tauri v2 IPC Bridge
+  if (window.__TAURI_INTERNALS__ || window.__TAURI__) {
+    let unlistenFn: (() => void) | null = null;
+    let isCleanedUp = false;
+
+    void import("@tauri-apps/api/event").then(({ listen }) => {
+      if (isCleanedUp) return;
+      listen(eventName, (event) => {
+        callback(event.payload);
+      }).then((unlisten) => {
+        if (isCleanedUp) {
+          unlisten();
+        } else {
+          unlistenFn = unlisten;
+        }
+      });
+    });
+
+    return () => {
+      isCleanedUp = true;
+      if (unlistenFn) {
+        unlistenFn();
+      }
+    };
+  }
+
+  // 3. Fallback Web Custom Event
+  const customEventName = `lumen:${eventName}`;
+  const webHandler = (e: Event) => {
+    const customEvent = e as CustomEvent;
+    callback(customEvent.detail);
+  };
+  window.addEventListener(customEventName, webHandler);
+  return () => {
+    window.removeEventListener(customEventName, webHandler);
+  };
 }
 
 /**
@@ -177,3 +278,4 @@ export async function toggleAlwaysOnTop(onTop: boolean): Promise<void> {
     }
   }
 }
+

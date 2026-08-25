@@ -4,6 +4,7 @@ import { sounds } from "@/lib/audio";
 import {
   closeOrQuitDesktopApp,
   isDesktopApp,
+  listenToDesktopEvent,
   sendDesktopNotification,
   setIgnoreMouseEvents,
 } from "@/lib/desktop-bridge";
@@ -292,58 +293,65 @@ export function DesktopScene() {
     };
     window.addEventListener("keydown", onKey);
 
-    let unlistenCapture: (() => void) | null = null;
-    let unlistenTimer: (() => void) | null = null;
-    let unlistenAdd: (() => void) | null = null;
-    let unlistenArrange: (() => void) | null = null;
-    let unlistenToggle: (() => void) | null = null;
-    let unlistenTogglePet: (() => void) | null = null;
-    let unlistenPet: (() => void) | null = null;
-    let unlistenApp: (() => void) | null = null;
+    const unlisteners: (() => void)[] = [];
 
     if (isDesktopApp()) {
-      import("@tauri-apps/api/event").then(({ listen }) => {
-        listen("open-quick-capture", () => setCaptureOpen(true)).then((un) => {
-          unlistenCapture = un;
-        });
-        listen("open-quick-timer", () => triggerOpenQuickTimer()).then((un) => {
-          unlistenTimer = un;
-        });
-        listen("add-new-note", () => addNote({ body: "", tint: "cream" })).then((un) => {
-          unlistenAdd = un;
-        });
-        listen("arrange-notes", () => tidyNotes()).then((un) => {
-          unlistenArrange = un;
-        });
-        listen("toggle-show-hide-all", () => {
+      unlisteners.push(
+        listenToDesktopEvent("open-quick-capture", () => {
+          setCaptureOpen(true);
+        }),
+      );
+      unlisteners.push(
+        listenToDesktopEvent("open-quick-timer", () => {
+          triggerOpenQuickTimer();
+        }),
+      );
+      unlisteners.push(
+        listenToDesktopEvent("add-new-note", () => {
+          addNote({ body: "", tint: "cream" });
+        }),
+      );
+      unlisteners.push(
+        listenToDesktopEvent("arrange-notes", () => {
+          tidyNotes();
+        }),
+      );
+      unlisteners.push(
+        listenToDesktopEvent("toggle-show-hide-all", () => {
           setLayout(useLumen.getState().layout === "tray" ? "stickies" : "tray");
-        }).then((un) => {
-          unlistenToggle = un;
-        });
-        listen("toggle-pet", () => {
+        }),
+      );
+      unlisteners.push(
+        listenToDesktopEvent("toggle-pet", () => {
           setPipEnabled(!useLumen.getState().pip.enabled);
-        }).then((un) => {
-          unlistenTogglePet = un;
-        });
-        listen("open-pet-settings", () => setHubOpen(true)).then((un) => {
-          unlistenPet = un;
-        });
-        listen("open-app-settings", () => setHubOpen(true)).then((un) => {
-          unlistenApp = un;
-        });
-      });
+        }),
+      );
+      unlisteners.push(
+        listenToDesktopEvent("open-pet-settings", () => {
+          setHubOpen(true);
+        }),
+      );
+      unlisteners.push(
+        listenToDesktopEvent("open-app-settings", () => {
+          setHubOpen(true);
+        }),
+      );
+      unlisteners.push(
+        listenToDesktopEvent("restore-window", () => {
+          // Window restored
+        }),
+      );
     }
 
     return () => {
       window.removeEventListener("keydown", onKey);
-      if (unlistenCapture) unlistenCapture();
-      if (unlistenTimer) unlistenTimer();
-      if (unlistenAdd) unlistenAdd();
-      if (unlistenArrange) unlistenArrange();
-      if (unlistenToggle) unlistenToggle();
-      if (unlistenTogglePet) unlistenTogglePet();
-      if (unlistenPet) unlistenPet();
-      if (unlistenApp) unlistenApp();
+      for (const unlisten of unlisteners) {
+        try {
+          unlisten();
+        } catch (err) {
+          console.debug("[DesktopScene] unlisten error:", err);
+        }
+      }
     };
   }, [setCaptureOpen, setHubOpen, addNote, tidyNotes, setLayout, setPipEnabled]);
 
