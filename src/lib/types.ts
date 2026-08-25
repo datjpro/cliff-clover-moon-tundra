@@ -98,3 +98,19 @@ export type PipState = {
   speech: string | null;
   targetNoteId?: string | null;
 };
+
+export type ProFeatureId =
+  | "unlimited_notes"
+  | "multi_timers"
+  | "pro_themes"
+  | "exclusive_skins"
+  | "ai_cluster"
+  | "pin_lock";
+
+export type ProLicense = {
+  isPro: boolean;
+  licenseKey?: string;
+  activatedAt?: number;
+  plan?: "lifetime" | "annual" | "monthly" | "free";
+  expiresAt?: number;
+};

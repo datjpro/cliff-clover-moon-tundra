@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type PointerEvent } from "react";
-import { Clock, Eye, EyeOff, Folder, LayoutGrid, Plus, Search, Settings, Sparkles, X } from "lucide-react";
+import { Clock, Crown, Eye, EyeOff, Folder, LayoutGrid, Plus, Search, Settings, Sparkles, X } from "lucide-react";
 import { sounds } from "@/lib/audio";
 import {
   closeOrQuitDesktopApp,
@@ -17,6 +17,7 @@ import { FloatingTimers } from "./floating-timers";
 import { Hub } from "./hub";
 import { MissedRemindersModal } from "./missed-reminders-modal";
 import { Onboarding } from "./onboarding";
+import { ProUpgradeModal } from "./pro-upgrade-modal";
 import { QuickCapture } from "./quick-capture";
 import { QuickTimer, triggerOpenQuickTimer } from "./quick-timer";
 import { SpotlightSearch } from "./spotlight-search";
@@ -42,6 +43,8 @@ function FloatingTrayMenu() {
   const pipEnabled = useLumen((s) => s.pip.enabled);
   const setPipEnabled = useLumen((s) => s.setPipEnabled);
   const requestNoteFromPip = useLumen((s) => s.requestNoteFromPip);
+  const pro = useLumen((s) => s.pro);
+  const setProModalOpen = useLumen((s) => s.setProModalOpen);
 
   const isVi = lang === "vi";
 
@@ -196,6 +199,24 @@ function FloatingTrayMenu() {
                 <span className="font-medium text-[#F4F5F7]">{isVi ? "Cài đặt hệ thống" : "Settings"}</span>
               </div>
               <span className="text-[10px] text-[#8B90A0] font-mono">Alt+S</span>
+            </button>
+
+            {/* Lumen Pro Upgrade / Status */}
+            <button
+              type="button"
+              onClick={() => {
+                setProModalOpen(true);
+                setOpen(false);
+              }}
+              className="flex items-center justify-between px-2.5 h-9 rounded-xl bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-amber-500/15 border border-amber-500/30 hover:border-amber-400 text-amber-300 font-medium transition-colors duration-120 text-left cursor-pointer"
+            >
+              <div className="flex items-center gap-2.5">
+                <Crown className="size-4.5 text-amber-400" />
+                <span>{pro.isPro ? (isVi ? "Lumen Pro (Đã Kích Hoạt)" : "Lumen Pro Active") : (isVi ? "Nâng cấp Lumen Pro" : "Upgrade Pro")}</span>
+              </div>
+              <span className="text-[10px] bg-amber-500/20 text-amber-400 px-1.5 py-0.2 rounded font-mono font-semibold">
+                PRO
+              </span>
             </button>
 
             {/* Arrange Notes (Highlighted with Left Accent Bar + Surface Elevated) */}
@@ -615,6 +636,7 @@ export function DesktopScene() {
       <QuickTimer />
       <SpotlightSearch />
       <Hub />
+      <ProUpgradeModal />
       {appLoaded && <Onboarding />}
       {appLoaded && <FloatingTrayMenu />}
       <AppStartupLoading />

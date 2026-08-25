@@ -2,8 +2,11 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { sounds } from "./audio";
 import { DICTIONARY } from "./i18n";
-import type { AlarmSettings, Language, LayoutMode, Note, NoteTint, PetSkin, PipState, Reminder, ThemeId, ToastItem } from "./types";
+import type { AlarmSettings, Language, LayoutMode, Note, NoteTint, PetSkin, PipState, ProFeatureId, ProLicense, Reminder, ThemeId, ToastItem } from "./types";
 import { uid } from "./utils";
+
+export const FREE_MAX_NOTES = 5;
+export const FREE_MAX_TIMERS = 1;
 
 const SEED_NOTES: Note[] = [
   {
@@ -90,6 +93,12 @@ type LumenState = {
   resetDemo: () => void;
   appLoaded: boolean;
   setAppLoaded: (loaded: boolean) => void;
+  pro: ProLicense;
+  proModalOpen: boolean;
+  proModalFeature: ProFeatureId | null;
+  setProModalOpen: (open: boolean, feature?: ProFeatureId | null) => void;
+  activatePro: (licenseKey: string) => { success: boolean; message: string };
+  deactivatePro: () => void;
 };
 
 function emptyPip(): PipState {
@@ -133,6 +142,45 @@ export const useLumen = create<LumenState>()(
       toasts: [],
       pip: emptyPip(),
       maxZ: 5,
+      pro: {
+        isPro: false,
+        plan: "free",
+      },
+      proModalOpen: false,
+      proModalFeature: null,
+      setProModalOpen: (proModalOpen, proModalFeature = null) => {
+        sounds.playPop(520);
+        set({ proModalOpen, proModalFeature });
+      },
+      activatePro: (licenseKey: string) => {
+        const cleaned = licenseKey.trim().toUpperCase();
+        if (cleaned.length < 4) {
+          return {
+            success: false,
+            message: get().lang === "vi" ? "Mã bản quyền không hợp lệ" : "Invalid license key format",
+          };
+        }
+        sounds.playChime();
+        set({
+          pro: {
+            isPro: true,
+            licenseKey: cleaned,
+            activatedAt: Date.now(),
+            plan: "lifetime",
+          },
+          proModalOpen: false,
+        });
+        return { success: true, message: "OK" };
+      },
+      deactivatePro: () => {
+        sounds.playPop(400);
+        set({
+          pro: {
+            isPro: false,
+            plan: "free",
+          },
+        });
+      },
       markHydrated: () => set({ hydrated: true }),
       setLang: (lang) => {
         sounds.playPop(560);
@@ -204,6 +252,19 @@ export const useLumen = create<LumenState>()(
       },
       dismissOnboarding: () => set({ onboarding: false }),
       addNote: (partial) => {
+        const pro = get().pro;
+        const currentNotes = get().notes;
+        const isVi = get().lang === "vi";
+
+        if (!pro.isPro && currentNotes.length >= FREE_MAX_NOTES) {
+          get().setProModalOpen(true, "unlimited_notes");
+          get().pushToast(
+            isVi ? "Đã đạt giới hạn 5 ghi chú miễn phí" : "Free limit reached (5 notes)",
+            isVi ? "Nâng cấp Pro để tạo không giới hạn ghi chú!" : "Upgrade to Pro for unlimited notes!",
+          );
+          return "";
+        }
+
         const id = partial?.id ?? uid();
         const z = get().maxZ + 1;
         const note: Note = {
@@ -332,6 +393,19 @@ export const useLumen = create<LumenState>()(
         });
       },
       addReminder: (title, delayMs, pinToScreen = false) => {
+        const pro = get().pro;
+        const activeTimers = get().reminders.filter((r) => !r.done);
+        const isVi = get().lang === "vi";
+
+        if (!pro.isPro && activeTimers.length >= FREE_MAX_TIMERS) {
+          get().setProModalOpen(true, "multi_timers");
+          get().pushToast(
+            isVi ? "Gói Miễn phí chỉ chạy 1 hẹn giờ đồng thời" : "Free tier allows 1 concurrent timer",
+            isVi ? "Nâng cấp Pro để chạy không giới hạn đa hẹn giờ!" : "Upgrade to Pro for multi-timer tracking!",
+          );
+          return;
+        }
+
         sounds.playChime();
         const item: Reminder = {
           id: uid(),
@@ -344,7 +418,6 @@ export const useLumen = create<LumenState>()(
         set({
           reminders: [...get().reminders, item],
         });
-        const isVi = get().lang === "vi";
         get().pushToast(
           isVi ? "Đã đặt hẹn giờ" : "Timer Set",
           `⏰ ${title} (${Math.round(delayMs / 60000)}m)`,
