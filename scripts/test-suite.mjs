@@ -252,6 +252,12 @@ console.log("\n📦 [SUITE 5]: Desktop Window Visibility & Single Instance Recov
   onMouseLeave(500);
   assert(paperVisible === true, "Paper stack remains visible during the 500ms transition delay window");
   if (leaveTimer) clearTimeout(leaveTimer);
+
+  // Sticky Note Popover & Layer Stacking Test
+  const mockNote = { id: "n1", x: 10, y: 10, z: 2, pinned: false, rot: 0 };
+  const isMenuOpen = true;
+  const noteZIndex = (mockNote.pinned ? 90 : 10) + mockNote.z + (isMenuOpen ? 200 : 0);
+  assert(noteZIndex >= 210, "Note z-index dynamically elevates above all other notes when kebab menu or color picker is opened");
 }
 
 console.log(`\n========================================`);

@@ -1,4 +1,4 @@
-import { useRef, useState, type PointerEvent } from "react";
+import { useEffect, useRef, useState, type PointerEvent } from "react";
 import {
   Check,
   CheckSquare,
@@ -49,6 +49,8 @@ export function StickyNote({ note, stacked }: Props) {
     parentHeight: number;
   } | null>(null);
   const rotateDrag = useRef<{ startAngle: number; initRot: number; centerX: number; centerY: number } | null>(null);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+  const colorPickerRef = useRef<HTMLDivElement | null>(null);
 
   const [colorPickerOpen, setColorPickerOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -57,6 +59,22 @@ export function StickyNote({ note, stacked }: Props) {
   const [newCheckText, setNewCheckText] = useState("");
   const [isDragging, setIsDragging] = useState(false);
   const [isRotating, setIsRotating] = useState(false);
+
+  // Close menus when clicking outside
+  useEffect(() => {
+    if (!menuOpen && !colorPickerOpen) return;
+    const handleOutsideClick = (e: MouseEvent | globalThis.PointerEvent) => {
+      const target = e.target as HTMLElement;
+      if (menuOpen && menuRef.current && !menuRef.current.contains(target)) {
+        setMenuOpen(false);
+      }
+      if (colorPickerOpen && colorPickerRef.current && !colorPickerRef.current.contains(target)) {
+        setColorPickerOpen(false);
+      }
+    };
+    window.addEventListener("pointerdown", handleOutsideClick);
+    return () => window.removeEventListener("pointerdown", handleOutsideClick);
+  }, [menuOpen, colorPickerOpen]);
 
   // High-Performance Position Drag Handlers (Cached Parent Bounds, Zero Layout Reflow)
   const onPointerDown = (e: PointerEvent<HTMLElement>) => {
@@ -189,13 +207,15 @@ export function StickyNote({ note, stacked }: Props) {
 
   const isTransformActive = isDragging || isRotating;
 
+  const isMenuOpen = menuOpen || colorPickerOpen;
+
   const style = stacked
     ? undefined
     : {
         left: `${note.x}%`,
         top: `${note.y}%`,
         transform: note.collapsed ? "none" : `rotate(${note.rot}deg)`,
-        zIndex: (note.pinned ? 90 : 10) + note.z,
+        zIndex: (note.pinned ? 90 : 10) + note.z + (isMenuOpen ? 200 : 0),
         opacity: note.opacity ?? 1,
         transition: isTransformActive ? "none" : undefined,
       };
@@ -239,7 +259,7 @@ export function StickyNote({ note, stacked }: Props) {
   return (
     <article
       className={cn(
-        "relative rounded-2xl select-none flex flex-col overflow-hidden group touch-none",
+        "relative rounded-2xl select-none flex flex-col overflow-visible group touch-none",
         "shadow-[0_1px_2px_rgba(0,0,0,0.08),0_6px_20px_rgba(0,0,0,0.16)] border border-black/10",
         isTransformActive
           ? "!transition-none shadow-[0_6px_14px_rgba(0,0,0,0.15),0_20px_45px_rgba(0,0,0,0.3)] ring-2 ring-[#F5A623] cursor-grabbing will-change-transform scale-[1.02]"
@@ -255,13 +275,14 @@ export function StickyNote({ note, stacked }: Props) {
       onPointerCancel={onPointerUp}
     >
       {/* Dark Integrated Header Bar (~34px height) */}
-      <header className="h-8.5 px-3 flex items-center justify-between bg-[#1D2029]/95 text-white backdrop-blur-md border-b border-white/5 shrink-0 select-none">
+      <header className="h-8.5 px-3 flex items-center justify-between bg-[#1D2029]/95 text-white backdrop-blur-md border-b border-white/5 shrink-0 select-none rounded-t-2xl">
         {/* Color Dot Button (Opens 4-color popover) */}
-        <div className="relative no-drag">
+        <div className="relative no-drag" ref={colorPickerRef}>
           <button
             type="button"
             onClick={(e) => {
               e.stopPropagation();
+              bringNote(note.id);
               setColorPickerOpen(!colorPickerOpen);
               setMenuOpen(false);
             }}
@@ -277,7 +298,7 @@ export function StickyNote({ note, stacked }: Props) {
 
           {/* Color Picker Popover */}
           {colorPickerOpen && (
-            <div className="absolute left-0 top-7.5 z-30 flex items-center gap-1.5 p-1.5 rounded-xl bg-[#262A35] border border-white/10 shadow-xl backdrop-blur-md animate-in fade-in zoom-in-95 duration-120">
+            <div className="absolute left-0 top-8 z-50 flex items-center gap-1.5 p-1.5 rounded-xl bg-[#262A35] border border-white/10 shadow-[0_12px_30px_rgba(0,0,0,0.5)] backdrop-blur-xl animate-in fade-in zoom-in-95 duration-120">
               {NOTE_PALETTE.map((p) => (
                 <button
                   key={p.id}
@@ -310,6 +331,7 @@ export function StickyNote({ note, stacked }: Props) {
             title={note.pinned ? "Bỏ ghim" : "Ghim lên trên"}
             onClick={(e) => {
               e.stopPropagation();
+              bringNote(note.id);
               toggleNotePin(note.id);
             }}
             className={cn(
@@ -323,12 +345,13 @@ export function StickyNote({ note, stacked }: Props) {
           </button>
 
           {/* Kebab Menu Button */}
-          <div className="relative">
+          <div className="relative" ref={menuRef}>
             <button
               type="button"
               title="Tùy chọn khác"
               onClick={(e) => {
                 e.stopPropagation();
+                bringNote(note.id);
                 setMenuOpen(!menuOpen);
                 setColorPickerOpen(false);
               }}
@@ -339,7 +362,7 @@ export function StickyNote({ note, stacked }: Props) {
 
             {/* Kebab Popover Menu */}
             {menuOpen && (
-              <div className="absolute right-0 top-7.5 z-30 w-48 flex flex-col p-1 rounded-xl bg-[#262A35] border border-white/10 shadow-2xl backdrop-blur-md text-xs animate-in fade-in zoom-in-95 duration-120 font-medium">
+              <div className="absolute right-0 top-8 z-50 w-48 flex flex-col p-1 rounded-xl bg-[#262A35] border border-white/10 shadow-[0_16px_36px_rgba(0,0,0,0.6)] backdrop-blur-xl text-xs animate-in fade-in zoom-in-95 duration-120 font-medium">
                 <button
                   type="button"
                   onClick={(e) => {
@@ -383,7 +406,7 @@ export function StickyNote({ note, stacked }: Props) {
       </header>
 
       {/* Note Body Area (Pastel Background + #23262F Text) */}
-      <div className="p-3.5 flex flex-col text-[#23262F] relative">
+      <div className="p-3.5 flex flex-col text-[#23262F] relative rounded-b-2xl">
         {/* Delete Confirmation Overlay */}
         {showDeleteConfirm && (
           <div className="no-drag mb-2 flex flex-col gap-2 rounded-xl bg-[#1D2029] text-white p-2.5 text-xs shadow-2xl border border-white/10 animate-in zoom-in-95 duration-120">
