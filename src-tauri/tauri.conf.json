@@ -20,10 +20,10 @@
         "minHeight": 580,
         "resizable": true,
         "fullscreen": false,
-        "decorations": false,
-        "transparent": true,
-        "alwaysOnTop": true,
-        "shadow": false
+        "decorations": true,
+        "transparent": false,
+        "alwaysOnTop": false,
+        "shadow": true
       }
     ],
     "security": {
