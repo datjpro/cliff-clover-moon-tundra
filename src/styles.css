@@ -278,3 +278,34 @@ section[role="dialog"],
 [role="dialog"] {
   pointer-events: auto !important;
 }
+
+/* ==========================================================================
+   CARET & INPUT CURSOR ENHANCEMENT (Khắc phục rõ con trỏ văn bản)
+   ========================================================================== */
+textarea,
+input[type="text"],
+input[type="search"] {
+  caret-color: #14161D !important;
+  cursor: text !important;
+  user-select: text !important;
+  -webkit-user-select: text !important;
+}
+
+section[role="dialog"] textarea,
+section[role="dialog"] input,
+form textarea,
+form input {
+  caret-color: #F5A623 !important;
+}
+
+.sticky-note-textarea {
+  caret-color: #14161D !important;
+  cursor: text !important;
+  user-select: text !important;
+  -webkit-user-select: text !important;
+}
+
+.sticky-note-textarea::selection {
+  background-color: rgba(245, 166, 35, 0.35);
+  color: #14161D;
+}

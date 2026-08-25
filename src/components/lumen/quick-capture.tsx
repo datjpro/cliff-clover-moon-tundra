@@ -82,7 +82,7 @@ export function QuickCapture() {
           }}
           rows={4}
           placeholder="Nhập nội dung ghi chú nhanh... (Bấm Enter để lưu)"
-          className="w-full resize-none rounded-xl bg-[#14161D] p-3 text-xs text-[#F4F5F7] outline-none placeholder:text-[#8B90A0]/50 border border-white/6 focus:border-[#F5A623]/50 focus:ring-1 focus:ring-[#F5A623]/50 transition-all duration-120"
+          className="w-full resize-none rounded-xl bg-[#14161D] p-3 text-xs text-[#F4F5F7] outline-none placeholder:text-[#8B90A0]/50 border border-white/6 focus:border-[#F5A623]/50 focus:ring-1 focus:ring-[#F5A623]/50 transition-all duration-120 cursor-text select-text touch-auto caret-[#F5A623]"
         />
 
         <div className="mt-3 flex items-center justify-between gap-2">

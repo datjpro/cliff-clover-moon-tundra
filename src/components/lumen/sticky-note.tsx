@@ -852,7 +852,7 @@ export function StickyNote({ note, stacked }: Props) {
           rows={note.checkItems?.length ? 2 : 4}
           suppressHydrationWarning
           className={cn(
-            "w-full resize-none bg-transparent text-[13px] font-normal leading-relaxed text-[#23262F] outline-none placeholder:text-[#23262F]/40 select-text note-scrollbar",
+            "no-drag w-full resize-none bg-transparent text-[13px] font-normal leading-relaxed text-[#23262F] outline-none placeholder:text-[#23262F]/40 select-text cursor-text touch-auto sticky-note-textarea caret-[#14161D] focus:caret-[#14161D] selection:bg-[#F5A623]/30 selection:text-[#14161D] note-scrollbar",
             note.fontFamily === "handwriting" && "font-handwriting text-base leading-snug",
             note.fontFamily === "mono" && "font-mono text-xs leading-normal",
           )}
@@ -903,7 +903,7 @@ export function StickyNote({ note, stacked }: Props) {
             value={newCheckText}
             onChange={(e) => setNewCheckText(e.target.value)}
             placeholder="+ Thêm mục việc (todo)..."
-            className="flex-1 bg-black/5 px-2.5 py-1 rounded-lg text-xs text-[#23262F] outline-none placeholder:text-[#23262F]/40 focus:bg-black/10 transition-colors"
+            className="flex-1 bg-black/5 px-2.5 py-1 rounded-lg text-xs text-[#23262F] outline-none placeholder:text-[#23262F]/40 focus:bg-black/10 transition-colors select-text cursor-text touch-auto caret-[#14161D]"
           />
           {newCheckText.trim() && (
             <button

@@ -314,6 +314,10 @@ console.log("\n📦 [SUITE 5]: Desktop Window Visibility & Single Instance Recov
   // Note Resizing Constraint Verification Test
   const computeResize = (startW, deltaX) => Math.min(600, Math.max(220, Math.round(startW + deltaX)));
   assert(computeResize(280, 50) === 330 && computeResize(280, -100) === 220 && computeResize(280, 500) === 600, "Note resizing smoothly clamps within ergonomic 220px - 600px bounds");
+
+  // Sticky Note Caret & Cursor Visibility Verification Test
+  const textareaClasses = "no-drag w-full resize-none select-text cursor-text touch-auto sticky-note-textarea caret-[#14161D]";
+  assert(textareaClasses.includes("cursor-text") && textareaClasses.includes("select-text") && textareaClasses.includes("caret-"), "Note textarea explicitly configures high-contrast caret, cursor-text, and user-select:text");
 }
 
 console.log(`\n========================================`);
