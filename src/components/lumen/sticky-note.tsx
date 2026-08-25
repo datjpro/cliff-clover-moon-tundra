@@ -742,7 +742,7 @@ export function StickyNote({ note, stacked }: Props) {
 
       {/* Note Body Area (Pastel Background + #23262F Text) - relative z-0 keeps content below header popovers */}
       <div
-        className="relative z-0 p-3.5 flex flex-col text-[#23262F] rounded-b-2xl cursor-text select-text"
+        className="relative z-0 p-3.5 pb-6 flex flex-1 flex-col text-[#23262F] rounded-b-2xl cursor-text select-text min-h-0"
         onClick={(e) => {
           const tag = (e.target as HTMLElement).tagName;
           if (tag !== "TEXTAREA" && tag !== "INPUT" && tag !== "BUTTON" && !(e.target as HTMLElement).closest("button,input,form,.no-drag")) {
@@ -754,7 +754,7 @@ export function StickyNote({ note, stacked }: Props) {
         {showOptions && !showDeleteConfirm && (
           <div
             onPointerDown={(e) => e.stopPropagation()}
-            className="no-drag mb-2.5 flex flex-col gap-2 rounded-xl bg-black/5 p-2.5 text-xs border border-black/5 animate-in fade-in zoom-in-95 duration-120"
+            className="no-drag mb-2.5 flex flex-col gap-2 rounded-xl bg-black/5 p-2.5 text-xs border border-black/5 animate-in fade-in zoom-in-95 duration-120 shrink-0"
           >
             <div className="flex items-center justify-between border-b border-black/10 pb-1 mb-0.5">
               <span className="font-bold text-[10px] uppercase text-[#23262F]/75 tracking-wider">
@@ -861,25 +861,24 @@ export function StickyNote({ note, stacked }: Props) {
           </div>
         )}
 
-        {/* Main Textarea */}
+        {/* Main Textarea: Expands flex-1 to fill the note when resized */}
         <textarea
           ref={textareaRef}
           value={note.body}
           onChange={(e) => updateNote(note.id, { body: e.target.value })}
           onFocus={() => bringNote(note.id)}
           placeholder="Viết ghi chú của bạn..."
-          rows={note.checkItems?.length ? 2 : 4}
           suppressHydrationWarning
           className={cn(
-            "no-drag w-full resize-none bg-transparent text-[13px] font-normal leading-relaxed text-[#23262F] outline-none placeholder:text-[#23262F]/40 select-text cursor-text touch-auto sticky-note-textarea caret-[#000000] focus:caret-[#000000] selection:bg-[#F5A623]/30 selection:text-[#000000] note-scrollbar",
+            "no-drag w-full flex-1 min-h-[64px] resize-none bg-transparent text-[13px] font-normal leading-relaxed text-[#23262F] outline-none placeholder:text-[#23262F]/40 select-text cursor-text touch-auto sticky-note-textarea caret-[#000000] focus:caret-[#000000] selection:bg-[#F5A623]/30 selection:text-[#000000] note-scrollbar",
             note.fontFamily === "handwriting" && "font-handwriting text-base leading-snug",
             note.fontFamily === "mono" && "font-mono text-xs leading-normal",
           )}
         />
 
-        {/* Checklist / Todo Items */}
+        {/* Checklist / Todo Items: Anchored at bottom with scrollable area if long */}
         {note.checkItems && note.checkItems.length > 0 && (
-          <div className="no-drag mt-2 space-y-1 border-t border-black/10 pt-2">
+          <div className="no-drag mt-auto pt-2.5 space-y-1 border-t border-black/10 shrink-0 max-h-40 overflow-y-auto note-scrollbar pr-1">
             {note.checkItems.map((item) => (
               <div key={item.id} className="flex items-center justify-between gap-1 text-xs group/todo">
                 <button
@@ -909,25 +908,25 @@ export function StickyNote({ note, stacked }: Props) {
           </div>
         )}
 
-        {/* Add Checkbox Item Form */}
+        {/* Add Checkbox Item Form: Always separated from bottom-right resize corner */}
         <form
           onSubmit={(e) => {
             e.preventDefault();
             addCheckItem();
           }}
-          className="no-drag mt-2 flex items-center gap-1 opacity-60 hover:opacity-100 transition-opacity"
+          className="no-drag mt-2 flex items-center gap-1 opacity-65 hover:opacity-100 transition-opacity shrink-0 mr-5"
         >
           <input
             type="text"
             value={newCheckText}
             onChange={(e) => setNewCheckText(e.target.value)}
             placeholder="+ Thêm mục việc (todo)..."
-            className="flex-1 bg-black/5 px-2.5 py-1 rounded-lg text-xs text-[#23262F] outline-none placeholder:text-[#23262F]/40 focus:bg-black/10 transition-colors select-text cursor-text touch-auto caret-[#14161D]"
+            className="flex-1 bg-black/5 px-2.5 py-1 rounded-lg text-xs text-[#23262F] outline-none placeholder:text-[#23262F]/40 focus:bg-black/10 transition-colors select-text cursor-text touch-auto caret-[#000000]"
           />
           {newCheckText.trim() && (
             <button
               type="submit"
-              className="p-1 rounded-lg bg-black/10 hover:bg-black/20 text-[#23262F] cursor-pointer transition-colors"
+              className="p-1 rounded-lg bg-black/10 hover:bg-black/20 text-[#23262F] cursor-pointer transition-colors shrink-0"
             >
               <Plus className="size-3" />
             </button>
@@ -950,7 +949,7 @@ export function StickyNote({ note, stacked }: Props) {
             onPointerCancel={onResizePointerUp}
             onDoubleClick={onResetSize}
             className={cn(
-              "no-drag absolute bottom-1.5 right-1.5 size-5 flex items-center justify-center rounded-lg transition-all cursor-se-resize z-20 touch-none select-none",
+              "no-drag absolute bottom-1 right-1 size-5 flex items-center justify-center rounded-lg transition-all cursor-se-resize z-20 touch-none select-none",
               isResizing
                 ? "bg-[#F5A623] text-[#14161D] shadow-lg scale-110 opacity-100 ring-2 ring-[#1D2029]"
                 : "text-[#23262F]/30 hover:text-[#23262F] hover:bg-black/10 opacity-0 group-hover:opacity-100 hover:scale-110",
