@@ -36,6 +36,7 @@ export function Companion() {
   const dancePip = useLumen((s) => s.dancePip);
   const setPip = useLumen((s) => s.setPip);
   const setPipEnabled = useLumen((s) => s.setPipEnabled);
+  const activeAlarm = useLumen((s) => s.activeAlarm);
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [isWalking, setIsWalking] = useState(false);
@@ -406,7 +407,10 @@ export function Companion() {
         {/* Pet Avatar Component with Mathematical Stride & Accessories */}
         <button
           type="button"
-          className="cursor-grab active:cursor-grabbing bg-transparent p-0 transition-transform active:scale-90 hover:scale-105"
+          className={cn(
+            "cursor-grab active:cursor-grabbing bg-transparent p-0 transition-transform active:scale-90 hover:scale-105 rounded-full",
+            activeAlarm && "pip-timer-alarm ring-4 ring-[#F5A623] shadow-[0_0_25px_rgba(245,166,35,0.7)]",
+          )}
           onClick={() => setMenuOpen(!menuOpen)}
           onDoubleClick={() => petPip()}
           aria-label="Pet companion"

@@ -1,10 +1,57 @@
+@import url("https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
 
 @layer base {
   :root {
-    --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    --font-handwriting: "Caveat", "Kalam", "Patrick Hand", cursive, sans-serif;
+    --font-sans: "Be Vietnam Pro", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     --font-mono: "JetBrains Mono", "Fira Code", monospace;
+    --font-handwriting: "Caveat", "Kalam", cursive, sans-serif;
+
+    /* ==========================================================================
+       LUMEN CORE BRAND & DESIGN TOKENS
+       ========================================================================== */
+    --lumen-bg: #14161D;               /* Nền app tổng thể */
+    --lumen-surface: #1D2029;          /* Panel, card, note-header, menu */
+    --lumen-surface-elevated: #262A35; /* Hover / active / selected */
+    --lumen-border: rgba(255, 255, 255, 0.06);
+    --lumen-border-hover: rgba(255, 255, 255, 0.12);
+    --lumen-accent: #F5A623;           /* Cam/Amber — màu thương hiệu duy nhất */
+    --lumen-accent-deep: #D6871A;      /* Hover / pressed của accent */
+    --lumen-accent-glow: rgba(245, 166, 35, 0.20);
+    --lumen-text: #F4F5F7;
+    --lumen-text-muted: #8B90A0;
+    --lumen-danger: #EF4444;           /* Chỉ dùng cho Thoát ứng dụng / Xoá */
+
+    /* Bộ màu Note (Nền pastel + Accent riêng + Text chung) */
+    --note-text: #23262F;              /* Dùng chung cho mọi note */
+    --note-mint-bg: #E4F5EA;
+    --note-mint-accent: #3FAE6C;
+    --note-amber-bg: #FCEFD3;
+    --note-amber-accent: #F5A623;
+    --note-rose-bg: #F8E1E7;
+    --note-rose-accent: #E8779A;
+    --note-fox-bg: #F3DCC7;
+    --note-fox-accent: #C9793B;
+
+    /* Shadows */
+    --shadow-rest: 0 1px 2px rgba(0, 0, 0, 0.08), 0 6px 20px rgba(0, 0, 0, 0.16);
+    --shadow-drag: 0 4px 8px rgba(0, 0, 0, 0.12), 0 16px 40px rgba(0, 0, 0, 0.28);
+    --shadow-modal: 0 24px 60px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.06);
+
+    /* Backward compatibility mapping */
+    --bg: var(--lumen-bg);
+    --surface: var(--lumen-surface);
+    --elevated: var(--lumen-surface-elevated);
+    --fg: var(--lumen-text);
+    --muted: var(--lumen-text-muted);
+    --subtle: #64748b;
+    --accent: var(--lumen-accent);
+    --accent-fg: #14161D;
+    --border: var(--lumen-border);
+    --tray: var(--lumen-surface);
+    --tray-fg: var(--lumen-text);
+    --shadow-border: 0 0 0 1px var(--lumen-border);
+    --shadow-float: var(--shadow-modal);
   }
 
   * {
@@ -26,91 +73,10 @@
   body {
     margin: 0;
     background: transparent;
-    color: var(--fg);
+    color: var(--lumen-text);
     font-family: var(--font-sans);
     overflow: hidden;
   }
-}
-
-:root,
-[data-theme="ink"] {
-  --bg: #18181b;
-  --surface: #27272a;
-  --elevated: #3f3f46;
-  --fg: #fafafa;
-  --muted: #a1a1aa;
-  --subtle: #71717a;
-  --accent: #f59e0b;
-  --accent-fg: #18181b;
-  --border: rgba(255, 255, 255, 0.1);
-  --tray: #09090b;
-  --tray-fg: #f4f4f5;
-  --shadow-border: 0 0 0 1px rgba(255, 255, 255, 0.1);
-  --shadow-float: 0 18px 40px -18px rgba(0, 0, 0, 0.65);
-}
-
-[data-theme="glass"] {
-  --bg: rgba(15, 23, 42, 0.75);
-  --surface: rgba(30, 41, 59, 0.8);
-  --elevated: rgba(51, 65, 85, 0.85);
-  --fg: #f8fafc;
-  --muted: #94a3b8;
-  --subtle: #64748b;
-  --accent: #38bdf8;
-  --accent-fg: #0f172a;
-  --border: rgba(255, 255, 255, 0.18);
-  --tray: rgba(15, 23, 42, 0.9);
-  --tray-fg: #f8fafc;
-  --shadow-border: 0 0 0 1px rgba(255, 255, 255, 0.2);
-  --shadow-float: 0 20px 45px -15px rgba(0, 0, 0, 0.5);
-}
-
-[data-theme="pastel"] {
-  --bg: #fdf6ec;
-  --surface: #ffffff;
-  --elevated: #fef08a;
-  --fg: #292524;
-  --muted: #78716c;
-  --subtle: #a8a29e;
-  --accent: #f43f5e;
-  --accent-fg: #ffffff;
-  --border: rgba(0, 0, 0, 0.08);
-  --tray: #292524;
-  --tray-fg: #fef08a;
-  --shadow-border: 0 0 0 1px rgba(0, 0, 0, 0.08);
-  --shadow-float: 0 16px 36px -16px rgba(0, 0, 0, 0.2);
-}
-
-[data-theme="cyberpunk"] {
-  --bg: #090014;
-  --surface: #15002a;
-  --elevated: #28024d;
-  --fg: #00ffcc;
-  --muted: #ff007f;
-  --subtle: #7928ca;
-  --accent: #ffe600;
-  --accent-fg: #000000;
-  --border: rgba(0, 255, 204, 0.3);
-  --tray: #090014;
-  --tray-fg: #00ffcc;
-  --shadow-border: 0 0 0 1px #00ffcc;
-  --shadow-float: 0 0 30px rgba(0, 255, 204, 0.35);
-}
-
-[data-theme="minimalist"] {
-  --bg: #ffffff;
-  --surface: #f4f4f5;
-  --elevated: #e4e4e7;
-  --fg: #09090b;
-  --muted: #71717a;
-  --subtle: #a1a1aa;
-  --accent: #18181b;
-  --accent-fg: #ffffff;
-  --border: rgba(0, 0, 0, 0.12);
-  --tray: #18181b;
-  --tray-fg: #ffffff;
-  --shadow-border: 0 0 0 1px rgba(0, 0, 0, 0.1);
-  --shadow-float: 0 12px 30px -12px rgba(0, 0, 0, 0.15);
 }
 
 /* Full Transparent Desktop Overlay */
@@ -125,43 +91,54 @@
   display: none !important;
 }
 
-/* Note Tints */
+/* ==========================================================================
+   STICKY NOTE STYLES (Pastel Bodies & Dark Headers)
+   ========================================================================== */
+.note-amber,
 .note-cream {
-  background-color: #fef08a !important;
-  color: #713f12 !important;
-  border-color: #fde047 !important;
+  background-color: var(--note-amber-bg) !important;
+  color: var(--note-text) !important;
+  border-color: rgba(245, 166, 35, 0.22) !important;
 }
-.note-mist {
-  background-color: #bae6fd !important;
-  color: #0369a1 !important;
-  border-color: #7dd3fc !important;
-}
+
+.note-mint,
 .note-sage {
-  background-color: #bbf7d0 !important;
-  color: #15803d !important;
-  border-color: #86efac !important;
+  background-color: var(--note-mint-bg) !important;
+  color: var(--note-text) !important;
+  border-color: rgba(63, 174, 108, 0.22) !important;
 }
+
+.note-rose,
 .note-blush {
-  background-color: #fbcfe8 !important;
-  color: #9d174d !important;
-  border-color: #f472b6 !important;
+  background-color: var(--note-rose-bg) !important;
+  color: var(--note-text) !important;
+  border-color: rgba(232, 119, 154, 0.22) !important;
 }
+
+.note-fox,
+.note-mist {
+  background-color: var(--note-fox-bg) !important;
+  color: var(--note-text) !important;
+  border-color: rgba(201, 121, 59, 0.22) !important;
+}
+
 .note-neon {
-  background-color: #22d3ee !important;
-  color: #083344 !important;
-  border-color: #06b6d4 !important;
-  box-shadow: 0 0 20px rgba(34, 211, 238, 0.4) !important;
+  background-color: #e0f2fe !important;
+  color: var(--note-text) !important;
+  border-color: rgba(14, 165, 233, 0.25) !important;
 }
+
 .note-dark {
-  background-color: #18181b !important;
-  color: #f4f4f5 !important;
-  border-color: #3f3f46 !important;
+  background-color: #262a35 !important;
+  color: #f4f5f7 !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
 }
+
 .note-glass {
-  background-color: rgba(255, 255, 255, 0.8) !important;
-  color: #0f172a !important;
+  background-color: rgba(255, 255, 255, 0.85) !important;
+  color: var(--note-text) !important;
   backdrop-filter: blur(16px) !important;
-  border-color: rgba(255, 255, 255, 0.4) !important;
+  border-color: rgba(255, 255, 255, 0.35) !important;
 }
 
 /* Fonts */
@@ -169,40 +146,59 @@
   font-family: var(--font-handwriting);
 }
 
-/* Procedural Pet Animations */
+.font-mono-numbers {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ==========================================================================
+   PROCEDURAL PET ANIMATIONS (Cáo Lumen là điểm nhấn duy nhất)
+   ========================================================================== */
 @keyframes petIdleBob {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-3px); }
+  50% { transform: translateY(-2px); }
 }
 
 @keyframes petTailWag {
   0%, 100% { transform: rotate(0deg); }
-  50% { transform: rotate(18deg); }
+  50% { transform: rotate(14deg); }
 }
 
 @keyframes petWalkBody {
   0% { transform: translateY(0) rotate(0deg); }
-  25% { transform: translateY(-4px) rotate(2deg); }
+  25% { transform: translateY(-3px) rotate(1.5deg); }
   50% { transform: translateY(0) rotate(0deg); }
-  75% { transform: translateY(-4px) rotate(-2deg); }
+  75% { transform: translateY(-3px) rotate(-1.5deg); }
   100% { transform: translateY(0) rotate(0deg); }
 }
 
 @keyframes petLegL {
-  0% { transform: rotate(20deg); }
-  50% { transform: rotate(-20deg); }
-  100% { transform: rotate(20deg); }
+  0% { transform: rotate(18deg); }
+  50% { transform: rotate(-18deg); }
+  100% { transform: rotate(18deg); }
 }
 
 @keyframes petLegR {
-  0% { transform: rotate(-20deg); }
-  50% { transform: rotate(20deg); }
-  100% { transform: rotate(-20deg); }
+  0% { transform: rotate(-18deg); }
+  50% { transform: rotate(18deg); }
+  100% { transform: rotate(-18deg); }
 }
 
 @keyframes petTailWalk {
-  0%, 100% { transform: rotate(-6deg); }
-  50% { transform: rotate(22deg); }
+  0%, 100% { transform: rotate(-4deg); }
+  50% { transform: rotate(18deg); }
+}
+
+@keyframes petTimerBounce {
+  0%, 100% { transform: translateY(0) scale(1); }
+  30% { transform: translateY(-12px) scale(1.12); }
+  60% { transform: translateY(0) scale(0.96); }
+  80% { transform: translateY(-4px) scale(1.04); }
+}
+
+@keyframes petGlowPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(245, 166, 35, 0.4); }
+  50% { box-shadow: 0 0 24px 8px rgba(245, 166, 35, 0.7); }
 }
 
 .pip-bob {
@@ -232,7 +228,13 @@
   transform-origin: 24px 58px;
 }
 
-/* Custom Subtle Scrollbar */
+.pip-timer-alarm {
+  animation: petTimerBounce 0.4s ease-out infinite, petGlowPulse 1.2s ease-in-out infinite;
+}
+
+/* ==========================================================================
+   SCROLLBAR & UI UTILITIES
+   ========================================================================== */
 .custom-scrollbar::-webkit-scrollbar {
   width: 5px;
   height: 5px;
@@ -241,14 +243,13 @@
   background: transparent;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.08);
   border-radius: 9999px;
 }
 .custom-scrollbar:hover::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.18);
 }
 
-/* Note Subtle Scrollbar */
 .note-scrollbar::-webkit-scrollbar {
   width: 4px;
 }

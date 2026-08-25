@@ -112,48 +112,48 @@ export function QuickTimer() {
         onClick={() => setOpen(false)}
       />
 
-      {/* Solid Opaque Dialog */}
+      {/* Frosted Dialog */}
       <form
         onSubmit={handleSubmit}
-        className="interactive-el relative z-10 w-full max-w-md rounded-2xl bg-[#1c1917] p-5 shadow-[0_25px_60px_rgba(0,0,0,0.85)] border border-[#44403c] text-white animate-in zoom-in-95 fade-in duration-150 space-y-3"
+        className="interactive-el relative z-10 w-full max-w-md rounded-2xl bg-[#1D2029]/95 p-5 shadow-[0_24px_60px_rgba(0,0,0,0.8)] border border-white/10 text-[#F4F5F7] backdrop-blur-2xl animate-in zoom-in-95 fade-in duration-140 space-y-3"
       >
-        <div className="flex items-center justify-between pb-2 border-b border-[#38332e]">
-          <p className="font-display text-sm font-bold text-amber-400 flex items-center gap-1.5">
-            <Clock className="size-4" />
-            <span>Đặt Giờ Nhanh (Ctrl + Shift + T)</span>
+        <div className="flex items-center justify-between pb-2.5 border-b border-white/6">
+          <p className="font-semibold text-xs text-[#F5A623] flex items-center gap-1.5 uppercase tracking-wide">
+            <Clock className="size-3.5" />
+            <span>Đặt giờ nhanh (Ctrl + Shift + T)</span>
           </p>
           <button
             type="button"
             onClick={() => setOpen(false)}
-            className="p-1 rounded hover:bg-white/10 text-[#a8a29e] hover:text-white cursor-pointer"
+            className="p-1 rounded-lg hover:bg-white/10 text-[#8B90A0] hover:text-white cursor-pointer transition-colors"
           >
             <X className="size-4" />
           </button>
         </div>
 
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <Input
             ref={inputRef}
             placeholder="Ví dụ: xây nhà trong COC : 2g14p hoặc nấu canh 15p..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            className="bg-[#292524] border-[#57534e] text-sm text-white placeholder:text-[#78716c] focus:border-amber-400"
+            className="bg-[#14161D] border-white/10 text-xs text-[#F4F5F7] placeholder:text-[#8B90A0]/50 focus:border-[#F5A623]/50 focus:ring-1 focus:ring-[#F5A623]/50 h-8.5 rounded-xl"
           />
 
-          {/* Quick Preset Tags */}
-          <div className="flex flex-wrap gap-1.5 pt-1">
+          {/* Quick Preset Chips */}
+          <div className="flex flex-wrap gap-1">
             {[
-              { label: "COC: 2g14p", val: "xây nhà trong COC : 2g14p" },
-              { label: "Pomodoro: 25p", val: "Tập trung làm việc : 25p" },
-              { label: "Nghỉ: 5p", val: "Nghỉ ngơi giải lao : 5p" },
-              { label: "Nấu ăn: 15p", val: "Nấu ăn canh súp : 15p" },
-              { label: "1 Giờ", val: "Hẹn giờ : 1g" },
+              { label: "🏰 COC: 2g14p", val: "xây nhà trong COC : 2g14p" },
+              { label: "🍅 Pomodoro: 25p", val: "Tập trung làm việc : 25p" },
+              { label: "☕ Nghỉ: 5p", val: "Nghỉ ngơi giải lao : 5p" },
+              { label: "🍲 Nấu ăn: 15p", val: "Nấu ăn canh súp : 15p" },
+              { label: "⏳ 1 Giờ", val: "Hẹn giờ làm việc : 1g" },
             ].map((preset) => (
               <button
                 key={preset.label}
                 type="button"
                 onClick={() => setInput(preset.val)}
-                className="text-[10px] px-2 py-0.5 rounded-full bg-[#292524] hover:bg-amber-500/20 hover:text-amber-400 text-[#d6d3d1] border border-[#57534e] transition-colors cursor-pointer"
+                className="text-[10px] px-2.5 py-0.5 rounded-full bg-[#14161D] hover:bg-[#F5A623]/20 hover:text-[#F5A623] text-[#8B90A0] border border-white/6 transition-colors duration-120 cursor-pointer"
               >
                 {preset.label}
               </button>
@@ -161,17 +161,17 @@ export function QuickTimer() {
           </div>
         </div>
 
-        <div className="flex items-center justify-between pt-1 border-t border-[#38332e]">
-          <span className="text-xs text-[#a8a29e]">Ghim đồng hồ đếm ngược nổi trên Desktop</span>
+        <div className="flex items-center justify-between pt-1.5 border-t border-white/5">
+          <span className="text-[11px] text-[#8B90A0]">Ghim đồng hồ đếm ngược nổi trên Desktop</span>
           <Switch checked={pinToDesktop} onCheckedChange={setPinToDesktop} />
         </div>
 
-        <div className="flex items-center justify-end gap-2 pt-2">
+        <div className="flex items-center justify-end gap-2 pt-1">
           <Button
             type="button"
             variant="ghost"
             size="sm"
-            className="cursor-pointer text-[#d6d3d1] hover:bg-white/10 text-xs"
+            className="cursor-pointer text-[#8B90A0] hover:text-white hover:bg-white/10 text-xs rounded-xl"
             onClick={() => setOpen(false)}
           >
             Hủy
@@ -179,7 +179,7 @@ export function QuickTimer() {
           <Button
             type="submit"
             size="sm"
-            className="cursor-pointer bg-amber-500 text-black hover:bg-amber-400 font-bold text-xs px-4"
+            className="cursor-pointer bg-[#F5A623] hover:bg-[#D6871A] text-[#14161D] font-bold text-xs px-4 rounded-xl shadow-xs transition-colors"
           >
             Bắt đầu đếm giờ
           </Button>

@@ -64,14 +64,14 @@ function FloatingTimerCard({ timer }: { timer: Reminder }) {
   const progress = Math.max(0, Math.min(100, ((total - remaining) / total) * 100));
   const isFinished = remaining <= 0;
 
-  // 1. MINIMAL TRANSPARENT MODE (Chỉ hiện nội dung + Time, nền trong suốt)
+  // 1. Minimal Transparent Pill Mode
   if (minimal) {
     return (
       <div
         className={cn(
           "interactive-el fixed z-[85] flex items-center gap-2 rounded-xl px-2.5 py-1.5 select-none cursor-grab active:cursor-grabbing",
-          "bg-black/35 hover:bg-black/60 text-white backdrop-blur-[2px] transition-all duration-150 group",
-          isFinished && "bg-red-500/80 animate-pulse",
+          "bg-[#14161D]/80 hover:bg-[#14161D]/95 text-[#F4F5F7] border border-white/10 backdrop-blur-md transition-all duration-140 group shadow-lg",
+          isFinished && "bg-[#EF4444]/90 animate-pulse border-red-400",
         )}
         style={{ left: `${pos.x}px`, top: `${pos.y}px` }}
         onPointerDown={onPointerDown}
@@ -79,11 +79,11 @@ function FloatingTimerCard({ timer }: { timer: Reminder }) {
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerUp}
       >
-        <Clock className={cn("size-3.5 shrink-0 drop-shadow", isFinished ? "text-white" : "text-amber-400")} />
-        <span className="text-xs font-bold truncate max-w-[120px] drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+        <Clock className={cn("size-3.5 shrink-0", isFinished ? "text-white" : "text-[#F5A623]")} />
+        <span className="text-xs font-medium truncate max-w-[120px]">
           {timer.title}
         </span>
-        <span className="font-mono text-sm font-extrabold tracking-wider text-amber-300 drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]">
+        <span className="font-mono text-xs font-bold tracking-wider text-[#F5A623] tabular-nums">
           {isFinished ? "00:00 🔔" : formatDuration(remaining)}
         </span>
 
@@ -93,7 +93,7 @@ function FloatingTimerCard({ timer }: { timer: Reminder }) {
             type="button"
             onClick={() => setMinimal(false)}
             title="Mở rộng đầy đủ"
-            className="p-0.5 rounded hover:bg-white/20 text-white/80 cursor-pointer"
+            className="p-0.5 rounded hover:bg-white/20 text-[#8B90A0] hover:text-white cursor-pointer"
           >
             <Eye className="size-3" />
           </button>
@@ -101,7 +101,7 @@ function FloatingTimerCard({ timer }: { timer: Reminder }) {
             type="button"
             onClick={() => removeReminder(timer.id)}
             title="Đóng / Xóa"
-            className="p-0.5 rounded hover:bg-red-500/30 text-white/80 cursor-pointer"
+            className="p-0.5 rounded hover:bg-red-500/30 text-[#8B90A0] hover:text-red-400 cursor-pointer"
           >
             <X className="size-3" />
           </button>
@@ -110,14 +110,14 @@ function FloatingTimerCard({ timer }: { timer: Reminder }) {
     );
   }
 
-  // 2. STANDARD FLOATING CARD MODE (Đầy đủ điều khiển)
+  // 2. Standard Floating Card Mode
   return (
     <div
       className={cn(
-        "interactive-el fixed z-[85] flex flex-col gap-1.5 rounded-2xl p-3 select-none cursor-grab active:cursor-grabbing shadow-[0_16px_36px_rgba(0,0,0,0.55)] border backdrop-blur-xl transition-all duration-200 w-64",
+        "interactive-el fixed z-[85] flex flex-col gap-1.5 rounded-2xl p-3 select-none cursor-grab active:cursor-grabbing shadow-[0_20px_45px_rgba(0,0,0,0.6)] border backdrop-blur-2xl transition-all duration-160 w-64",
         isFinished
-          ? "bg-red-500/90 text-white border-red-400 animate-pulse ring-2 ring-red-400"
-          : "bg-[#1c1917]/95 text-[#f5f5f4] border-[#44403c]",
+          ? "bg-[#EF4444]/90 text-white border-red-400 animate-pulse ring-2 ring-red-400"
+          : "bg-[#1D2029]/95 text-[#F4F5F7] border-white/10",
       )}
       style={{ left: `${pos.x}px`, top: `${pos.y}px` }}
       onPointerDown={onPointerDown}
@@ -128,32 +128,31 @@ function FloatingTimerCard({ timer }: { timer: Reminder }) {
       {/* Title & Controls */}
       <div className="flex items-center justify-between gap-1">
         <div className="flex items-center gap-1.5 min-w-0">
-          <Clock className={cn("size-3.5 shrink-0", isFinished ? "text-white" : "text-amber-400")} />
-          <p className="text-xs font-bold truncate leading-tight">{timer.title}</p>
+          <Clock className={cn("size-3.5 shrink-0", isFinished ? "text-white" : "text-[#F5A623]")} />
+          <p className="text-xs font-semibold truncate leading-tight">{timer.title}</p>
         </div>
         <div className="flex items-center gap-0.5 shrink-0">
-          {/* Toggle Minimal Transparent Mode */}
           <button
             type="button"
             onClick={() => setMinimal(true)}
-            title="Thu gọn trong suốt (Chỉ hiện chữ & giờ)"
-            className="flex size-5 items-center justify-center rounded hover:bg-white/20 transition-colors cursor-pointer opacity-75 hover:opacity-100"
+            title="Thu gọn trong suốt"
+            className="flex size-5 items-center justify-center rounded hover:bg-white/10 transition-colors cursor-pointer text-[#8B90A0] hover:text-white"
           >
-            <EyeOff className="size-3 text-[#d6d3d1]" />
+            <EyeOff className="size-3" />
           </button>
           <button
             type="button"
             onClick={() => togglePinReminder(timer.id)}
             title="Bỏ ghim màn hình"
-            className="flex size-5 items-center justify-center rounded hover:bg-white/20 transition-colors cursor-pointer opacity-75 hover:opacity-100"
+            className="flex size-5 items-center justify-center rounded hover:bg-white/10 transition-colors cursor-pointer text-[#F5A623]"
           >
-            <Pin className="size-3 fill-amber-400 text-amber-400" />
+            <Pin className="size-3 fill-[#F5A623]" />
           </button>
           <button
             type="button"
             onClick={() => removeReminder(timer.id)}
             title="Xóa hẹn giờ"
-            className="flex size-5 items-center justify-center rounded hover:bg-red-500/30 transition-colors cursor-pointer opacity-75 hover:opacity-100 text-red-400"
+            className="flex size-5 items-center justify-center rounded hover:bg-red-500/20 transition-colors cursor-pointer text-[#8B90A0] hover:text-[#EF4444]"
           >
             <X className="size-3" />
           </button>
@@ -162,14 +161,14 @@ function FloatingTimerCard({ timer }: { timer: Reminder }) {
 
       {/* Big Digital Countdown */}
       <div className="flex items-baseline justify-between pt-0.5">
-        <span className="font-mono text-xl font-extrabold tracking-wider text-amber-400">
+        <span className="font-mono text-xl font-bold tracking-wider text-[#F5A623] tabular-nums">
           {isFinished ? (lang === "vi" ? "ĐÃ HẾT GIỜ! 🔔" : "TIME UP! 🔔") : formatDuration(remaining)}
         </span>
         {isFinished ? (
           <button
             type="button"
             onClick={() => completeReminder(timer.id)}
-            className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-white text-black font-bold text-xs shadow-md cursor-pointer hover:bg-slate-100"
+            className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-white text-[#14161D] font-bold text-xs shadow-md cursor-pointer hover:bg-slate-100 transition-colors"
           >
             <Check className="size-3" />
             <span>Tắt chuông</span>
@@ -185,7 +184,7 @@ function FloatingTimerCard({ timer }: { timer: Reminder }) {
                 ),
               });
             }}
-            className="text-[10px] px-1.5 py-0.5 rounded bg-white/10 hover:bg-white/20 transition-colors cursor-pointer text-muted"
+            className="text-[10px] px-1.5 py-0.5 rounded-lg bg-white/5 hover:bg-white/10 text-[#8B90A0] hover:text-white transition-colors cursor-pointer border border-white/5"
           >
             +5p
           </button>
@@ -193,11 +192,11 @@ function FloatingTimerCard({ timer }: { timer: Reminder }) {
       </div>
 
       {/* Progress Bar */}
-      <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/10">
+      <div className="h-1 w-full overflow-hidden rounded-full bg-white/5">
         <div
           className={cn(
-            "h-full transition-all duration-500",
-            isFinished ? "bg-white" : "bg-amber-400",
+            "h-full transition-all duration-500 rounded-full",
+            isFinished ? "bg-white" : "bg-[#F5A623]",
           )}
           style={{ width: `${progress}%` }}
         />

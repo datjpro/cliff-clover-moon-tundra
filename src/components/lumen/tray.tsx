@@ -12,10 +12,10 @@ function Clock() {
     return () => window.clearInterval(id);
   }, []);
   if (!now) {
-    return <span className="tabular-nums text-xs font-medium text-tray-fg/80">--:--</span>;
+    return <span className="tabular-nums text-xs font-medium text-[#8B90A0]">--:--</span>;
   }
   return (
-    <time className="tabular-nums text-xs font-medium text-tray-fg/80" dateTime={now.toISOString()}>
+    <time className="tabular-nums text-xs font-mono font-medium text-[#8B90A0]" dateTime={now.toISOString()}>
       {now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
     </time>
   );
@@ -35,23 +35,23 @@ export function Tray() {
   const pending = useLumen((s) => s.reminders.filter((r) => !r.done).length);
 
   return (
-    <footer className="interactive-el absolute inset-x-0 bottom-0 z-[80] flex h-12 items-center justify-between gap-2 border-t border-white/5 bg-tray/80 backdrop-blur-md px-3 text-tray-fg select-none">
+    <footer className="interactive-el absolute inset-x-0 bottom-0 z-[80] flex h-12 items-center justify-between gap-2 border-t border-white/6 bg-[#1D2029]/85 backdrop-blur-md px-3 text-[#F4F5F7] select-none">
       <div className="flex items-center gap-1.5">
         <button
           type="button"
           onClick={() => setHubOpen(!hubOpen)}
-          className="flex h-9 items-center gap-2 rounded-md px-2.5 hover:bg-white/5 cursor-pointer"
+          className="flex h-9 items-center gap-2 rounded-xl px-2.5 hover:bg-white/10 transition-colors cursor-pointer"
           aria-pressed={hubOpen}
         >
-          <span className="grid size-6 place-items-center rounded-sm bg-amber-500/20">
-            <span className="block size-2.5 rounded-full bg-amber-500" />
+          <span className="grid size-6 place-items-center rounded-lg bg-[#F5A623]/20 border border-[#F5A623]/30">
+            <span className="block size-2 rounded-full bg-[#F5A623]" />
           </span>
-          <span className="hidden font-display text-sm font-medium sm:inline">{dict.appName}</span>
+          <span className="hidden font-semibold text-sm sm:inline">{dict.appName}</span>
         </button>
         <button
           type="button"
           onClick={() => setCaptureOpen(true)}
-          className="flex size-9 items-center justify-center rounded-md hover:bg-white/5 cursor-pointer"
+          className="flex size-9 items-center justify-center rounded-xl hover:bg-white/10 text-[#8B90A0] hover:text-white transition-colors cursor-pointer"
           aria-label={dict.quickNote}
           title={dict.quickNote}
         >
@@ -60,13 +60,13 @@ export function Tray() {
         <button
           type="button"
           onClick={() => setHubOpen(true)}
-          className="relative flex size-9 items-center justify-center rounded-md hover:bg-white/5 cursor-pointer"
+          className="relative flex size-9 items-center justify-center rounded-xl hover:bg-white/10 text-[#8B90A0] hover:text-white transition-colors cursor-pointer"
           aria-label={dict.reminders}
           title={dict.reminders}
         >
           <Bell className="size-4" />
           {pending > 0 ? (
-            <span className="absolute top-1.5 right-1.5 size-1.5 rounded-full bg-amber-500 animate-pulse" />
+            <span className="absolute top-2 right-2 size-2 rounded-full bg-[#F5A623] animate-pulse" />
           ) : null}
         </button>
       </div>
@@ -74,7 +74,7 @@ export function Tray() {
         <button
           type="button"
           onClick={() => (pipEnabled ? requestNoteFromPip() : setPipEnabled(true))}
-          className="hidden h-9 items-center gap-1 rounded-md px-1.5 hover:bg-white/5 sm:flex cursor-pointer"
+          className="hidden h-9 items-center gap-1 rounded-xl px-1.5 hover:bg-white/10 sm:flex cursor-pointer transition-colors"
           aria-label={pipEnabled ? dict.pipStudio.fetchNote : dict.pipStudio.enableCompanion}
           title={pipEnabled ? dict.pipStudio.fetchNote : dict.pipStudio.enableCompanion}
         >
@@ -85,7 +85,7 @@ export function Tray() {
         <button
           type="button"
           onClick={() => setHubOpen(true)}
-          className="flex size-9 items-center justify-center rounded-md hover:bg-white/5 cursor-pointer"
+          className="flex size-9 items-center justify-center rounded-xl hover:bg-white/10 text-[#8B90A0] hover:text-white transition-colors cursor-pointer"
           aria-label={dict.settings}
           title={dict.settings}
         >

@@ -48,23 +48,23 @@ export function QuickCapture() {
         onClick={() => setCaptureOpen(false)}
       />
 
-      {/* Solid Opaque Dialog */}
+      {/* Frosted Dialog */}
       <form
-        className="interactive-el relative z-10 w-full max-w-md rounded-2xl bg-[#1c1917] p-5 shadow-[0_25px_60px_rgba(0,0,0,0.85)] border border-[#44403c] text-white animate-in zoom-in-95 fade-in duration-150"
+        className="interactive-el relative z-10 w-full max-w-md rounded-2xl bg-[#1D2029]/95 p-5 shadow-[0_24px_60px_rgba(0,0,0,0.8)] border border-white/10 text-[#F4F5F7] backdrop-blur-2xl animate-in zoom-in-95 fade-in duration-140"
         onSubmit={(e) => {
           e.preventDefault();
           save();
         }}
       >
-        <div className="flex items-center justify-between pb-2 border-b border-[#38332e] mb-3">
-          <p className="font-display text-sm font-bold text-amber-400 flex items-center gap-1.5">
-            <Sparkles className="size-4" />
-            <span>{dict.quickNote} (Ctrl + Shift + N)</span>
+        <div className="flex items-center justify-between pb-2.5 border-b border-white/6 mb-3">
+          <p className="font-semibold text-xs text-[#F5A623] flex items-center gap-1.5 uppercase tracking-wide">
+            <Sparkles className="size-3.5" />
+            <span>Ghi chú nhanh (Ctrl + Shift + N)</span>
           </p>
           <button
             type="button"
             onClick={() => setCaptureOpen(false)}
-            className="p-1 rounded hover:bg-white/10 text-[#a8a29e] hover:text-white cursor-pointer"
+            className="p-1 rounded-lg hover:bg-white/10 text-[#8B90A0] hover:text-white cursor-pointer transition-colors"
           >
             <X className="size-4" />
           </button>
@@ -82,17 +82,17 @@ export function QuickCapture() {
           }}
           rows={4}
           placeholder="Nhập nội dung ghi chú nhanh... (Bấm Enter để lưu)"
-          className="w-full resize-none rounded-xl bg-[#292524] p-3 text-sm text-white outline-none placeholder:text-[#78716c] border border-[#57534e] focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+          className="w-full resize-none rounded-xl bg-[#14161D] p-3 text-xs text-[#F4F5F7] outline-none placeholder:text-[#8B90A0]/50 border border-white/6 focus:border-[#F5A623]/50 focus:ring-1 focus:ring-[#F5A623]/50 transition-all duration-120"
         />
 
         <div className="mt-3 flex items-center justify-between gap-2">
-          <p className="text-[11px] text-[#a8a29e]">Shift + Enter để xuống dòng</p>
+          <p className="text-[11px] text-[#8B90A0]">Shift + Enter để xuống dòng</p>
           <div className="flex gap-2">
             <Button
               type="button"
               variant="ghost"
               size="sm"
-              className="cursor-pointer text-[#d6d3d1] hover:bg-white/10"
+              className="cursor-pointer text-[#8B90A0] hover:text-white hover:bg-white/10 text-xs rounded-xl"
               onClick={() => setCaptureOpen(false)}
             >
               {dict.cancel}
@@ -100,7 +100,7 @@ export function QuickCapture() {
             <Button
               type="submit"
               size="sm"
-              className="cursor-pointer bg-amber-500 text-black hover:bg-amber-400 font-bold px-4"
+              className="cursor-pointer bg-[#F5A623] hover:bg-[#D6871A] text-[#14161D] font-bold px-4 text-xs rounded-xl shadow-xs transition-colors"
             >
               {dict.save}
             </Button>

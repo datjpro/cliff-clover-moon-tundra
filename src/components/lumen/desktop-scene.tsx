@@ -60,7 +60,7 @@ function PaperWell() {
   );
 }
 
-// Floating Quick Tray Menu (Modern Glassmorphism Design)
+// Floating Quick Tray Menu (Modern Glassmorphism & Tokenized System)
 function FloatingTrayMenu() {
   const [open, setOpen] = useState(false);
   const lang = useLumen((s) => s.lang);
@@ -77,12 +77,12 @@ function FloatingTrayMenu() {
   return (
     <div className="interactive-el fixed right-6 bottom-5 z-[85] flex flex-col items-end gap-2 select-none">
       {open ? (
-        <div className="animate-in fade-in slide-in-from-bottom-2 w-60 rounded-2xl bg-slate-900/90 text-slate-100 p-2 shadow-[0_20px_50px_rgba(0,0,0,0.65)] border border-white/10 backdrop-blur-2xl">
-          <div className="flex flex-col gap-0.5 text-xs font-medium">
+        <div className="animate-in fade-in slide-in-from-bottom-2 w-64 rounded-2xl bg-[#1D2029]/90 text-[#F4F5F7] p-2 shadow-[0_20px_50px_rgba(0,0,0,0.65)] border border-white/6 backdrop-blur-2xl">
+          <div className="flex flex-col gap-1 text-xs font-medium">
             {/* Header label */}
-            <div className="flex items-center justify-between px-2.5 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-white/5 mb-1">
-              <span>Lumen Menu</span>
-              <span className="text-amber-400">Desktop</span>
+            <div className="flex items-center justify-between px-2.5 py-1 text-[10px] font-semibold text-[#8B90A0] uppercase tracking-wider border-b border-white/5 mb-0.5">
+              <span>Lumen Desk</span>
+              <span className="text-[#F5A623]">Overlay</span>
             </div>
 
             {/* + New Note */}
@@ -92,13 +92,13 @@ function FloatingTrayMenu() {
                 addNote({ body: "", tint: "cream" });
                 setOpen(false);
               }}
-              className="flex items-center justify-between px-2.5 py-2 rounded-xl hover:bg-white/10 transition-colors text-left cursor-pointer group"
+              className="flex items-center justify-between px-2.5 h-9 rounded-xl hover:bg-[#262A35] transition-colors duration-120 text-left cursor-pointer group"
             >
               <div className="flex items-center gap-2.5">
-                <Plus className="size-4 text-amber-400 group-hover:scale-110 transition-transform" />
-                <span className="font-semibold text-slate-100">{isVi ? "Ghi chú mới" : "New Note"}</span>
+                <Plus className="size-4.5 text-[#F5A623] group-hover:scale-110 transition-transform duration-120" />
+                <span className="font-medium text-[#F4F5F7]">{isVi ? "Ghi chú mới" : "New Note"}</span>
               </div>
-              <span className="text-[10px] text-slate-500 font-mono">Ctrl+Shift+N</span>
+              <span className="text-[10px] text-[#8B90A0] font-mono">Ctrl+Shift+N</span>
             </button>
 
             {/* + Quick Timer */}
@@ -108,13 +108,13 @@ function FloatingTrayMenu() {
                 triggerOpenQuickTimer();
                 setOpen(false);
               }}
-              className="flex items-center justify-between px-2.5 py-2 rounded-xl hover:bg-white/10 transition-colors text-left cursor-pointer group"
+              className="flex items-center justify-between px-2.5 h-9 rounded-xl hover:bg-[#262A35] transition-colors duration-120 text-left cursor-pointer group"
             >
               <div className="flex items-center gap-2.5">
-                <Clock className="size-4 text-amber-400 group-hover:scale-110 transition-transform" />
-                <span className="font-semibold text-slate-100">{isVi ? "Đặt giờ nhanh" : "Quick Timer"}</span>
+                <Clock className="size-4.5 text-[#F5A623] group-hover:scale-110 transition-transform duration-120" />
+                <span className="font-medium text-[#F4F5F7]">{isVi ? "Đặt giờ nhanh" : "Quick Timer"}</span>
               </div>
-              <span className="text-[10px] text-slate-500 font-mono">Ctrl+Shift+T</span>
+              <span className="text-[10px] text-[#8B90A0] font-mono">Ctrl+Shift+T</span>
             </button>
 
             {/* Toggle Pet Hide/Show */}
@@ -124,31 +124,33 @@ function FloatingTrayMenu() {
                 setPipEnabled(!pipEnabled);
                 setOpen(false);
               }}
-              className="flex items-center justify-between px-2.5 py-2 rounded-xl hover:bg-white/10 transition-colors text-left cursor-pointer group"
+              className="flex items-center justify-between px-2.5 h-9 rounded-xl hover:bg-[#262A35] transition-colors duration-120 text-left cursor-pointer group"
             >
               <div className="flex items-center gap-2.5">
-                <Sparkles className="size-4 text-amber-400 group-hover:scale-110 transition-transform" />
-                <span>{pipEnabled ? (isVi ? "Ẩn Thú cưng" : "Hide Pet") : (isVi ? "Hiện Thú cưng" : "Show Pet")}</span>
+                <Sparkles className="size-4.5 text-[#F5A623] group-hover:scale-110 transition-transform duration-120" />
+                <span className="font-medium text-[#F4F5F7]">
+                  {pipEnabled ? (isVi ? "Ẩn Thú cưng" : "Hide Pet") : (isVi ? "Hiện Thú cưng" : "Show Pet")}
+                </span>
               </div>
-              <span className="text-[10px] text-slate-500">🐾</span>
+              <span className="text-xs">🐾</span>
             </button>
 
             {/* Hide All / Show All Notes */}
             <button
               type="button"
               onClick={() => setLayout(layout === "tray" ? "stickies" : "tray")}
-              className="flex items-center justify-between px-2.5 py-2 rounded-xl hover:bg-white/10 transition-colors text-left cursor-pointer"
+              className="flex items-center justify-between px-2.5 h-9 rounded-xl hover:bg-[#262A35] transition-colors duration-120 text-left cursor-pointer"
             >
               <div className="flex items-center gap-2.5">
                 {layout === "tray" ? (
                   <>
-                    <Eye className="size-4 text-slate-400" />
-                    <span>{isVi ? "Hiện tất cả note" : "Show All Notes"}</span>
+                    <Eye className="size-4.5 text-[#8B90A0]" />
+                    <span className="font-medium text-[#F4F5F7]">{isVi ? "Hiện tất cả note" : "Show All Notes"}</span>
                   </>
                 ) : (
                   <>
-                    <EyeOff className="size-4 text-slate-400" />
-                    <span>{isVi ? "Ẩn tất cả note" : "Hide All Notes"}</span>
+                    <EyeOff className="size-4.5 text-[#8B90A0]" />
+                    <span className="font-medium text-[#F4F5F7]">{isVi ? "Ẩn tất cả note" : "Hide All Notes"}</span>
                   </>
                 )}
               </div>
@@ -161,38 +163,41 @@ function FloatingTrayMenu() {
                 setHubOpen(true);
                 setOpen(false);
               }}
-              className="flex items-center justify-between px-2.5 py-2 rounded-xl hover:bg-white/10 transition-colors text-left cursor-pointer"
+              className="flex items-center justify-between px-2.5 h-9 rounded-xl hover:bg-[#262A35] transition-colors duration-120 text-left cursor-pointer"
             >
               <div className="flex items-center gap-2.5">
-                <Settings className="size-4 text-slate-400" />
-                <span>{isVi ? "Cài đặt hệ thống" : "Settings"}</span>
+                <Settings className="size-4.5 text-[#8B90A0]" />
+                <span className="font-medium text-[#F4F5F7]">{isVi ? "Cài đặt hệ thống" : "Settings"}</span>
               </div>
-              <span className="text-[10px] text-slate-500 font-mono">Hub</span>
+              <span className="text-[10px] text-[#8B90A0] font-mono">Hub</span>
             </button>
 
-            {/* Arrange Notes Unified Amber Highlight Button */}
+            {/* Arrange Notes (Highlighted with Left Accent Bar + Surface Elevated) */}
             <button
               type="button"
               onClick={() => {
                 tidyNotes();
                 setOpen(false);
               }}
-              className="flex items-center justify-between px-2.5 py-2 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 font-semibold shadow-sm transition-all active:scale-95 text-left cursor-pointer mt-1"
+              className="flex items-center justify-between pl-3 pr-2.5 h-9 rounded-xl bg-[#262A35] border-l-2 border-[#F5A623] hover:bg-[#2e3340] text-[#F4F5F7] font-medium shadow-xs transition-all duration-120 active:scale-98 text-left cursor-pointer"
             >
-              <div className="flex items-center gap-2">
-                <LayoutGrid className="size-4 text-amber-400" />
+              <div className="flex items-center gap-2.5">
+                <LayoutGrid className="size-4.5 text-[#F5A623]" />
                 <span>{isVi ? "Sắp xếp ghi chú" : "Arrange Notes"}</span>
               </div>
-              <span className="text-[10px] bg-amber-500/20 px-1.5 py-0.5 rounded font-mono text-amber-300">Auto</span>
+              <span className="text-[10px] bg-[#F5A623]/20 text-[#F5A623] px-1.5 py-0.2 rounded font-mono font-semibold">
+                Auto
+              </span>
             </button>
 
-            {/* Quit */}
+            {/* Hairline Divider & Quit Button */}
+            <div className="h-px bg-white/5 my-1" />
             <button
               type="button"
               onClick={() => void closeOrQuitDesktopApp()}
-              className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl hover:bg-red-500/20 text-red-400 hover:text-red-300 transition-colors text-left cursor-pointer text-[11px] mt-0.5"
+              className="flex items-center gap-2.5 px-2.5 h-8.5 rounded-xl hover:bg-red-500/15 text-[#EF4444] transition-colors duration-120 text-left cursor-pointer text-xs font-medium"
             >
-              <X className="size-3.5" />
+              <X className="size-4 text-[#EF4444]" />
               <span>{isVi ? "Thoát ứng dụng" : "Quit"}</span>
             </button>
           </div>
@@ -203,7 +208,7 @@ function FloatingTrayMenu() {
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="flex size-10 items-center justify-center rounded-2xl bg-slate-900/90 hover:bg-slate-900 text-white shadow-2xl border border-white/15 backdrop-blur-xl hover:scale-110 active:scale-95 transition-transform cursor-pointer"
+        className="flex size-10 items-center justify-center rounded-2xl bg-[#1D2029]/95 hover:bg-[#1D2029] text-white shadow-2xl border border-white/10 backdrop-blur-xl hover:scale-110 active:scale-95 transition-transform duration-140 cursor-pointer"
         title="Lumen Overlay Menu"
       >
         <span className="text-xl">🦊</span>

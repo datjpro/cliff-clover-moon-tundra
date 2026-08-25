@@ -73,11 +73,11 @@ const ALARM_TONES: { id: AlarmSoundTone; name: string; icon: string; desc: strin
 ];
 
 const THEME_PREVIEWS: Record<ThemeId, { bg: string; accent: string; border: string }> = {
-  glass: { bg: "bg-slate-800/80", accent: "bg-cyan-400", border: "border-cyan-500/30" },
-  pastel: { bg: "bg-amber-900/30", accent: "bg-rose-400", border: "border-rose-500/30" },
-  cyberpunk: { bg: "bg-purple-950/70", accent: "bg-fuchsia-400", border: "border-fuchsia-500/30" },
+  glass: { bg: "bg-slate-800/80", accent: "bg-[#F5A623]", border: "border-white/10" },
+  pastel: { bg: "bg-amber-900/30", accent: "bg-[#F5A623]", border: "border-white/10" },
+  cyberpunk: { bg: "bg-purple-950/70", accent: "bg-[#F5A623]", border: "border-white/10" },
   minimalist: { bg: "bg-zinc-800", accent: "bg-zinc-200", border: "border-zinc-700" },
-  ink: { bg: "bg-stone-900", accent: "bg-amber-500", border: "border-stone-700" },
+  ink: { bg: "bg-stone-900", accent: "bg-[#F5A623]", border: "border-stone-700" },
 };
 
 function parseTimerInput(raw: string): { title: string; durationMs: number } {
@@ -163,25 +163,25 @@ function HubTimerRow({
   return (
     <div
       className={cn(
-        "flex items-center justify-between rounded-xl px-3 py-2.5 text-xs border transition-all",
+        "flex items-center justify-between rounded-xl px-3 py-2.5 text-xs border transition-all duration-140",
         r.done
-          ? "bg-slate-900/40 border-white/5 text-slate-500"
-          : "bg-slate-800/40 border-white/10 text-slate-100 hover:border-white/20 shadow-xs",
+          ? "bg-[#14161D]/40 border-white/5 text-[#8B90A0]"
+          : "bg-[#262A35]/60 border-white/5 text-[#F4F5F7] hover:border-white/15 shadow-xs",
       )}
     >
       <div className="min-w-0 flex-1 space-y-0.5">
         <div className="flex items-center gap-1.5">
           <span className="text-xs">{r.done ? "✓" : "⏱"}</span>
-          <p className={cn("font-medium truncate text-xs", r.done && "line-through text-slate-500")}>
+          <p className={cn("font-medium truncate text-xs", r.done && "line-through text-[#8B90A0]")}>
             {r.title}
           </p>
           {r.pinToScreen && !r.done ? (
-            <span className="bg-amber-500/15 text-amber-300 text-[10px] px-1.5 py-0.2 rounded font-semibold border border-amber-500/30">
+            <span className="bg-[#F5A623]/20 text-[#F5A623] text-[10px] px-1.5 py-0.2 rounded-md font-semibold border border-[#F5A623]/30">
               Ghim Desktop
             </span>
           ) : null}
         </div>
-        <p className="font-mono text-xs font-semibold text-amber-400">
+        <p className="font-mono text-xs font-semibold text-[#F5A623] tabular-nums">
           {r.done ? "Đã xong" : `Còn lại: ${formatCountdown(diff)}`}
         </p>
       </div>
@@ -196,18 +196,18 @@ function HubTimerRow({
               className={cn(
                 "p-1.5 rounded-lg border transition-colors cursor-pointer text-xs",
                 r.pinToScreen
-                  ? "bg-amber-500/20 text-amber-300 border-amber-500/40"
-                  : "bg-slate-900/50 hover:bg-white/10 text-slate-400 border-white/10",
+                  ? "bg-[#F5A623]/20 text-[#F5A623] border-[#F5A623]/40"
+                  : "bg-[#14161D] hover:bg-white/10 text-[#8B90A0] border-white/10",
               )}
             >
-              <Pin className={cn("size-3", r.pinToScreen && "fill-amber-400 text-amber-400")} />
+              <Pin className={cn("size-3", r.pinToScreen && "fill-[#F5A623] text-[#F5A623]")} />
             </button>
             <Button
               size="sm"
               variant="outline"
               type="button"
               onClick={() => onFire(r.id)}
-              className="text-[10px] h-6.5 px-2 border-white/10 bg-slate-900/50 hover:bg-amber-500/20 hover:text-amber-300 cursor-pointer"
+              className="text-[10px] h-6.5 px-2 border-white/10 bg-[#14161D] hover:bg-[#F5A623]/20 hover:text-[#F5A623] cursor-pointer"
             >
               Báo ngay
             </Button>
@@ -218,7 +218,7 @@ function HubTimerRow({
             variant="ghost"
             type="button"
             onClick={() => onComplete(r.id)}
-            className="text-[10px] h-6.5 px-2 hover:bg-white/10 text-slate-400 cursor-pointer"
+            className="text-[10px] h-6.5 px-2 hover:bg-white/10 text-[#8B90A0] cursor-pointer"
           >
             Đóng
           </Button>
@@ -227,7 +227,7 @@ function HubTimerRow({
           type="button"
           onClick={() => onRemove(r.id)}
           title="Xóa hẹn giờ"
-          className="p-1.5 rounded-lg hover:bg-red-500/20 text-slate-400 hover:text-red-400 transition-colors cursor-pointer"
+          className="p-1.5 rounded-lg hover:bg-red-500/20 text-[#8B90A0] hover:text-[#EF4444] transition-colors cursor-pointer"
         >
           <Trash2 className="size-3" />
         </button>
@@ -391,9 +391,9 @@ export function Hub() {
   return (
     <section
       className={cn(
-        "interactive-el fixed z-[90] flex flex-col overflow-hidden bg-slate-900/90 text-slate-100 shadow-[0_24px_60px_rgba(0,0,0,0.75)] border border-white/10 rounded-2xl select-none backdrop-blur-2xl",
+        "interactive-el fixed z-[90] flex flex-col overflow-hidden bg-[#1D2029]/95 text-[#F4F5F7] shadow-[0_24px_60px_rgba(0,0,0,0.75)] border border-white/6 rounded-2xl select-none backdrop-blur-2xl",
         "w-[calc(100vw-1.5rem)] max-w-[480px] h-[580px] max-h-[calc(100vh-2rem)]",
-        isDragging && "ring-1 ring-amber-500/50 shadow-[0_30px_70px_rgba(0,0,0,0.85)]",
+        isDragging && "ring-1 ring-[#F5A623]/50 shadow-[0_30px_70px_rgba(0,0,0,0.85)]",
       )}
       style={
         pos
@@ -418,18 +418,18 @@ export function Hub() {
         onPointerMove={handlePointerMoveHeader}
         onPointerUp={handlePointerUpHeader}
         className={cn(
-          "flex items-center justify-between px-4 py-2.5 border-b border-white/10 bg-slate-950/40 cursor-grab active:cursor-grabbing transition-colors",
-          isDragging && "bg-slate-950/60",
+          "flex items-center justify-between px-4 py-2.5 border-b border-white/6 bg-[#14161D]/50 cursor-grab active:cursor-grabbing transition-colors",
+          isDragging && "bg-[#14161D]/80",
         )}
         title="Kéo thả để di chuyển bảng cài đặt"
       >
         <div className="flex items-center gap-2 min-w-0">
-          <div className="flex items-center justify-center size-6 rounded-md bg-white/5 text-slate-400 shrink-0 border border-white/5">
+          <div className="flex items-center justify-center size-6 rounded-md bg-white/5 text-[#8B90A0] shrink-0 border border-white/5">
             <GripHorizontal className="size-3.5" />
           </div>
           <div className="flex items-center gap-1.5 min-w-0">
             <span className="text-sm">🦊</span>
-            <p className="font-semibold text-xs tracking-tight text-slate-100">
+            <p className="font-semibold text-xs tracking-tight text-[#F4F5F7]">
               Lumen Settings
             </p>
           </div>
@@ -439,7 +439,7 @@ export function Hub() {
           <button
             type="button"
             onClick={handleResetPosition}
-            className="flex size-6.5 items-center justify-center rounded-lg hover:bg-white/10 cursor-pointer transition-colors text-slate-400 hover:text-slate-200"
+            className="flex size-6.5 items-center justify-center rounded-lg hover:bg-white/10 cursor-pointer transition-colors text-[#8B90A0] hover:text-white"
             title="Đặt lại vị trí giữa màn hình"
             aria-label="Đặt lại vị trí"
           >
@@ -448,7 +448,7 @@ export function Hub() {
           <button
             type="button"
             onClick={() => setHubOpen(false)}
-            className="flex size-6.5 items-center justify-center rounded-lg hover:bg-red-500/20 hover:text-red-400 cursor-pointer transition-colors text-slate-400"
+            className="flex size-6.5 items-center justify-center rounded-lg hover:bg-red-500/20 hover:text-[#EF4444] cursor-pointer transition-colors text-[#8B90A0]"
             aria-label={dict.close}
             title={dict.close}
           >
@@ -463,37 +463,37 @@ export function Hub() {
         onValueChange={setActiveTab}
         className="flex min-h-0 flex-1 flex-col"
       >
-        <div className="px-3 pt-2.5 pb-2 bg-slate-950/20 border-b border-white/5">
-          <TabsList className="grid grid-cols-4 bg-slate-950/60 p-0.5 rounded-xl h-8.5 border border-white/10">
+        <div className="px-3 pt-2.5 pb-2 bg-[#14161D]/30 border-b border-white/5">
+          <TabsList className="grid grid-cols-4 bg-[#14161D] p-0.5 rounded-xl h-8.5 border border-white/6">
             <TabsTrigger
               value="remind"
-              className="text-[11px] font-semibold rounded-lg transition-all data-[state=active]:bg-amber-500/20 data-[state=active]:text-amber-300 data-[state=active]:border data-[state=active]:border-amber-500/30 flex items-center justify-center gap-1 text-slate-400"
+              className="text-[11px] font-semibold rounded-lg transition-all duration-180 data-[state=active]:bg-[#F5A623] data-[state=active]:text-[#14161D] data-[state=active]:shadow-sm flex items-center justify-center gap-1 text-[#8B90A0]"
             >
               <span>⏱</span>
               <span>Hẹn giờ</span>
               {activeTimersCount > 0 ? (
-                <span className="size-3.5 rounded-full bg-amber-500 text-slate-950 text-[9px] flex items-center justify-center font-bold">
+                <span className="size-3.5 rounded-full bg-[#14161D] text-[#F5A623] text-[9px] flex items-center justify-center font-bold">
                   {activeTimersCount}
                 </span>
               ) : null}
             </TabsTrigger>
             <TabsTrigger
               value="pip"
-              className="text-[11px] font-semibold rounded-lg transition-all data-[state=active]:bg-amber-500/20 data-[state=active]:text-amber-300 data-[state=active]:border data-[state=active]:border-amber-500/30 flex items-center justify-center gap-1 text-slate-400"
+              className="text-[11px] font-semibold rounded-lg transition-all duration-180 data-[state=active]:bg-[#F5A623] data-[state=active]:text-[#14161D] data-[state=active]:shadow-sm flex items-center justify-center gap-1 text-[#8B90A0]"
             >
               <span>🐾</span>
               <span>Thú cưng</span>
             </TabsTrigger>
             <TabsTrigger
               value="look"
-              className="text-[11px] font-semibold rounded-lg transition-all data-[state=active]:bg-amber-500/20 data-[state=active]:text-amber-300 data-[state=active]:border data-[state=active]:border-amber-500/30 flex items-center justify-center gap-1 text-slate-400"
+              className="text-[11px] font-semibold rounded-lg transition-all duration-180 data-[state=active]:bg-[#F5A623] data-[state=active]:text-[#14161D] data-[state=active]:shadow-sm flex items-center justify-center gap-1 text-[#8B90A0]"
             >
               <span>🎨</span>
               <span>Giao diện</span>
             </TabsTrigger>
             <TabsTrigger
               value="about"
-              className="text-[11px] font-semibold rounded-lg transition-all data-[state=active]:bg-amber-500/20 data-[state=active]:text-amber-300 data-[state=active]:border data-[state=active]:border-amber-500/30 flex items-center justify-center gap-1 text-slate-400"
+              className="text-[11px] font-semibold rounded-lg transition-all duration-180 data-[state=active]:bg-[#F5A623] data-[state=active]:text-[#14161D] data-[state=active]:shadow-sm flex items-center justify-center gap-1 text-[#8B90A0]"
             >
               <span>⚙️</span>
               <span>Hệ thống</span>
@@ -505,18 +505,18 @@ export function Hub() {
           {/* TAB 1: SMART TIMERS & COUNTDOWN */}
           <TabsContent value="remind" className="space-y-3 mt-0">
             {/* Quick Smart Input Box */}
-            <div className="rounded-xl bg-slate-800/40 p-3 border border-white/10 space-y-2.5 shadow-xs">
+            <div className="rounded-2xl bg-[#262A35]/50 p-3 border border-white/6 space-y-2.5 shadow-xs">
               <form onSubmit={handleSmartSubmit} className="space-y-2">
                 <div className="flex gap-1.5">
                   <Input
                     placeholder="Ví dụ: xây nhà COC : 2g14p, Nấu canh : 15p..."
                     value={smartInput}
                     onChange={(e) => setSmartInput(e.target.value)}
-                    className="bg-slate-950/60 border-white/10 focus:border-amber-500/50 text-xs text-slate-100 placeholder:text-slate-500 h-8 rounded-lg"
+                    className="bg-[#14161D] border-white/10 focus:border-[#F5A623]/60 text-xs text-[#F4F5F7] placeholder:text-[#8B90A0]/60 h-8 rounded-xl"
                   />
                   <Button
                     type="submit"
-                    className="cursor-pointer font-semibold bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs px-3 h-8 shadow-xs shrink-0 rounded-lg transition-colors"
+                    className="cursor-pointer font-semibold bg-[#F5A623] hover:bg-[#D6871A] text-[#14161D] text-xs px-3 h-8 shadow-xs shrink-0 rounded-xl transition-colors duration-140"
                   >
                     + Đặt giờ
                   </Button>
@@ -535,7 +535,7 @@ export function Hub() {
                       key={preset.label}
                       type="button"
                       onClick={() => setSmartInput(preset.val)}
-                      className="text-[10px] px-2 py-0.5 rounded-md bg-slate-900/60 hover:bg-amber-500/15 hover:text-amber-300 text-slate-300 border border-white/10 transition-colors cursor-pointer"
+                      className="text-[10px] px-2.5 py-0.5 rounded-full bg-[#14161D] hover:bg-[#F5A623]/20 hover:text-[#F5A623] text-[#8B90A0] border border-white/6 transition-colors duration-120 cursor-pointer"
                     >
                       {preset.label}
                     </button>
@@ -543,23 +543,23 @@ export function Hub() {
                 </div>
 
                 <div className="flex items-center justify-between pt-1.5 border-t border-white/5">
-                  <span className="text-[11px] text-slate-400">Ghim đồng hồ nổi trên Desktop</span>
+                  <span className="text-[11px] text-[#8B90A0]">Ghim đồng hồ nổi trên Desktop</span>
                   <Switch checked={pinToDesktop} onCheckedChange={setPinToDesktop} />
                 </div>
               </form>
             </div>
 
             {/* Alarm Audio Customizer */}
-            <div className="rounded-xl bg-slate-800/40 p-3 border border-white/10 space-y-2.5 shadow-xs">
+            <div className="rounded-2xl bg-[#262A35]/50 p-3 border border-white/6 space-y-2.5 shadow-xs">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-200">
-                  <Volume2 className="size-3.5 text-amber-400" />
+                <div className="flex items-center gap-1.5 text-xs font-semibold text-[#F4F5F7]">
+                  <Volume2 className="size-3.5 text-[#F5A623]" />
                   <span>Chuông báo thức</span>
                 </div>
                 <button
                   type="button"
                   onClick={handleTestAlarm}
-                  className="flex items-center gap-1 text-[11px] font-semibold text-amber-300 hover:text-amber-200 bg-amber-500/15 border border-amber-500/30 px-2 py-0.5 rounded-md cursor-pointer transition-colors"
+                  className="flex items-center gap-1 text-[11px] font-semibold text-[#F5A623] hover:text-[#F4F5F7] bg-[#F5A623]/15 border border-[#F5A623]/30 px-2 py-0.5 rounded-lg cursor-pointer transition-colors duration-120"
                 >
                   <Play className="size-2.5 fill-current" />
                   <span>Thử chuông</span>
@@ -567,8 +567,8 @@ export function Hub() {
               </div>
 
               {/* Volume Slider */}
-              <div className="flex items-center gap-2.5 bg-slate-950/40 px-2.5 py-1.5 rounded-lg border border-white/5">
-                <span className="text-[11px] text-slate-400 shrink-0">Âm lượng</span>
+              <div className="flex items-center gap-2.5 bg-[#14161D] px-2.5 py-1.5 rounded-xl border border-white/5">
+                <span className="text-[11px] text-[#8B90A0] shrink-0">Âm lượng</span>
                 <input
                   type="range"
                   min="10"
@@ -576,51 +576,54 @@ export function Hub() {
                   step="5"
                   value={alarmSettings.volume ?? 100}
                   onChange={(e) => setAlarmSettings({ volume: parseInt(e.target.value, 10) })}
-                  className="w-full h-1 bg-slate-700 rounded appearance-none cursor-pointer accent-amber-500"
+                  className="w-full h-1 bg-[#262A35] rounded-full appearance-none cursor-pointer accent-[#F5A623]"
                 />
-                <span className="font-mono text-[11px] font-semibold text-amber-400 shrink-0">
+                <span className="font-mono text-[11px] font-semibold text-[#F5A623] shrink-0 tabular-nums">
                   {alarmSettings.volume ?? 100}%
                 </span>
               </div>
 
               {/* Alarm Tones Selector */}
               <div className="grid grid-cols-2 gap-1.5">
-                {ALARM_TONES.map((tone) => (
-                  <button
-                    key={tone.id}
-                    type="button"
-                    onClick={() => {
-                      setAlarmSettings({ tone: tone.id });
-                      sounds.playAlarmTone(tone.id, alarmSettings.volume ?? 100);
-                    }}
-                    className={cn(
-                      "flex items-center justify-between rounded-lg bg-slate-950/40 p-2 text-left border cursor-pointer transition-all",
-                      (alarmSettings.tone || "bell_arpeggio") === tone.id
-                        ? "border-amber-500/50 bg-amber-500/10 text-amber-200"
-                        : "border-white/5 hover:border-white/15 text-slate-300",
-                    )}
-                  >
-                    <div className="flex items-center gap-1.5 min-w-0">
-                      <span className="text-sm shrink-0">{tone.icon}</span>
-                      <p className="text-[11px] font-medium truncate">{tone.name}</p>
-                    </div>
-                    {(alarmSettings.tone || "bell_arpeggio") === tone.id ? (
-                      <Check className="size-3 text-amber-400 shrink-0" />
-                    ) : null}
-                  </button>
-                ))}
+                {ALARM_TONES.map((tone) => {
+                  const isSelected = (alarmSettings.tone || "bell_arpeggio") === tone.id;
+                  return (
+                    <button
+                      key={tone.id}
+                      type="button"
+                      onClick={() => {
+                        setAlarmSettings({ tone: tone.id });
+                        sounds.playAlarmTone(tone.id, alarmSettings.volume ?? 100);
+                      }}
+                      className={cn(
+                        "flex items-center justify-between rounded-xl p-2 text-left border cursor-pointer transition-all duration-140",
+                        isSelected
+                          ? "border-[#F5A623] bg-[#262A35] text-[#F4F5F7] shadow-xs"
+                          : "border-white/5 bg-[#14161D]/70 hover:border-white/15 text-[#8B90A0]",
+                      )}
+                    >
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <span className="text-sm shrink-0">{tone.icon}</span>
+                        <p className="text-[11px] font-medium truncate">{tone.name}</p>
+                      </div>
+                      {isSelected ? (
+                        <Check className="size-3 text-[#F5A623] shrink-0" />
+                      ) : null}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
             {/* Active Timers List */}
             <div className="space-y-1.5">
-              <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+              <p className="text-[10px] font-semibold text-[#8B90A0] uppercase tracking-wider">
                 Hẹn giờ đang chạy ({activeTimersCount})
               </p>
 
               {reminders.length === 0 ? (
-                <div className="rounded-xl bg-slate-800/20 p-4 text-center border border-white/5">
-                  <p className="text-[11px] text-slate-500">Chưa có hẹn giờ nào đang chạy.</p>
+                <div className="rounded-2xl bg-[#262A35]/30 p-4 text-center border border-white/5">
+                  <p className="text-[11px] text-[#8B90A0]">Chưa có hẹn giờ nào đang chạy.</p>
                 </div>
               ) : (
                 <div className="space-y-1.5">
@@ -641,10 +644,10 @@ export function Hub() {
 
           {/* TAB 2: VIRTUAL PET STUDIO & WARDROBE */}
           <TabsContent value="pip" className="space-y-3 mt-0">
-            <div className="flex items-center justify-between gap-3 rounded-xl bg-slate-800/40 px-3 py-2.5 border border-white/10">
+            <div className="flex items-center justify-between gap-3 rounded-2xl bg-[#262A35]/50 px-3 py-2.5 border border-white/6">
               <div>
-                <p className="text-xs font-semibold text-slate-100">{dict.pipStudio.enableCompanion}</p>
-                <p className="text-[10px] text-slate-400">{dict.pipStudio.enableDesc}</p>
+                <p className="text-xs font-semibold text-[#F4F5F7]">{dict.pipStudio.enableCompanion}</p>
+                <p className="text-[10px] text-[#8B90A0]">{dict.pipStudio.enableDesc}</p>
               </div>
               <Switch checked={pip.enabled} onCheckedChange={setPipEnabled} />
             </div>
@@ -652,9 +655,9 @@ export function Hub() {
             {pip.enabled && (
               <>
                 {/* Pet Stage & Happiness Card */}
-                <div className="rounded-xl bg-slate-800/40 p-3 border border-white/10 space-y-2.5 shadow-xs">
+                <div className="rounded-2xl bg-[#262A35]/50 p-3 border border-white/6 space-y-2.5 shadow-xs">
                   <div className="flex items-center gap-3">
-                    <div className="flex size-16 items-center justify-center rounded-xl bg-slate-950/60 border border-white/10 shrink-0 relative overflow-hidden">
+                    <div className="flex size-16 items-center justify-center rounded-xl bg-[#14161D] border border-white/10 shrink-0 relative overflow-hidden">
                       <PipFigure
                         walking={false}
                         carrying={pip.carrying}
@@ -668,18 +671,18 @@ export function Hub() {
                     </div>
                     <div className="flex-1 space-y-1.5">
                       <div className="flex items-center justify-between text-xs">
-                        <span className="text-[11px] font-medium text-slate-400">Vui vẻ (Happiness)</span>
-                        <span className="font-mono text-xs font-bold text-amber-400">{pip.happiness}%</span>
+                        <span className="text-[11px] font-medium text-[#8B90A0]">Vui vẻ (Happiness)</span>
+                        <span className="font-mono text-xs font-bold text-[#F5A623] tabular-nums">{pip.happiness}%</span>
                       </div>
-                      <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-950/60">
+                      <div className="h-1.5 w-full overflow-hidden rounded-full bg-[#14161D]">
                         <div
-                          className="h-full bg-gradient-to-r from-amber-500 to-emerald-400 transition-all duration-500"
+                          className="h-full bg-gradient-to-r from-[#F5A623] to-[#3FAE6C] transition-all duration-500"
                           style={{ width: `${pip.happiness}%` }}
                         />
                       </div>
-                      <div className="flex items-center justify-between text-[10px] text-slate-400">
-                        <span>🍪 Đã ăn: <b className="text-slate-200">{pip.treatsEaten}</b></span>
-                        <span>✨ Mood: <b className="capitalize text-amber-300">{pip.mood}</b></span>
+                      <div className="flex items-center justify-between text-[10px] text-[#8B90A0]">
+                        <span>🍪 Đã ăn: <b className="text-[#F4F5F7]">{pip.treatsEaten}</b></span>
+                        <span>✨ Mood: <b className="capitalize text-[#F5A623]">{pip.mood}</b></span>
                       </div>
                     </div>
                   </div>
@@ -693,7 +696,7 @@ export function Hub() {
                         triggerThrowBall();
                         setHubOpen(false);
                       }}
-                      className="flex items-center justify-center gap-1.5 cursor-pointer border-lime-500/30 bg-lime-500/10 text-lime-300 hover:bg-lime-500/20 h-7 text-[11px] font-semibold"
+                      className="flex items-center justify-center gap-1.5 cursor-pointer border-[#3FAE6C]/30 bg-[#3FAE6C]/10 text-[#3FAE6C] hover:bg-[#3FAE6C]/20 h-7 text-[11px] font-semibold rounded-xl"
                     >
                       <span>🎾</span>
                       <span>Ném bóng</span>
@@ -702,7 +705,7 @@ export function Hub() {
                       variant="outline"
                       size="sm"
                       onClick={petPip}
-                      className="flex items-center justify-center gap-1.5 cursor-pointer border-rose-500/30 bg-rose-500/10 text-rose-300 hover:bg-rose-500/20 h-7 text-[11px] font-semibold"
+                      className="flex items-center justify-center gap-1.5 cursor-pointer border-[#E8779A]/30 bg-[#E8779A]/10 text-[#E8779A] hover:bg-[#E8779A]/20 h-7 text-[11px] font-semibold rounded-xl"
                     >
                       <Heart className="size-3 fill-current" />
                       <span>{dict.pipStudio.petPip}</span>
@@ -711,7 +714,7 @@ export function Hub() {
                       variant="outline"
                       size="sm"
                       onClick={feedPip}
-                      className="flex items-center justify-center gap-1.5 cursor-pointer border-amber-500/30 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20 h-7 text-[11px] font-semibold"
+                      className="flex items-center justify-center gap-1.5 cursor-pointer border-[#F5A623]/30 bg-[#F5A623]/10 text-[#F5A623] hover:bg-[#F5A623]/20 h-7 text-[11px] font-semibold rounded-xl"
                     >
                       <Cookie className="size-3 fill-current" />
                       <span>{dict.pipStudio.feedSnack}</span>
@@ -720,7 +723,7 @@ export function Hub() {
                       variant="outline"
                       size="sm"
                       onClick={dancePip}
-                      className="flex items-center justify-center gap-1.5 cursor-pointer border-indigo-500/30 bg-indigo-500/10 text-indigo-300 hover:bg-indigo-500/20 h-7 text-[11px] font-semibold"
+                      className="flex items-center justify-center gap-1.5 cursor-pointer border-indigo-400/30 bg-indigo-400/10 text-indigo-300 hover:bg-indigo-400/20 h-7 text-[11px] font-semibold rounded-xl"
                     >
                       <Sparkles className="size-3" />
                       <span>{dict.pipStudio.danceParty}</span>
@@ -730,7 +733,7 @@ export function Hub() {
 
                 {/* Pet Species */}
                 <div className="space-y-1.5">
-                  <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                  <p className="text-[10px] font-semibold text-[#8B90A0] uppercase tracking-wider">
                     Loài thú cưng (Pet Species)
                   </p>
                   <div className="grid grid-cols-1 gap-1">
@@ -743,10 +746,10 @@ export function Hub() {
                           sounds.playPop(560);
                         }}
                         className={cn(
-                          "flex items-center justify-between rounded-xl bg-slate-800/30 px-3 py-1.5 text-left border transition-all cursor-pointer",
+                          "flex items-center justify-between rounded-xl px-3 py-1.5 text-left border transition-all duration-120 cursor-pointer",
                           pip.petType === pt.id
-                            ? "border-amber-500/50 bg-amber-500/10 text-amber-200"
-                            : "border-white/5 hover:border-white/15 text-slate-300",
+                            ? "border-[#F5A623]/60 bg-[#F5A623]/15 text-[#F4F5F7]"
+                            : "border-white/5 bg-[#262A35]/30 hover:border-white/15 text-[#8B90A0]",
                         )}
                       >
                         <div className="flex items-center gap-2 min-w-0">
@@ -754,7 +757,7 @@ export function Hub() {
                           <span className="text-xs font-semibold">{pt.name}</span>
                         </div>
                         {pip.petType === pt.id ? (
-                          <span className="text-[10px] bg-amber-500/20 text-amber-300 px-1.5 py-0.2 rounded font-semibold border border-amber-500/30">
+                          <span className="text-[10px] bg-[#F5A623]/20 text-[#F5A623] px-1.5 py-0.2 rounded-md font-semibold border border-[#F5A623]/30">
                             Active
                           </span>
                         ) : null}
@@ -765,7 +768,7 @@ export function Hub() {
 
                 {/* Pet Wardrobe: Hats */}
                 <div className="space-y-1.5">
-                  <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                  <p className="text-[10px] font-semibold text-[#8B90A0] uppercase tracking-wider">
                     🎩 Mũ & Phụ kiện đầu
                   </p>
                   <div className="grid grid-cols-3 gap-1">
@@ -778,10 +781,10 @@ export function Hub() {
                           sounds.playPop(580);
                         }}
                         className={cn(
-                          "flex items-center gap-1.5 rounded-lg bg-slate-800/30 p-1.5 text-left border transition-all cursor-pointer text-xs",
+                          "flex items-center gap-1.5 rounded-xl p-1.5 text-left border transition-all duration-120 cursor-pointer text-xs",
                           (pip.hat || "none") === h.id
-                            ? "border-amber-500/50 bg-amber-500/10 text-amber-300 font-semibold"
-                            : "border-white/5 hover:border-white/15 text-slate-400",
+                            ? "border-[#F5A623]/60 bg-[#F5A623]/15 text-[#F5A623] font-semibold"
+                            : "border-white/5 bg-[#262A35]/30 hover:border-white/15 text-[#8B90A0]",
                         )}
                       >
                         <span className="text-sm">{h.icon}</span>
@@ -793,7 +796,7 @@ export function Hub() {
 
                 {/* Pet Wardrobe: Outfits */}
                 <div className="space-y-1.5">
-                  <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                  <p className="text-[10px] font-semibold text-[#8B90A0] uppercase tracking-wider">
                     🎒 Trang phục & Đồ đeo
                   </p>
                   <div className="grid grid-cols-3 gap-1">
@@ -806,10 +809,10 @@ export function Hub() {
                           sounds.playPop(580);
                         }}
                         className={cn(
-                          "flex items-center gap-1.5 rounded-lg bg-slate-800/30 p-1.5 text-left border transition-all cursor-pointer text-xs",
+                          "flex items-center gap-1.5 rounded-xl p-1.5 text-left border transition-all duration-120 cursor-pointer text-xs",
                           (pip.bodyItem || "backpack") === b.id
-                            ? "border-amber-500/50 bg-amber-500/10 text-amber-300 font-semibold"
-                            : "border-white/5 hover:border-white/15 text-slate-400",
+                            ? "border-[#F5A623]/60 bg-[#F5A623]/15 text-[#F5A623] font-semibold"
+                            : "border-white/5 bg-[#262A35]/30 hover:border-white/15 text-[#8B90A0]",
                         )}
                       >
                         <span className="text-sm">{b.icon}</span>
@@ -826,7 +829,7 @@ export function Hub() {
           <TabsContent value="look" className="space-y-3 mt-0">
             {/* Language Selector */}
             <div className="space-y-1.5">
-              <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+              <p className="text-[10px] font-semibold text-[#8B90A0] uppercase tracking-wider">
                 Ngôn ngữ (Language)
               </p>
               <div className="grid grid-cols-2 gap-2">
@@ -837,17 +840,17 @@ export function Hub() {
                     sounds.playPop(520);
                   }}
                   className={cn(
-                    "flex items-center justify-between rounded-xl bg-slate-800/30 px-3 py-2 text-left border cursor-pointer transition-all",
+                    "flex items-center justify-between rounded-xl px-3 py-2 text-left border cursor-pointer transition-all duration-120",
                     lang === "vi"
-                      ? "border-amber-500/50 bg-amber-500/10 text-amber-200"
-                      : "border-white/5 hover:border-white/15 text-slate-400",
+                      ? "border-[#F5A623]/60 bg-[#F5A623]/15 text-[#F4F5F7]"
+                      : "border-white/5 bg-[#262A35]/30 hover:border-white/15 text-[#8B90A0]",
                   )}
                 >
                   <div className="flex items-center gap-1.5">
                     <span>🇻🇳</span>
                     <span className="text-xs font-semibold">Tiếng Việt</span>
                   </div>
-                  {lang === "vi" ? <span className="size-1.5 rounded-full bg-amber-400" /> : null}
+                  {lang === "vi" ? <span className="size-1.5 rounded-full bg-[#F5A623]" /> : null}
                 </button>
                 <button
                   type="button"
@@ -856,29 +859,29 @@ export function Hub() {
                     sounds.playPop(520);
                   }}
                   className={cn(
-                    "flex items-center justify-between rounded-xl bg-slate-800/30 px-3 py-2 text-left border cursor-pointer transition-all",
+                    "flex items-center justify-between rounded-xl px-3 py-2 text-left border cursor-pointer transition-all duration-120",
                     lang === "en"
-                      ? "border-amber-500/50 bg-amber-500/10 text-amber-200"
-                      : "border-white/5 hover:border-white/15 text-slate-400",
+                      ? "border-[#F5A623]/60 bg-[#F5A623]/15 text-[#F4F5F7]"
+                      : "border-white/5 bg-[#262A35]/30 hover:border-white/15 text-[#8B90A0]",
                   )}
                 >
                   <div className="flex items-center gap-1.5">
                     <span>🇬🇧</span>
                     <span className="text-xs font-semibold">English</span>
                   </div>
-                  {lang === "en" ? <span className="size-1.5 rounded-full bg-amber-400" /> : null}
+                  {lang === "en" ? <span className="size-1.5 rounded-full bg-[#F5A623]" /> : null}
                 </button>
               </div>
             </div>
 
             {/* Themes Grid */}
             <div className="space-y-1.5">
-              <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+              <p className="text-[10px] font-semibold text-[#8B90A0] uppercase tracking-wider">
                 Chủ đề không gian
               </p>
               <div className="space-y-1">
                 {THEMES.map((t) => {
-                  const preview = THEME_PREVIEWS[t.id] || { bg: "bg-slate-800", accent: "bg-amber-500", border: "border-slate-700" };
+                  const preview = THEME_PREVIEWS[t.id] || { bg: "bg-[#262A35]", accent: "bg-[#F5A623]", border: "border-white/10" };
                   return (
                     <button
                       key={t.id}
@@ -888,10 +891,10 @@ export function Hub() {
                         sounds.playPop(540);
                       }}
                       className={cn(
-                        "flex w-full items-center justify-between rounded-xl bg-slate-800/30 px-3 py-2 text-left border cursor-pointer transition-all",
+                        "flex w-full items-center justify-between rounded-xl px-3 py-2 text-left border cursor-pointer transition-all duration-120",
                         theme === t.id
-                          ? "border-amber-500/50 bg-amber-500/10 text-amber-200"
-                          : "border-white/5 hover:border-white/15 text-slate-300",
+                          ? "border-[#F5A623]/60 bg-[#F5A623]/15 text-[#F4F5F7]"
+                          : "border-white/5 bg-[#262A35]/30 hover:border-white/15 text-[#8B90A0]",
                       )}
                     >
                       <div className="flex items-center gap-2.5">
@@ -901,7 +904,7 @@ export function Hub() {
                         <span className="text-xs font-medium">{t.name}</span>
                       </div>
                       {theme === t.id ? (
-                        <span className="text-[10px] bg-amber-500/20 text-amber-300 px-1.5 py-0.2 rounded font-semibold border border-amber-500/30">
+                        <span className="text-[10px] bg-[#F5A623]/20 text-[#F5A623] px-1.5 py-0.2 rounded-md font-semibold border border-[#F5A623]/30">
                           Active
                         </span>
                       ) : null}
@@ -913,18 +916,18 @@ export function Hub() {
 
             {/* Always on top & audio switches */}
             <div className="space-y-1.5">
-              <div className="flex items-center justify-between gap-3 rounded-xl bg-slate-800/30 px-3 py-2.5 border border-white/5">
+              <div className="flex items-center justify-between gap-3 rounded-2xl bg-[#262A35]/30 px-3 py-2.5 border border-white/5">
                 <div>
-                  <p className="text-xs font-medium text-slate-200">{dict.look.alwaysOnTop}</p>
-                  <p className="text-[10px] text-slate-400">{dict.look.alwaysOnTopDesc}</p>
+                  <p className="text-xs font-medium text-[#F4F5F7]">{dict.look.alwaysOnTop}</p>
+                  <p className="text-[10px] text-[#8B90A0]">{dict.look.alwaysOnTopDesc}</p>
                 </div>
                 <Switch checked={alwaysOnTop} onCheckedChange={handleAlwaysOnTopChange} />
               </div>
 
-              <div className="flex items-center justify-between gap-3 rounded-xl bg-slate-800/30 px-3 py-2.5 border border-white/5">
+              <div className="flex items-center justify-between gap-3 rounded-2xl bg-[#262A35]/30 px-3 py-2.5 border border-white/5">
                 <div>
-                  <p className="text-xs font-medium text-slate-200">{dict.look.proceduralAudio}</p>
-                  <p className="text-[10px] text-slate-400">{dict.look.audioDesc}</p>
+                  <p className="text-xs font-medium text-[#F4F5F7]">{dict.look.proceduralAudio}</p>
+                  <p className="text-[10px] text-[#8B90A0]">{dict.look.audioDesc}</p>
                 </div>
                 <Switch checked={pip.soundEnabled} onCheckedChange={(val) => toggleSound(val)} />
               </div>
@@ -932,38 +935,38 @@ export function Hub() {
           </TabsContent>
 
           {/* TAB 4: SYSTEM & TELEMETRY */}
-          <TabsContent value="about" className="space-y-3 text-xs text-slate-400 mt-0">
+          <TabsContent value="about" className="space-y-3 text-xs text-[#8B90A0] mt-0">
             {/* Live Performance Telemetry */}
-            <div className="rounded-xl bg-slate-800/40 p-3 space-y-2 border border-white/10">
-              <p className="font-semibold text-slate-200 flex items-center gap-1.5 text-xs">
-                <Activity className="size-3 text-emerald-400" />
+            <div className="rounded-2xl bg-[#262A35]/50 p-3 space-y-2 border border-white/6">
+              <p className="font-semibold text-[#F4F5F7] flex items-center gap-1.5 text-xs">
+                <Activity className="size-3 text-[#3FAE6C]" />
                 <span>Giám sát hiệu năng</span>
               </p>
               <div className="grid grid-cols-3 gap-2 text-center font-mono">
-                <div className="bg-slate-950/50 p-2 rounded-lg border border-white/5">
-                  <p className="text-[9px] text-slate-500">RAM</p>
-                  <p className="text-xs font-bold text-emerald-400">~38 MB</p>
+                <div className="bg-[#14161D] p-2 rounded-xl border border-white/5">
+                  <p className="text-[9px] text-[#8B90A0]">RAM</p>
+                  <p className="text-xs font-bold text-[#3FAE6C] mt-0.5">~38 MB</p>
                 </div>
-                <div className="bg-slate-950/50 p-2 rounded-lg border border-white/5">
-                  <p className="text-[9px] text-slate-500">FPS</p>
-                  <p className="text-xs font-bold text-amber-400">120 FPS</p>
+                <div className="bg-[#14161D] p-2 rounded-xl border border-white/5">
+                  <p className="text-[9px] text-[#8B90A0]">FPS</p>
+                  <p className="text-xs font-bold text-[#F5A623] mt-0.5">120 FPS</p>
                 </div>
-                <div className="bg-slate-950/50 p-2 rounded-lg border border-white/5">
-                  <p className="text-[9px] text-slate-500">CPU</p>
-                  <p className="text-xs font-bold text-sky-400">&lt; 0.4%</p>
+                <div className="bg-[#14161D] p-2 rounded-xl border border-white/5">
+                  <p className="text-[9px] text-[#8B90A0]">CPU</p>
+                  <p className="text-xs font-bold text-sky-400 mt-0.5">&lt; 0.4%</p>
                 </div>
               </div>
             </div>
 
             {/* Local Backup */}
-            <div className="rounded-xl bg-slate-800/40 p-3 space-y-2 border border-white/10">
-              <p className="font-semibold text-slate-200 text-xs">Sao lưu & Khôi phục</p>
+            <div className="rounded-2xl bg-[#262A35]/50 p-3 space-y-2 border border-white/6">
+              <p className="font-semibold text-[#F4F5F7] text-xs">Sao lưu & Khôi phục</p>
               <div className="flex gap-2">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={handleExportBackup}
-                  className="flex-1 flex items-center justify-center gap-1.5 cursor-pointer border-white/10 bg-slate-950/50 text-slate-200 hover:bg-white/10 h-7.5 text-xs"
+                  className="flex-1 flex items-center justify-center gap-1.5 cursor-pointer border-white/10 bg-[#14161D] text-[#F4F5F7] hover:bg-white/10 h-7.5 text-xs rounded-xl"
                 >
                   <Download className="size-3" />
                   <span>Xuất JSON</span>
@@ -972,7 +975,7 @@ export function Hub() {
                   variant="outline"
                   size="sm"
                   onClick={() => fileInputRef.current?.click()}
-                  className="flex-1 flex items-center justify-center gap-1.5 cursor-pointer border-white/10 bg-slate-950/50 text-slate-200 hover:bg-white/10 h-7.5 text-xs"
+                  className="flex-1 flex items-center justify-center gap-1.5 cursor-pointer border-white/10 bg-[#14161D] text-[#F4F5F7] hover:bg-white/10 h-7.5 text-xs rounded-xl"
                 >
                   <Upload className="size-3" />
                   <span>Nhập JSON</span>
@@ -988,24 +991,24 @@ export function Hub() {
             </div>
 
             {/* Shortcuts */}
-            <div className="rounded-xl bg-slate-800/40 p-3 space-y-1.5 border border-white/10">
-              <p className="font-semibold text-slate-200 text-xs mb-1">Phím tắt nhanh:</p>
+            <div className="rounded-2xl bg-[#262A35]/50 p-3 space-y-1.5 border border-white/6">
+              <p className="font-semibold text-[#F4F5F7] text-xs mb-1">Phím tắt nhanh:</p>
               <div className="space-y-1 text-[11px]">
                 <div className="flex items-center justify-between">
                   <span>Ghi chú nhanh:</span>
-                  <span className="font-mono bg-slate-950/60 px-1.5 py-0.2 rounded border border-white/5 text-amber-300 font-semibold">
+                  <span className="font-mono bg-[#14161D] px-1.5 py-0.2 rounded-md border border-white/5 text-[#F5A623] font-semibold">
                     Ctrl + Shift + N
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span>Hẹn giờ nhanh:</span>
-                  <span className="font-mono bg-slate-950/60 px-1.5 py-0.2 rounded border border-white/5 text-amber-300 font-semibold">
+                  <span className="font-mono bg-[#14161D] px-1.5 py-0.2 rounded-md border border-white/5 text-[#F5A623] font-semibold">
                     Ctrl + Shift + T
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span>Đóng cửa sổ / Modal:</span>
-                  <span className="font-mono bg-slate-950/60 px-1.5 py-0.2 rounded border border-white/5 text-slate-300">
+                  <span className="font-mono bg-[#14161D] px-1.5 py-0.2 rounded-md border border-white/5 text-[#F4F5F7]">
                     Escape
                   </span>
                 </div>
@@ -1015,7 +1018,7 @@ export function Hub() {
             {/* Reset */}
             <Button
               variant="outline"
-              className="w-full cursor-pointer border-white/10 bg-slate-800/30 text-red-400 hover:bg-red-500/10 hover:text-red-300 text-xs h-8"
+              className="w-full cursor-pointer border-white/10 bg-[#262A35]/30 text-[#EF4444] hover:bg-red-500/10 hover:text-red-300 text-xs h-8 rounded-xl"
               type="button"
               onClick={resetDemo}
             >
