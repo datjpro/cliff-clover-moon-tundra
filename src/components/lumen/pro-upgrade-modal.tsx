@@ -103,9 +103,9 @@ export function ProUpgradeModal() {
   };
 
   return (
-    <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/65 backdrop-blur-md p-4 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 pointer-events-none animate-in fade-in duration-200">
       <div
-        className="relative w-full max-w-2xl overflow-hidden rounded-3xl border border-amber-500/30 bg-[#15171e]/95 text-stone-100 shadow-2xl shadow-amber-500/10 backdrop-blur-2xl"
+        className="interactive-el pointer-events-auto relative w-full max-w-2xl overflow-hidden rounded-3xl border border-amber-500/30 bg-[#15171e]/95 text-stone-100 shadow-2xl shadow-amber-500/10 backdrop-blur-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Glow Header Accent */}

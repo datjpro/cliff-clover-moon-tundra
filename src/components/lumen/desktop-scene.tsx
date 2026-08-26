@@ -321,11 +321,6 @@ export function DesktopScene() {
   useEffect(() => {
     if (!isDesktopApp()) return;
 
-    if (isAnyModalOpen) {
-      setIgnoreMouseEvents(false);
-      return;
-    }
-
     setIgnoreMouseEvents(true);
     let currentIgnore = true;
 
@@ -338,7 +333,7 @@ export function DesktopScene() {
       const isInteractive = Boolean(
         !isAtScreenBottomEdge &&
         target.closest(
-          "article, .interactive-el, section[role='dialog'], form, button, input, textarea, .group, [role='dialog'], [tabindex]",
+          "article, .interactive-el, section[role='dialog'], form, button, input, textarea, .group, [role='dialog'], [tabindex], .modal-content",
         ),
       );
       const shouldIgnore = !isInteractive;
@@ -350,7 +345,7 @@ export function DesktopScene() {
 
     window.addEventListener("mousemove", handlePointerMove, { passive: true });
     return () => window.removeEventListener("mousemove", handlePointerMove);
-  }, [isAnyModalOpen]);
+  }, []);
 
   // Global & In-App Keyboard Shortcuts
   useEffect(() => {

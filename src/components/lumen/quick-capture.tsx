@@ -39,18 +39,10 @@ export function QuickCapture() {
   };
 
   return (
-    <div className="fixed inset-0 z-[95] flex items-center justify-center p-4">
-      {/* Dimmed backdrop */}
-      <button
-        type="button"
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm cursor-pointer"
-        aria-label={dict.close}
-        onClick={() => setCaptureOpen(false)}
-      />
-
+    <div className="fixed inset-0 z-[95] flex items-center justify-center p-4 pointer-events-none">
       {/* Frosted Dialog */}
       <form
-        className="interactive-el relative z-10 w-full max-w-md rounded-2xl bg-[#1D2029]/95 p-5 shadow-[0_24px_60px_rgba(0,0,0,0.8)] border border-white/10 text-[#F4F5F7] backdrop-blur-2xl animate-in zoom-in-95 fade-in duration-140"
+        className="interactive-el pointer-events-auto relative z-10 w-full max-w-md rounded-2xl bg-[#1D2029]/95 p-5 shadow-[0_24px_60px_rgba(0,0,0,0.8)] border border-white/10 text-[#F4F5F7] backdrop-blur-2xl animate-in zoom-in-95 fade-in duration-140"
         onSubmit={(e) => {
           e.preventDefault();
           save();

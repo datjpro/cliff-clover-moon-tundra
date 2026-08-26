@@ -79,19 +79,11 @@ export function QuickTimer() {
   };
 
   return (
-    <div className="fixed inset-0 z-[95] flex items-center justify-center p-4">
-      {/* Dimmed backdrop */}
-      <button
-        type="button"
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm cursor-pointer"
-        aria-label="Đóng"
-        onClick={() => setOpen(false)}
-      />
-
+    <div className="fixed inset-0 z-[95] flex items-center justify-center p-4 pointer-events-none">
       {/* Frosted Dialog */}
       <form
         onSubmit={handleSubmit}
-        className="interactive-el relative z-10 w-full max-w-md rounded-2xl bg-[#1D2029]/95 p-5 shadow-[0_24px_60px_rgba(0,0,0,0.8)] border border-white/10 text-[#F4F5F7] backdrop-blur-2xl animate-in zoom-in-95 fade-in duration-140 space-y-3"
+        className="interactive-el pointer-events-auto relative z-10 w-full max-w-md rounded-2xl bg-[#1D2029]/95 p-5 shadow-[0_24px_60px_rgba(0,0,0,0.8)] border border-white/10 text-[#F4F5F7] backdrop-blur-2xl animate-in zoom-in-95 fade-in duration-140 space-y-3"
       >
         <div className="flex items-center justify-between pb-2.5 border-b border-white/6">
           <p className="font-semibold text-xs text-[#F5A623] flex items-center gap-1.5 uppercase tracking-wide">
