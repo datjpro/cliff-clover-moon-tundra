@@ -7,6 +7,7 @@ import {
   isDesktopApp,
   listenToDesktopEvent,
   sendDesktopNotification,
+  setIgnoreMouseEvents,
 } from "@/lib/desktop-bridge";
 import { useLumen } from "@/lib/store";
 import { AlarmRingingModal } from "./alarm-ringing-modal";
@@ -395,12 +396,54 @@ export function DesktopScene() {
 
   const isAnyModalOpen = captureOpen || quickTimerOpen || hubOpen || searchOpen;
 
-  // NOTE: setIgnoreMouseEvents is NOT used here.
-  // The root canvas div has pointer-events: none (CSS), and each sticky note / UI element
-  // has pointer-events: auto. This is the correct and reliable way to handle click-through
-  // on a transparent overlay window. IPC setIgnoreMouseEvents toggling via mousemove was
-  // unreliable because forwarded events don't trigger React handlers when ignore=true.
+  // Dynamic Click-Through: mousemove-based setIgnoreMouseEvents toggling.
+  //
+  // Strategy:
+  //   • setIgnoreMouseEvents(true) → transparent areas pass clicks to OS apps below
+  //     (e.g., browser, media player). Electron main.cjs uses { forward: true } so
+  //     mousemove events are still forwarded to React for hit-detection.
+  //   • setIgnoreMouseEvents(false) → entered an interactive element; full pointer interaction.
+  //
+  // This is the canonical Electron overlay pattern. CSS `pointer-events: none` on the root
+  // div with `pointer-events: auto` on interactive elements handles React hit-testing,
+  // while this IPC toggle makes transparent areas truly click-through at the OS level.
+  useEffect(() => {
+    if (!isDesktopApp()) return;
 
+    // Only send IPC when the interactive state actually changes (no spamming on every pixel)
+    let lastIsInteractive: boolean | null = null;
+    const INTERACTIVE_SELECTOR =
+      "article, .interactive-el, button, input, textarea, " +
+      "section[role='dialog'], [role='dialog'], form, select, [data-interactive], a";
+
+    const throttledHandler = (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (!target) return;
+      const isInteractive = Boolean(target.closest(INTERACTIVE_SELECTOR));
+      if (isInteractive !== lastIsInteractive) {
+        lastIsInteractive = isInteractive;
+        // false → interactive element → receive clicks normally
+        // true  → transparent area → let OS apps below receive clicks
+        setIgnoreMouseEvents(!isInteractive);
+      }
+    };
+
+    window.addEventListener("mousemove", throttledHandler, { passive: true });
+
+    // When mouse leaves the window entirely, restore click-through so OS stays responsive
+    const handleMouseLeave = () => {
+      lastIsInteractive = null;
+      setIgnoreMouseEvents(true);
+    };
+    document.documentElement.addEventListener("mouseleave", handleMouseLeave);
+
+    return () => {
+      window.removeEventListener("mousemove", throttledHandler);
+      document.documentElement.removeEventListener("mouseleave", handleMouseLeave);
+      // Restore to fully interactive mode on cleanup (component unmount)
+      setIgnoreMouseEvents(false);
+    };
+  }, []);
 
   // Global & In-App Keyboard Shortcuts
   useEffect(() => {

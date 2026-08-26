@@ -207,6 +207,9 @@ function createWindow() {
   });
 
   // IPC channel: Toggle Mouse Click-Through on transparent screen areas
+  // ignore=true + forward:true → clicks pass to OS apps below, but mousemove
+  // events are still forwarded to React so we can detect re-entry into interactive elements.
+  // ignore=false → full interaction with notes, inputs and controls.
   ipcMain.on("set-ignore-mouse-events", (event, ignore) => {
     if (mainWindow && !mainWindow.isDestroyed()) {
       if (ignore) {
