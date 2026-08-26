@@ -22,6 +22,7 @@
     "desktop": "concurrently -k \"npm run dev\" \"wait-on http://localhost:8080 && electron electron/main.cjs\"",
     "desktop:tauri": "tauri dev",
     "desktop:dev": "npm run desktop",
+    "tauri": "tauri",
     "desktop:build": "tauri build",
     "desktop:pack": "electron-builder --dir",
     "desktop:dist": "electron-builder --win nsis",
