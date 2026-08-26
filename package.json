@@ -1,6 +1,6 @@
 {
   "name": "lumen-desktop",
-  "version": "2.0.0",
+  "version": "1.0.0",
   "description": "Lumen — Artisanal Desktop Spatial Companion & Workspace",
   "author": "Lumen Team",
   "main": "electron/main.cjs",

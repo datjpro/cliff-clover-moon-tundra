@@ -1,4 +1,4 @@
-﻿name: "Release Lumen Desktop"
+name: "Release Lumen Desktop"
 
 on:
   push:
@@ -54,14 +54,14 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tagName: ${{ github.ref_name || inputs.release_tag || 'v2.0.0' }}
-          releaseName: "Lumen Desktop ${{ github.ref_name || inputs.release_tag || 'v2.0.0' }}"
+          tagName: ${{ github.ref_name || inputs.release_tag || 'v1.0.0' }}
+          releaseName: "Lumen Desktop ${{ github.ref_name || inputs.release_tag || 'v1.0.0' }}"
           releaseBody: |
             🌟 **Lumen Desktop — Artisanal Spatial Workspace & Desktop Companion**
             
             ### 📦 Download Assets:
-            - **Windows Setup Installer (.exe / NSIS)**: `Lumen_2.0.0_x64-setup.exe`
-            - **Windows MSI Installer (.msi)**: `Lumen_2.0.0_x64_en-US.msi`
+            - **Windows Setup Installer (.exe / NSIS)**: `Lumen_1.0.0_x64-setup.exe`
+            - **Windows MSI Installer (.msi)**: `Lumen_1.0.0_x64_en-US.msi`
             
             ### ✨ Highlights:
             - 🚀 **Sub-16ms GPU Accelerated Spatial Canvas**
