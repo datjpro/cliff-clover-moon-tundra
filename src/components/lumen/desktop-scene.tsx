@@ -25,10 +25,14 @@ import { StickyNote } from "./sticky-note";
 import { ToastStack } from "./toasts";
 import { cn } from "@/lib/utils";
 
-// Floating Quick Tray Menu & Hover-Revealed Paper Well Dock
+// Floating Quick Tray Menu & Hover-Revealed Paper Well Dock (Supports Direct Drag to Canvas)
 function FloatingTrayMenu() {
   const [open, setOpen] = useState(false);
   const [paperVisible, setPaperVisible] = useState(false);
+  const [isDraggingPaper, setIsDraggingPaper] = useState(false);
+  const [dragCursorPos, setDragCursorPos] = useState({ x: 0, y: 0 });
+  const dragStartPos = useRef({ x: 0, y: 0 });
+  const isDraggingRef = useRef(false);
   const leaveTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const lang = useLumen((s) => s.lang);
@@ -57,6 +61,7 @@ function FloatingTrayMenu() {
   };
 
   const handleMouseLeave = () => {
+    if (isDraggingRef.current) return;
     if (leaveTimerRef.current) {
       clearTimeout(leaveTimerRef.current);
     }
@@ -66,19 +71,67 @@ function FloatingTrayMenu() {
     }, 500);
   };
 
-  const handlePaperClick = (e: React.MouseEvent) => {
+  const handlePaperPointerDown = (e: React.PointerEvent) => {
     e.stopPropagation();
-    sounds.playPop(620);
-    if (pipEnabled) {
-      requestNoteFromPip();
-    } else {
+    isDraggingRef.current = true;
+    dragStartPos.current = { x: e.clientX, y: e.clientY };
+    setDragCursorPos({ x: e.clientX, y: e.clientY });
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch {}
+  };
+
+  const handlePaperPointerMove = (e: React.PointerEvent) => {
+    if (!isDraggingRef.current) return;
+    const dx = e.clientX - dragStartPos.current.x;
+    const dy = e.clientY - dragStartPos.current.y;
+    if (Math.hypot(dx, dy) > 8) {
+      setIsDraggingPaper(true);
+      setDragCursorPos({ x: e.clientX, y: e.clientY });
+    }
+  };
+
+  const handlePaperPointerUp = (e: React.PointerEvent) => {
+    if (!isDraggingRef.current) return;
+    isDraggingRef.current = false;
+    try {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    } catch {}
+
+    const dx = e.clientX - dragStartPos.current.x;
+    const dy = e.clientY - dragStartPos.current.y;
+    const distMoved = Math.hypot(dx, dy);
+
+    if (distMoved > 25) {
+      // User dragged to a location on the screen -> spawn note directly at dropped coordinates!
+      const screenW = window.innerWidth || 1920;
+      const screenH = window.innerHeight || 1080;
+      const dropX = Math.max(4, Math.min(82, ((e.clientX - 120) / screenW) * 100));
+      const dropY = Math.max(4, Math.min(76, ((e.clientY - 40) / screenH) * 100));
+
+      sounds.playPop(640);
       addNote({
-        x: Math.max(10, Math.min(80, 50 + (Math.random() - 0.5) * 30)),
-        y: Math.max(10, Math.min(75, 40 + (Math.random() - 0.5) * 25)),
+        x: dropX,
+        y: dropY,
         body: "",
         tint: "cream",
       });
+    } else {
+      // Quick click on paper stack
+      sounds.playPop(620);
+      if (pipEnabled) {
+        requestNoteFromPip();
+      } else {
+        addNote({
+          x: Math.max(10, Math.min(80, 50 + (Math.random() - 0.5) * 30)),
+          y: Math.max(10, Math.min(75, 40 + (Math.random() - 0.5) * 25)),
+          body: "",
+          tint: "cream",
+        });
+      }
     }
+
+    setIsDraggingPaper(false);
   };
 
   return (
@@ -254,11 +307,14 @@ function FloatingTrayMenu() {
       {/* 2. Hover-Revealed Paper Stack (Hidden by default, pops out on hover with 500ms leave delay buffer) */}
       {!open && paperVisible ? (
         <div
-          className="animate-in fade-in slide-in-from-bottom-3 zoom-in-95 duration-200 mb-1 flex flex-col items-center cursor-pointer group"
+          className="animate-in fade-in slide-in-from-bottom-3 zoom-in-95 duration-200 mb-1 flex flex-col items-center cursor-grab active:cursor-grabbing group touch-none select-none"
           onPointerEnter={handleMouseEnter}
           onPointerLeave={handleMouseLeave}
-          onClick={handlePaperClick}
-          title="Nhấp để lấy giấy ghi chú mới"
+          onPointerDown={handlePaperPointerDown}
+          onPointerMove={handlePaperPointerMove}
+          onPointerUp={handlePaperPointerUp}
+          onPointerCancel={handlePaperPointerUp}
+          title={isVi ? "Kéo để đặt ghi chú vào vị trí mong muốn • Hoặc nhấp để lấy nhanh" : "Drag to place note anywhere • Or click for quick note"}
           aria-label="Lấy giấy ghi chú"
         >
           <div className="relative h-16 w-14 hover:scale-110 active:scale-95 transition-transform duration-150">
@@ -269,12 +325,31 @@ function FloatingTrayMenu() {
             </span>
           </div>
           <span className="mt-1 rounded-full bg-[#1D2029]/95 px-2 py-0.5 text-[9px] font-bold text-[#F5A623] shadow-md border border-white/10 tracking-wide uppercase">
-            + Lấy giấy
+            {isVi ? "Kéo / Lấy giấy" : "Drag / Take"}
           </span>
         </div>
       ) : null}
 
-      {/* 3. Tiny Custom Pet Icon Trigger at Corner of Desktop */}
+      {/* 3. Dragged Paper Note Ghost Preview */}
+      {isDraggingPaper ? (
+        <div
+          className="pointer-events-none fixed z-[99999] w-64 rounded-2xl bg-[#fef08a] p-4 text-stone-800 shadow-[0_20px_60px_rgba(0,0,0,0.45)] border border-amber-300 ring-2 ring-[#F5A623] rotate-[-2deg] opacity-90 backdrop-blur-sm animate-in zoom-in-95 duration-100"
+          style={{
+            left: `${dragCursorPos.x - 120}px`,
+            top: `${dragCursorPos.y - 40}px`,
+          }}
+        >
+          <div className="flex items-center justify-between pb-2 border-b border-amber-400/40 text-amber-900/70 text-[11px] font-semibold">
+            <span>📝 {isVi ? "Thả để dán ghi chú" : "Drop to stick note"}</span>
+            <span className="text-[10px] uppercase font-mono">Lumen</span>
+          </div>
+          <p className="mt-2 text-xs text-amber-900/60 italic">
+            {isVi ? "Kéo đến vị trí bạn muốn đặt ghi chú..." : "Drag to your desired note position..."}
+          </p>
+        </div>
+      ) : null}
+
+      {/* 4. Tiny Custom Pet Icon Trigger at Corner of Desktop */}
       <button
         type="button"
         onClick={() => setOpen(!open)}

@@ -332,6 +332,17 @@ console.log("\n📦 [SUITE 5]: Desktop Window Visibility & Single Instance Recov
   assert(paperVisible === true, "Paper stack reveals immediately when hovering the bottom-right dock icon");
   onMouseLeave(500);
   assert(paperVisible === true, "Paper stack remains visible during the 500ms transition delay window");
+
+  // Paper Stack Drag-to-Place Coordinate Conversion Test
+  const computeDropCoordinates = (clientX, clientY, screenW = 1920, screenH = 1080) => ({
+    x: Math.max(4, Math.min(82, ((clientX - 120) / screenW) * 100)),
+    y: Math.max(4, Math.min(76, ((clientY - 40) / screenH) * 100)),
+  });
+
+  const droppedNote = computeDropCoordinates(800, 400, 1920, 1080);
+  assert(droppedNote.x > 30 && droppedNote.x < 40 && droppedNote.y > 30 && droppedNote.y < 40, "Drag-to-place converts pointer drop position accurately into responsive canvas percentage");
+  const clampedDrop = computeDropCoordinates(2000, 1200, 1920, 1080);
+  assert(clampedDrop.x === 82 && clampedDrop.y === 76, "Drag-to-place clamps drop position safely inside monitor workspace boundaries");
   if (leaveTimer) clearTimeout(leaveTimer);
 
   // Sticky Note Popover & Layer Stacking Test
