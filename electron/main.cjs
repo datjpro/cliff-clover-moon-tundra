@@ -66,7 +66,7 @@ function createWindow() {
     frame: false,
     hasShadow: false,
     alwaysOnTop: true,
-    skipTaskbar: false, // Ensures Windows OS recognizes window as focusable app and routes keyboard input
+    skipTaskbar: true, // Pure background daemon: does not show as a window or tab on the taskbar
     focusable: true,
     acceptFirstMouse: true, // Allows single-click focus and typing into notes immediately
     fullscreenable: false,

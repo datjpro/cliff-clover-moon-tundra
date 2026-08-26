@@ -25,6 +25,7 @@ export function AppStartupLoading() {
     sounds.playPop(520);
     setIsClosing(true);
     setAppLoaded(true);
+    setVisible(false); // Immediately unmount so zero backdrop exists
 
     if (videoRef.current) {
       try {
@@ -33,10 +34,6 @@ export function AppStartupLoading() {
         videoRef.current.load();
       } catch {}
     }
-
-    setTimeout(() => {
-      setVisible(false);
-    }, 400);
   };
 
   useEffect(() => {
@@ -46,10 +43,12 @@ export function AppStartupLoading() {
       return;
     }
 
-    // Any key (Space, Enter, Escape, etc.) dismisses instantly
+    // Space, Enter, Escape dismisses the intro cleanly without e.preventDefault()
     const handleKeyDown = (e: KeyboardEvent) => {
-      e.preventDefault();
-      handleDismiss();
+      if (e.key === "Escape" || e.key === " " || e.key === "Enter") {
+        window.removeEventListener("keydown", handleKeyDown);
+        handleDismiss();
+      }
     };
 
     window.addEventListener("keydown", handleKeyDown);
