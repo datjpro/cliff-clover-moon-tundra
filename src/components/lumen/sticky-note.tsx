@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type PointerEvent } from "react";
 import {
+  ALargeSmall,
   Check,
   CheckSquare,
   ChevronDown,
@@ -18,10 +19,12 @@ import {
   Scaling,
   Square,
   Trash2,
+  Type,
   Unlock,
   X,
 } from "lucide-react";
 import { sounds } from "@/lib/audio";
+import { focusDesktopWindow } from "@/lib/desktop-bridge";
 import { DICTIONARY } from "@/lib/i18n";
 import { useLumen } from "@/lib/store";
 import type { Note, NoteTint } from "@/lib/types";
@@ -176,15 +179,15 @@ export function StickyNote({ note, stacked }: Props) {
     };
   }, []);
 
-  // High-Performance Position Drag Handlers (Flush Screen Edge Clamping & Magnetic Snapping)
+  // High-Performance Position Drag Handlers (Attached to Header Only)
   const onPointerDown = (e: PointerEvent<HTMLElement>) => {
     if (stacked || note.pinned || note.locked) return;
-    if ((e.target as HTMLElement).closest("textarea,input,button,.no-drag")) return;
+    if ((e.target as HTMLElement).closest("button,input,textarea,form,.no-drag")) return;
     bringNote(note.id);
     sounds.playPop(540);
-    const parent = ((e.currentTarget.parentElement as HTMLElement) || document.body).getBoundingClientRect();
     const cardEl = (e.currentTarget.closest("article") || e.currentTarget) as HTMLElement;
-    const cardRect = cardEl ? cardEl.getBoundingClientRect() : { width: 280, height: 220 };
+    const parent = (cardEl.parentElement || document.body).getBoundingClientRect();
+    const cardRect = cardEl.getBoundingClientRect();
     drag.current = {
       parentLeft: parent.left,
       parentTop: parent.top,
@@ -472,7 +475,7 @@ export function StickyNote({ note, stacked }: Props) {
   return (
     <article
       className={cn(
-        "interactive-el relative rounded-2xl flex flex-col overflow-visible group",
+        "interactive-el pointer-events-auto relative rounded-2xl flex flex-col overflow-visible group",
         "shadow-[0_1px_2px_rgba(0,0,0,0.08),0_6px_20px_rgba(0,0,0,0.16)] border border-black/10",
         isTransformActive
           ? "!transition-none shadow-[0_6px_14px_rgba(0,0,0,0.15),0_20px_45px_rgba(0,0,0,0.3)] ring-2 ring-[#F5A623] will-change-transform"
@@ -483,13 +486,14 @@ export function StickyNote({ note, stacked }: Props) {
         highlightNoteId === note.id && "ring-4 ring-[#F5A623] shadow-[0_0_35px_rgba(245,166,35,0.75)] animate-pulse",
       )}
       style={style}
-      onPointerDown={onPointerDown}
-      onPointerMove={onPointerMove}
-      onPointerUp={onPointerUp}
-      onPointerCancel={onPointerUp}
+      onMouseDown={() => bringNote(note.id)}
     >
       {/* Dark Integrated Header Bar (~34px height) - acts as smooth drag handle & double click to minimize */}
       <header
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerCancel={onPointerUp}
         onDoubleClick={(e) => {
           if ((e.target as HTMLElement).closest("button,input,form,.no-drag")) return;
           e.stopPropagation();
@@ -740,8 +744,8 @@ export function StickyNote({ note, stacked }: Props) {
                   }}
                   className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl text-[#F4F5F7] hover:bg-[#262A35] hover:text-white transition-colors text-left cursor-pointer"
                 >
-                  <RotateCw className="size-3.5 text-[#F5A623]" />
-                  <span>Độ xoay & Phông chữ</span>
+                  <ALargeSmall className="size-3.5 text-[#F5A623]" />
+                  <span>Cỡ chữ & Phông chữ</span>
                 </button>
 
                 {/* 5. Copy Content */}
@@ -944,10 +948,10 @@ export function StickyNote({ note, stacked }: Props) {
 
       {/* Note Body Area (Pastel Background + #23262F Text) - relative z-0 keeps content below header popovers */}
       <div
-        className="relative z-0 p-3.5 pb-6 flex flex-1 flex-col text-[#23262F] rounded-b-2xl cursor-text select-text min-h-0"
+        className="no-drag relative z-0 p-3.5 pb-6 flex flex-1 flex-col text-[#23262F] rounded-b-2xl cursor-text select-text min-h-0 pointer-events-auto"
         onClick={(e) => {
           const tag = (e.target as HTMLElement).tagName;
-          if (tag !== "TEXTAREA" && tag !== "INPUT" && tag !== "BUTTON" && !(e.target as HTMLElement).closest("button,input,form,.no-drag")) {
+          if (tag !== "TEXTAREA" && tag !== "INPUT" && tag !== "BUTTON" && !(e.target as HTMLElement).closest("button,input,form")) {
             textareaRef.current?.focus();
           }
         }}
@@ -959,8 +963,9 @@ export function StickyNote({ note, stacked }: Props) {
             className="no-drag mb-2.5 flex flex-col gap-2 rounded-xl bg-black/5 p-2.5 text-xs border border-black/5 animate-in fade-in zoom-in-95 duration-120 shrink-0"
           >
             <div className="flex items-center justify-between border-b border-black/10 pb-1 mb-0.5">
-              <span className="font-bold text-[10px] uppercase text-[#23262F]/75 tracking-wider">
-                Tùy chỉnh ghi chú
+              <span className="font-bold text-[10px] uppercase text-[#23262F]/85 tracking-wider flex items-center gap-1.5">
+                <ALargeSmall className="size-3 text-[#F5A623]" />
+                Tùy chỉnh cỡ chữ & phông
               </span>
               <button
                 type="button"
@@ -975,53 +980,74 @@ export function StickyNote({ note, stacked }: Props) {
                 <X className="size-3" />
               </button>
             </div>
-            {/* Rotation Control */}
-            <div className="space-y-1">
-              <div className="flex items-center justify-between">
-                <span className="font-semibold text-[10px] uppercase opacity-75">Góc nghiêng (Xoay)</span>
-                <div className="flex items-center gap-1.5">
-                  <input
-                    type="range"
-                    min="-30"
-                    max="30"
-                    step="1"
-                    value={note.rot || 0}
-                    onChange={(e) => updateNote(note.id, { rot: parseFloat(e.target.value) })}
-                    className="w-20 h-1 bg-black/20 rounded cursor-pointer accent-[#F5A623]"
-                  />
-                  <span className="font-mono text-[10px] w-7 text-right tabular-nums">
-                    {Math.round(note.rot || 0)}°
-                  </span>
-                </div>
-              </div>
-              <div className="flex items-center justify-end gap-1 pt-0.5">
-                {[-5, 0, 5].map((ang) => (
-                  <button
-                    key={ang}
-                    type="button"
-                    onClick={() => updateNote(note.id, { rot: ang })}
-                    className={cn(
-                      "px-1.5 py-0.5 rounded text-[9px] cursor-pointer transition-colors",
-                      Math.round(note.rot || 0) === ang ? "bg-black/20 font-bold" : "opacity-60 hover:opacity-100",
-                    )}
-                  >
-                    {ang > 0 ? `+${ang}°` : `${ang}°`}
-                  </button>
-                ))}
+            {/* Font Family Control */}
+            <div className="flex items-center justify-between pb-1.5 border-b border-black/5">
+              <span className="font-semibold text-[10px] uppercase opacity-75">Phông chữ</span>
+              <div className="flex gap-1">
                 <button
                   type="button"
-                  onClick={() => updateNote(note.id, { rot: Math.round((Math.random() - 0.5) * 8 * 10) / 10 })}
-                  className="px-1.5 py-0.5 rounded text-[9px] opacity-60 hover:opacity-100 cursor-pointer"
-                  title="Góc ngẫu nhiên tự nhiên"
+                  onClick={() => updateNote(note.id, { fontFamily: "sans" })}
+                  className={cn("px-2 py-0.5 rounded text-[10px] cursor-pointer transition-colors", note.fontFamily === "sans" ? "bg-black/15 font-bold shadow-xs" : "opacity-60 hover:opacity-100 hover:bg-black/5")}
                 >
-                  🎲 Ngẫu nhiên
+                  Sans
+                </button>
+                <button
+                  type="button"
+                  onClick={() => updateNote(note.id, { fontFamily: "handwriting" })}
+                  className={cn("px-2 py-0.5 rounded text-[10px] font-handwriting cursor-pointer transition-colors", note.fontFamily === "handwriting" ? "bg-black/15 font-bold shadow-xs" : "opacity-60 hover:opacity-100 hover:bg-black/5")}
+                >
+                  Script
+                </button>
+                <button
+                  type="button"
+                  onClick={() => updateNote(note.id, { fontFamily: "mono" })}
+                  className={cn("px-2 py-0.5 rounded text-[10px] font-mono cursor-pointer transition-colors", note.fontFamily === "mono" ? "bg-black/15 font-bold shadow-xs" : "opacity-60 hover:opacity-100 hover:bg-black/5")}
+                >
+                  Mono
                 </button>
               </div>
             </div>
 
+            {/* Word Standard Font Size Control (10, 11, 12, 14, 16, 18, 24) */}
+            <div className="space-y-1 pb-1.5 border-b border-black/5">
+              <div className="flex items-center justify-between">
+                <span className="font-semibold text-[10px] uppercase opacity-75">Cỡ chữ (Chuẩn Word)</span>
+                <span className="font-mono text-[10px] tabular-nums font-bold opacity-85 text-[#F5A623]">
+                  {typeof note.fontSize === "number" ? `${note.fontSize} pt` : "12 pt"}
+                </span>
+              </div>
+              <div className="flex items-center gap-1">
+                {[10, 11, 12, 14, 16, 18, 24].map((pt) => {
+                  const currentPt = typeof note.fontSize === "number" ? note.fontSize : 12;
+                  const isSelected = currentPt === pt;
+                  return (
+                    <button
+                      key={pt}
+                      type="button"
+                      onClick={() => updateNote(note.id, { fontSize: pt })}
+                      className={cn(
+                        "flex-1 py-0.5 rounded text-[9.5px] font-mono font-medium cursor-pointer transition-all text-center",
+                        isSelected
+                          ? "bg-black/25 font-bold text-[#23262F] shadow-xs ring-1 ring-black/10"
+                          : "opacity-60 hover:opacity-100 hover:bg-black/5",
+                      )}
+                      title={`Cỡ chữ ${pt}pt`}
+                    >
+                      {pt}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             {/* Opacity Control */}
-            <div className="flex items-center justify-between pt-1 border-t border-black/5">
-              <span className="font-semibold text-[10px] uppercase opacity-75">Độ trong suốt</span>
+            <div className="flex items-center justify-between pt-0.5">
+              <div className="flex items-center gap-1">
+                <span className="font-semibold text-[10px] uppercase opacity-75">Độ trong suốt</span>
+                <span className="font-mono text-[10px] tabular-nums opacity-60">
+                  {Math.round((note.opacity ?? 1) * 100)}%
+                </span>
+              </div>
               <input
                 type="range"
                 min="0.3"
@@ -1029,36 +1055,8 @@ export function StickyNote({ note, stacked }: Props) {
                 step="0.05"
                 value={note.opacity ?? 1}
                 onChange={(e) => updateNote(note.id, { opacity: parseFloat(e.target.value) })}
-                className="w-20 h-1 bg-black/20 rounded cursor-pointer accent-[#F5A623]"
+                className="w-24 h-1.5 bg-black/20 rounded cursor-pointer accent-[#F5A623]"
               />
-            </div>
-
-            {/* Font Control */}
-            <div className="flex items-center justify-between pt-1 border-t border-black/5">
-              <span className="font-semibold text-[10px] uppercase opacity-75">Phông chữ</span>
-              <div className="flex gap-1">
-                <button
-                  type="button"
-                  onClick={() => updateNote(note.id, { fontFamily: "sans" })}
-                  className={cn("px-1.5 py-0.5 rounded text-[10px] cursor-pointer", note.fontFamily === "sans" ? "bg-black/15 font-bold" : "opacity-60 hover:opacity-100")}
-                >
-                  Sans
-                </button>
-                <button
-                  type="button"
-                  onClick={() => updateNote(note.id, { fontFamily: "handwriting" })}
-                  className={cn("px-1.5 py-0.5 rounded text-[10px] font-handwriting cursor-pointer", note.fontFamily === "handwriting" ? "bg-black/15 font-bold" : "opacity-60 hover:opacity-100")}
-                >
-                  Script
-                </button>
-                <button
-                  type="button"
-                  onClick={() => updateNote(note.id, { fontFamily: "mono" })}
-                  className={cn("px-1.5 py-0.5 rounded text-[10px] font-mono cursor-pointer", note.fontFamily === "mono" ? "bg-black/15 font-bold" : "opacity-60 hover:opacity-100")}
-                >
-                  Mono
-                </button>
-              </div>
             </div>
           </div>
         )}
@@ -1068,22 +1066,17 @@ export function StickyNote({ note, stacked }: Props) {
           ref={textareaRef}
           value={note.body}
           onChange={(e) => updateNote(note.id, { body: e.target.value })}
-          onFocus={() => {
-            bringNote(note.id);
-            if (typeof window !== "undefined") window.focus();
-          }}
-          onClick={(e) => {
-            e.stopPropagation();
-            textareaRef.current?.focus();
-            if (typeof window !== "undefined") window.focus();
-          }}
+          onFocus={() => bringNote(note.id)}
           placeholder="Viết ghi chú của bạn..."
           suppressHydrationWarning
-          style={{ caretColor: note.tint === "dark" ? "#F5A623" : "#000000" }}
+          style={{
+            fontSize: typeof note.fontSize === "number" ? `${note.fontSize}px` : note.fontSize === "sm" ? "11px" : note.fontSize === "lg" ? "16px" : "13.5px",
+            caretColor: note.tint === "dark" ? "#F5A623" : "#000000",
+          }}
           className={cn(
-            "no-drag w-full flex-1 min-h-[64px] resize-none bg-transparent text-[13px] font-normal leading-relaxed text-[#23262F] outline-none placeholder:text-[#23262F]/40 select-text cursor-text touch-auto sticky-note-textarea !caret-[#000000] focus:!caret-[#000000] selection:bg-[#F5A623]/30 selection:text-[#000000] note-scrollbar",
-            note.fontFamily === "handwriting" && "font-handwriting text-base leading-snug",
-            note.fontFamily === "mono" && "font-mono text-xs leading-normal",
+            "no-drag w-full flex-1 min-h-[64px] resize-none bg-transparent font-normal leading-relaxed text-[#23262F] outline-none placeholder:text-[#23262F]/40 select-text cursor-text touch-auto sticky-note-textarea pointer-events-auto !caret-[#000000] focus:!caret-[#000000] selection:bg-[#F5A623]/30 selection:text-[#000000] note-scrollbar",
+            note.fontFamily === "handwriting" && "font-handwriting leading-snug",
+            note.fontFamily === "mono" && "font-mono leading-normal",
           )}
         />
 

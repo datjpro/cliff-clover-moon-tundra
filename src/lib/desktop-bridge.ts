@@ -10,6 +10,7 @@ declare global {
       hide: () => void;
       restore: () => void;
       show: () => void;
+      focus: () => void;
       quit: () => void;
       setAlwaysOnTop: (flag: boolean) => void;
       setIgnoreMouseEvents: (ignore: boolean) => void;
@@ -53,21 +54,20 @@ export async function restoreDesktopWindow(): Promise<void> {
 }
 
 /**
- * Show and focus Desktop Window
+ * Focus Desktop Window and input web contents immediately
  */
-export async function showDesktopWindow(): Promise<void> {
-  if (typeof window !== "undefined" && window.desktopAPI?.show) {
-    window.desktopAPI.show();
+export async function focusDesktopWindow(): Promise<void> {
+  if (typeof window !== "undefined" && window.desktopAPI?.focus) {
+    window.desktopAPI.focus();
     return;
   }
   if (typeof window !== "undefined" && (window.__TAURI_INTERNALS__ || window.__TAURI__)) {
     try {
       const { getCurrentWindow } = await import("@tauri-apps/api/window");
       const win = getCurrentWindow();
-      await win.show();
       await win.setFocus();
     } catch (err) {
-      console.debug("[DesktopBridge] show error:", err);
+      console.debug("[DesktopBridge] focus error:", err);
     }
   }
 }

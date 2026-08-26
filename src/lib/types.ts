@@ -34,7 +34,7 @@ export type Note = {
   tint: NoteTint;
   opacity?: number; // 0.3 to 1.0
   fontFamily?: "sans" | "handwriting" | "mono";
-  fontSize?: "sm" | "base" | "lg";
+  fontSize?: number | "sm" | "base" | "lg";
   checkItems?: CheckItem[];
   z: number;
   createdAt: number;

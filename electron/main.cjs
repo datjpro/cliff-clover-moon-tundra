@@ -66,7 +66,7 @@ function createWindow() {
     frame: false,
     hasShadow: false,
     alwaysOnTop: true,
-    skipTaskbar: true, // Pure background daemon: does not show as a window on the taskbar
+    skipTaskbar: false, // Ensures Windows OS recognizes window as focusable app and routes keyboard input
     focusable: true,
     acceptFirstMouse: true, // Allows single-click focus and typing into notes immediately
     fullscreenable: false,
@@ -84,8 +84,8 @@ function createWindow() {
   mainWindow.setAlwaysOnTop(true, "normal");
   mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
 
-  // Initialize mouse click-through so desktop wallpaper, videos, and background apps work 100%
-  mainWindow.setIgnoreMouseEvents(true, { forward: true });
+  // Initialize with ignore: false so notes, inputs, and controls are 100% interactive immediately
+  mainWindow.setIgnoreMouseEvents(false);
 
   const isDev = !app.isPackaged && process.env.NODE_ENV !== "production";
   if (isDev) {
@@ -182,6 +182,16 @@ function createWindow() {
 
   ipcMain.on("show-window", () => {
     restoreAndFocusWindow();
+  });
+
+  ipcMain.on("focus-window", () => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.setIgnoreMouseEvents(false);
+      mainWindow.focus();
+      if (mainWindow.webContents) {
+        mainWindow.webContents.focus();
+      }
+    }
   });
 
   ipcMain.on("hide-window", () => {

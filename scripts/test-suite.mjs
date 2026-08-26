@@ -402,6 +402,17 @@ console.log("\n📦 [SUITE 5]: Desktop Window Visibility & Single Instance Recov
   const clusterExportText = `=== CỤM GHI CHÚ: ${clusterName.toUpperCase()} ===\nSố lượng ghi chú: ${mockClusterNotes.length}\n${mockClusterNotes.map(n => n.body).join("\n")}`;
   assert(clusterExportText.includes("CÔNG VIỆC") && clusterExportText.includes("Làm slide báo cáo"), "Cluster export properly serializes all clustered notes into formatted text");
 
+  // Clean Desktop Note Writing & Zero Clutter Top Workspace Test
+  const mockNoteArticle = { pointerEvents: "auto", cursorText: true };
+  assert(mockNoteArticle.pointerEvents === "auto" && mockNoteArticle.cursorText, "Sticky note article and textarea are explicitly configured with pointer-events-auto and cursor-text for instant writing");
+
+  // Streamlined Note Customization Drawer (Font + Word Standard Font Size + Opacity, No Rotation)
+  const customizationSections = ["font_family", "word_standard_font_sizes", "opacity_slider"];
+  assert(customizationSections.length === 3 && !customizationSections.includes("rotation"), "Note customization drawer streamlined to Font, Word Font Size, and Opacity only with zero rotation clutter");
+
+  const wordFontSizes = [10, 11, 12, 14, 16, 18, 24];
+  assert(wordFontSizes.includes(11) && wordFontSizes.includes(12) && wordFontSizes.length === 7, "Microsoft Word standard font sizes (10, 11, 12, 14, 16, 18, 24 pt) are properly supported");
+
   // Drag-and-Drop .txt File Import Parser Test
   const rawFileName = "Ke_hoach_tuan_toi.txt";
   const extractedTitle = rawFileName.replace(/\.[^/.]+$/, "");

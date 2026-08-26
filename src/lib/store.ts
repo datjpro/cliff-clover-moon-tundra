@@ -97,6 +97,8 @@ type LumenState = {
   setIntroVideoEnabled: (enabled: boolean) => void;
   setupWizardMode: "install" | "uninstall" | null;
   setSetupWizardMode: (mode: "install" | "uninstall" | null) => void;
+  showClusterDock: boolean;
+  setShowClusterDock: (show: boolean) => void;
   pro: ProLicense;
   proModalOpen: boolean;
   proModalFeature: ProFeatureId | null;
@@ -136,6 +138,8 @@ export const useLumen = create<LumenState>()(
       setIntroVideoEnabled: (introVideoEnabled) => set({ introVideoEnabled }),
       setupWizardMode: null,
       setSetupWizardMode: (setupWizardMode) => set({ setupWizardMode }),
+      showClusterDock: true,
+      setShowClusterDock: (showClusterDock) => set({ showClusterDock }),
       lang: "vi",
       theme: "ink",
       layout: "stickies",
@@ -144,7 +148,7 @@ export const useLumen = create<LumenState>()(
       hubOpen: false,
       captureOpen: false,
       quickTimerOpen: false,
-      onboarding: true,
+      onboarding: false,
       notes: SEED_NOTES,
       reminders: SEED_TIMERS,
       toasts: [],

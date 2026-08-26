@@ -5,6 +5,7 @@ contextBridge.exposeInMainWorld("desktopAPI", {
   hide: () => ipcRenderer.send("hide-window"),
   restore: () => ipcRenderer.send("restore-window"),
   show: () => ipcRenderer.send("show-window"),
+  focus: () => ipcRenderer.send("focus-window"),
   quit: () => ipcRenderer.send("quit-app"),
   setAlwaysOnTop: (flag) => ipcRenderer.send("set-always-on-top", flag),
   setIgnoreMouseEvents: (ignore) => ipcRenderer.send("set-ignore-mouse-events", ignore),
