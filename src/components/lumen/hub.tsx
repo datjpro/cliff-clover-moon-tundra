@@ -28,6 +28,7 @@ import {
   VolumeX,
   Wand2,
   X,
+  Zap,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -252,6 +253,7 @@ export function Hub() {
   const setAlwaysOnTop = useLumen((s) => s.setAlwaysOnTop);
   const introVideoEnabled = useLumen((s) => s.introVideoEnabled ?? true);
   const setIntroVideoEnabled = useLumen((s) => s.setIntroVideoEnabled);
+  const setSetupWizardMode = useLumen((s) => s.setSetupWizardMode);
   const pip = useLumen((s) => s.pip);
   const setPip = useLumen((s) => s.setPip);
   const setPipEnabled = useLumen((s) => s.setPipEnabled);
@@ -1436,6 +1438,43 @@ export function Hub() {
                     Escape
                   </span>
                 </div>
+              </div>
+            </div>
+
+            {/* Custom Installer & Uninstaller Wizard Showcase */}
+            <div className="rounded-2xl bg-[#262A35]/50 p-3 space-y-2 border border-white/6">
+              <p className="font-semibold text-[#F4F5F7] text-xs flex items-center gap-1.5">
+                <Sparkles className="size-3 text-[#F5A623]" />
+                <span>{isVi ? "Trình Cài Đặt & Gỡ Cài Đặt Tùy Chỉnh" : "Custom Setup & Uninstall Wizard"}</span>
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  type="button"
+                  onClick={() => {
+                    sounds.playPop(620);
+                    setSetupWizardMode("install");
+                  }}
+                  className="flex items-center justify-center gap-1.5 cursor-pointer border-white/10 bg-[#14161D] text-[#F4F5F7] hover:bg-[#F5A623]/20 hover:text-[#F5A623] hover:border-[#F5A623]/30 h-8 text-xs rounded-xl transition-all"
+                >
+                  <Zap className="size-3 text-[#F5A623]" />
+                  <span>{isVi ? "Xem Trình Cài Đặt" : "Setup Wizard"}</span>
+                </Button>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  type="button"
+                  onClick={() => {
+                    sounds.playPop(400);
+                    setSetupWizardMode("uninstall");
+                  }}
+                  className="flex items-center justify-center gap-1.5 cursor-pointer border-white/10 bg-[#14161D] text-[#8B90A0] hover:bg-red-500/15 hover:text-red-400 hover:border-red-500/30 h-8 text-xs rounded-xl transition-all"
+                >
+                  <Trash2 className="size-3 text-red-400" />
+                  <span>{isVi ? "Xem Gỡ Cài Đặt" : "Uninstaller"}</span>
+                </Button>
               </div>
             </div>
 

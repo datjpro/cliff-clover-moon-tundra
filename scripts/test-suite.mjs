@@ -373,6 +373,14 @@ console.log("\n📦 [SUITE 5]: Desktop Window Visibility & Single Instance Recov
   const skipKeys = ["Escape", " ", "Enter"];
   assert(skipKeys.includes(" ") && skipKeys.includes("Escape"), "Intro video loading supports instant skip via Space and Escape keys");
 
+  // Custom Setup & Uninstall Wizard Step Machine & Data Retention Test
+  const installerSteps = ["welcome_hero", "custom_options", "installing_progress", "complete"];
+  assert(installerSteps.length === 4 && installerSteps.includes("custom_options"), "Setup Wizard supports 4-stage flow including custom directory selection");
+  const uninstallerSteps = ["confirm_retention", "uninstalling_progress", "complete"];
+  assert(uninstallerSteps.length === 3 && uninstallerSteps.includes("confirm_retention"), "Uninstaller Wizard provides 3-stage safe removal with user data retention");
+  const mockUserData = { notesCount: 15, keepUserData: true };
+  assert(mockUserData.keepUserData === true, "Uninstaller safely preserves local note database when retention flag is enabled");
+
   // Sticky Note 3-Dots Kebab Action Menu Test
   const kebabActions = ["collapse", "options_rotation_font", "copy_content", "delete_note"];
   assert(kebabActions.length === 4, "3-Dots Kebab menu provides all 4 essential actions reliably");

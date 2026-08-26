@@ -7,7 +7,8 @@ import { cn } from "@/lib/utils";
 export function AppStartupLoading() {
   const [visible, setVisible] = useState(true);
   const [isClosing, setIsClosing] = useState(false);
-  const [statusText, setStatusText] = useState("Đang đánh thức người bạn Pip...");
+  const [progress, setProgress] = useState(0);
+  const [statusText, setStatusText] = useState("Đang khởi tạo không gian làm việc...");
 
   const lang = useLumen((s) => s.lang);
   const introVideoEnabled = useLumen((s) => s.introVideoEnabled ?? true);
@@ -17,7 +18,7 @@ export function AppStartupLoading() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const isDismissedRef = useRef(false);
 
-  // Smooth Organic Dismiss & Transition to Workspace
+  // Smooth Dismiss & Transition to Workspace
   const handleDismiss = () => {
     if (isDismissedRef.current) return;
     isDismissedRef.current = true;
@@ -35,7 +36,7 @@ export function AppStartupLoading() {
 
     setTimeout(() => {
       setVisible(false);
-    }, 450);
+    }, 400);
   };
 
   useEffect(() => {
@@ -53,10 +54,10 @@ export function AppStartupLoading() {
 
     window.addEventListener("keydown", handleKeyDown);
 
-    // Natural duration: 5.5s intro showcase before smooth transition
+    // Natural 6.5s intro showcase before auto-transition
     const autoDismissTimer = setTimeout(() => {
       handleDismiss();
-    }, 5500);
+    }, 6500);
 
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
@@ -67,10 +68,11 @@ export function AppStartupLoading() {
   const handleTimeUpdate = () => {
     if (!videoRef.current) return;
     const current = videoRef.current.currentTime;
-    const duration = videoRef.current.duration || 5.0;
+    const duration = videoRef.current.duration || 6.0;
     const pct = Math.min(100, Math.round((current / duration) * 100));
+    setProgress(pct);
 
-    if (pct < 35) {
+    if (pct < 30) {
       setStatusText(isVi ? "Đang chuẩn bị không gian làm việc..." : "Preparing spatial workspace...");
     } else if (pct < 70) {
       setStatusText(isVi ? "Đang đánh thức người bạn Pip ✨" : "Waking up Pip companion ✨");
@@ -84,28 +86,22 @@ export function AppStartupLoading() {
   return (
     <div
       className={cn(
-        "interactive-el fixed inset-0 z-[99999] flex flex-col items-center justify-center bg-[#0C0D12]/92 backdrop-blur-2xl transition-all duration-500 pointer-events-auto select-none overflow-hidden cursor-pointer",
+        "interactive-el fixed inset-0 z-[99999] flex flex-col items-center justify-center bg-[#0C0D12]/94 backdrop-blur-2xl transition-all duration-400 pointer-events-auto select-none overflow-hidden cursor-pointer",
         isClosing && "opacity-0 scale-105 pointer-events-none blur-sm",
       )}
       onClick={handleDismiss}
       title="Nhấp chuột hoặc bấm phím bất kỳ để vào màn hình làm việc"
     >
-      {/* 1. Deep Ambient Radial Atmosphere Glow */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_45%,rgba(245,166,35,0.18),rgba(20,22,29,0.95)_65%,#0C0D12_95%)] pointer-events-none" />
+      {/* 1. Ambient Background Luminescence Glow */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_45%,rgba(245,166,35,0.16),rgba(20,22,29,0.92)_60%,#0C0D12_95%)] pointer-events-none" />
 
-      {/* 2. Organic Luminous Centerpiece Portal (Feathered Radial Mask - Zero Video Box Borders) */}
-      <div className="relative flex flex-col items-center justify-center">
-        {/* Amber Halo Glow behind Mascot */}
-        <div className="absolute -top-6 size-80 rounded-full bg-[#F5A623]/25 blur-3xl pointer-events-none animate-pulse" />
+      {/* 2. Main Cinematic Full-Frame Presentation (Fully Visible, High-Res, No Cropped Anatomy) */}
+      <div className="relative flex flex-col items-center max-w-[94vw] pointer-events-none">
+        {/* Soft Golden Ambient Light behind Mascot */}
+        <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-96 h-96 rounded-full bg-[#F5A623]/20 blur-3xl pointer-events-none" />
 
-        {/* Seamless Masked Video Portal */}
-        <div
-          className="relative size-72 sm:size-80 md:size-96 overflow-hidden flex items-center justify-center pointer-events-none"
-          style={{
-            maskImage: "radial-gradient(ellipse 65% 70% at 50% 48%, black 45%, rgba(0,0,0,0.85) 60%, transparent 85%)",
-            WebkitMaskImage: "radial-gradient(ellipse 65% 70% at 50% 48%, black 45%, rgba(0,0,0,0.85) 60%, transparent 85%)",
-          }}
-        >
+        {/* Crisp, Rounded Cinematic Video Display (No Video Controls, Seamless Glass Border) */}
+        <div className="relative w-[720px] max-w-[92vw] aspect-video rounded-3xl overflow-hidden bg-[#14161D] shadow-[0_25px_80px_rgba(0,0,0,0.9)] border border-white/10 ring-1 ring-white/5">
           <video
             ref={videoRef}
             src="/intro.mp4"
@@ -115,32 +111,43 @@ export function AppStartupLoading() {
             preload="auto"
             onTimeUpdate={handleTimeUpdate}
             onEnded={handleDismiss}
-            className="size-full object-cover scale-[1.12] select-none pointer-events-none will-change-transform drop-shadow-[0_20px_40px_rgba(0,0,0,0.8)]"
+            className="size-full object-contain bg-[#171922] select-none pointer-events-none will-change-transform"
           />
+
+          {/* Subtle Corner Vignette to harmonize with desktop lighting */}
+          <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/40 via-transparent to-black/20" />
         </div>
 
-        {/* 3. Sleek Organic Branding Typography */}
-        <div className="relative z-10 -mt-4 flex flex-col items-center text-center space-y-1.5 pointer-events-none animate-in fade-in slide-in-from-bottom-2 duration-300">
-          <div className="flex items-center gap-2">
-            <h1 className="text-xl sm:text-2xl font-extrabold tracking-wider bg-gradient-to-r from-[#F4F5F7] via-[#FFD166] to-[#F5A623] bg-clip-text text-transparent drop-shadow-md">
-              LUMEN
-            </h1>
-            <span className="rounded-full bg-[#F5A623]/20 px-2 py-0.5 text-[10px] font-mono font-bold text-[#F5A623] border border-[#F5A623]/30">
-              DESK
-            </span>
+        {/* 3. Sleek Typography & Progress Bar Below Video */}
+        <div className="mt-5 flex flex-col items-center text-center space-y-2.5 w-full max-w-[720px] px-4">
+          <div className="flex items-center justify-between w-full">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-bold tracking-wider text-white">LUMEN</span>
+              <span className="rounded-full bg-[#F5A623]/20 px-2 py-0.5 text-[10px] font-mono font-bold text-[#F5A623] border border-[#F5A623]/30">
+                DESKTOP
+              </span>
+            </div>
+
+            <p className="text-xs text-[#8B90A0] font-medium flex items-center gap-1.5">
+              <Sparkles className="size-3.5 text-[#F5A623]" />
+              <span>{statusText}</span>
+            </p>
           </div>
 
-          <p className="text-xs text-[#8B90A0] font-medium flex items-center gap-1.5 tracking-wide">
-            <Sparkles className="size-3.5 text-[#F5A623] animate-spin" style={{ animationDuration: "3s" }} />
-            <span>{statusText}</span>
-          </p>
+          {/* Minimalist Golden Progress Line */}
+          <div className="w-full bg-white/10 h-1 rounded-full overflow-hidden p-0.5">
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-[#F5A623] to-[#FFD166] shadow-[0_0_10px_rgba(245,166,35,0.75)] transition-all duration-150 ease-out"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
         </div>
       </div>
 
-      {/* 4. Minimalist Natural Interaction Hint at Bottom */}
-      <div className="absolute bottom-8 flex items-center gap-2 text-[11px] text-[#8B90A0]/70 font-mono tracking-wider uppercase pointer-events-none">
+      {/* 4. Natural Interaction Hint at Bottom */}
+      <div className="absolute bottom-6 flex items-center gap-2 text-[11px] text-[#8B90A0]/60 font-mono tracking-wider uppercase pointer-events-none">
         <span className="size-1.5 rounded-full bg-[#F5A623] animate-ping" />
-        <span>{isVi ? "Nhấp chuột hoặc bấm phím bất kỳ để bắt đầu" : "Click or press any key to enter"}</span>
+        <span>{isVi ? "Nhấp chuột hoặc bấm phím bất kỳ để vào không gian làm việc" : "Click or press any key to enter workspace"}</span>
       </div>
     </div>
   );

@@ -95,6 +95,8 @@ type LumenState = {
   setAppLoaded: (loaded: boolean) => void;
   introVideoEnabled: boolean;
   setIntroVideoEnabled: (enabled: boolean) => void;
+  setupWizardMode: "install" | "uninstall" | null;
+  setSetupWizardMode: (mode: "install" | "uninstall" | null) => void;
   pro: ProLicense;
   proModalOpen: boolean;
   proModalFeature: ProFeatureId | null;
@@ -132,6 +134,8 @@ export const useLumen = create<LumenState>()(
       setAppLoaded: (appLoaded) => set({ appLoaded }),
       introVideoEnabled: true,
       setIntroVideoEnabled: (introVideoEnabled) => set({ introVideoEnabled }),
+      setupWizardMode: null,
+      setSetupWizardMode: (setupWizardMode) => set({ setupWizardMode }),
       lang: "vi",
       theme: "ink",
       layout: "stickies",

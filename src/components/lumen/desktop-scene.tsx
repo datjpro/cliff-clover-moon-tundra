@@ -22,6 +22,7 @@ import { QuickCapture } from "./quick-capture";
 import { QuickTimer, triggerOpenQuickTimer } from "./quick-timer";
 import { SpotlightSearch } from "./spotlight-search";
 import { StickyNote } from "./sticky-note";
+import { SetupWizardModal } from "./installer-wizard";
 import { ToastStack } from "./toasts";
 import { cn } from "@/lib/utils";
 
@@ -712,6 +713,7 @@ export function DesktopScene() {
       <SpotlightSearch />
       <Hub />
       <ProUpgradeModal />
+      <SetupWizardModal />
       {appLoaded && <Onboarding />}
       {appLoaded && <FloatingTrayMenu />}
       <AppStartupLoading />
