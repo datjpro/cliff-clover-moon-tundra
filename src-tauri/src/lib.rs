@@ -40,6 +40,11 @@ fn toggle_window<R: Runtime>(window: tauri::WebviewWindow<R>) -> Result<(), Stri
     }
 }
 
+#[tauri::command]
+fn quit_app(app: tauri::AppHandle) {
+    app.exit(0);
+}
+
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
@@ -49,7 +54,8 @@ pub fn run() {
             set_ignore_cursor_events,
             show_window,
             hide_window,
-            toggle_window
+            toggle_window,
+            quit_app
         ])
         .setup(|app| {
             // System Tray Menu Setup

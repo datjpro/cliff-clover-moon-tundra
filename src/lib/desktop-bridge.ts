@@ -215,10 +215,24 @@ export async function closeOrQuitDesktopApp(): Promise<void> {
   }
   if (typeof window !== "undefined" && (window.__TAURI_INTERNALS__ || window.__TAURI__)) {
     try {
-      const { getCurrentWindow } = await import("@tauri-apps/api/window");
-      await getCurrentWindow().close();
+      const { invoke } = await import("@tauri-apps/api/core");
+      await invoke("quit_app");
+      return;
+    } catch {
+      try {
+        const { getCurrentWindow } = await import("@tauri-apps/api/window");
+        await getCurrentWindow().destroy();
+        return;
+      } catch (err) {
+        console.debug("[DesktopBridge] Tauri quit error:", err);
+      }
+    }
+  }
+  if (typeof window !== "undefined") {
+    try {
+      window.close();
     } catch (err) {
-      console.debug("[DesktopBridge] quit:", err);
+      console.debug("[DesktopBridge] window.close error:", err);
     }
   }
 }
