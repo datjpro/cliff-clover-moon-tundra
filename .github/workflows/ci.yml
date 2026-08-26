@@ -1,0 +1,33 @@
+﻿name: "CI - Typecheck & Verification"
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  verify:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "npm"
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Run Typecheck
+        run: npm run typecheck
+
+      - name: Run Test Suites
+        run: npm test

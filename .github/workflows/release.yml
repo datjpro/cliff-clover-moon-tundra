@@ -1,0 +1,74 @@
+﻿name: "Release Lumen Desktop"
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Custom Release Tag (e.g. v2.0.0)"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+jobs:
+  release-tauri:
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: "windows-latest"
+            target: "x86_64-pc-windows-msvc"
+
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "npm"
+
+      - name: Install Rust Stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Rust Cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: "./src-tauri -> target"
+
+      - name: Install Node dependencies
+        run: npm install
+
+      - name: Build and Package with Tauri Action
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ github.ref_name || inputs.release_tag || 'v2.0.0' }}
+          releaseName: "Lumen Desktop ${{ github.ref_name || inputs.release_tag || 'v2.0.0' }}"
+          releaseBody: |
+            🌟 **Lumen Desktop — Artisanal Spatial Workspace & Desktop Companion**
+            
+            ### 📦 Download Assets:
+            - **Windows Setup Installer (.exe / NSIS)**: `Lumen_2.0.0_x64-setup.exe`
+            - **Windows MSI Installer (.msi)**: `Lumen_2.0.0_x64_en-US.msi`
+            
+            ### ✨ Highlights:
+            - 🚀 **Sub-16ms GPU Accelerated Spatial Canvas**
+            - 🐾 **Pip Spatial Desktop Companion**
+            - ⏰ **Natural Language Timer Parser (Alt+T)**
+            - 🌟 **Pure Background Overlay Daemon (System Tray Only)**
+            - 🔤 **Microsoft Word Standard Font Sizes (10 to 24 pt)**
+          releaseDraft: false
+          prerelease: false
+          args: --target ${{ matrix.target }}
