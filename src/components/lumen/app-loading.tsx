@@ -1,16 +1,13 @@
 import { useEffect, useRef, useState } from "react";
-import { Play, Sparkles, Volume2, VolumeX, X } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { useLumen } from "@/lib/store";
 import { sounds } from "@/lib/audio";
 import { cn } from "@/lib/utils";
 
 export function AppStartupLoading() {
   const [visible, setVisible] = useState(true);
-  const [progress, setProgress] = useState(0);
-  const [statusText, setStatusText] = useState("Đang khởi tạo không gian làm việc...");
   const [isClosing, setIsClosing] = useState(false);
-  const [isMuted, setIsMuted] = useState(true);
-  const [videoError, setVideoError] = useState(false);
+  const [statusText, setStatusText] = useState("Đang đánh thức người bạn Pip...");
 
   const lang = useLumen((s) => s.lang);
   const introVideoEnabled = useLumen((s) => s.introVideoEnabled ?? true);
@@ -20,7 +17,7 @@ export function AppStartupLoading() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const isDismissedRef = useRef(false);
 
-  // Smooth Dismiss function
+  // Smooth Organic Dismiss & Transition to Workspace
   const handleDismiss = () => {
     if (isDismissedRef.current) return;
     isDismissedRef.current = true;
@@ -38,7 +35,7 @@ export function AppStartupLoading() {
 
     setTimeout(() => {
       setVisible(false);
-    }, 350);
+    }, 450);
   };
 
   useEffect(() => {
@@ -48,48 +45,37 @@ export function AppStartupLoading() {
       return;
     }
 
-    // Keyboard shortcuts to skip (Space, Enter, Escape)
+    // Any key (Space, Enter, Escape, etc.) dismisses instantly
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" || e.key === " " || e.key === "Enter") {
-        e.preventDefault();
-        handleDismiss();
-      }
+      e.preventDefault();
+      handleDismiss();
     };
 
     window.addEventListener("keydown", handleKeyDown);
 
-    // Fallback safety timer: in case video doesn't play or takes too long, auto-dismiss after 6s
-    const fallbackTimer = setTimeout(() => {
+    // Natural duration: 5.5s intro showcase before smooth transition
+    const autoDismissTimer = setTimeout(() => {
       handleDismiss();
-    }, 6500);
+    }, 5500);
 
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
-      clearTimeout(fallbackTimer);
+      clearTimeout(autoDismissTimer);
     };
   }, [introVideoEnabled]);
 
   const handleTimeUpdate = () => {
     if (!videoRef.current) return;
     const current = videoRef.current.currentTime;
-    const duration = videoRef.current.duration || 4.5;
+    const duration = videoRef.current.duration || 5.0;
     const pct = Math.min(100, Math.round((current / duration) * 100));
-    setProgress(pct);
 
     if (pct < 35) {
-      setStatusText(isVi ? "Đang khởi tạo không gian làm việc..." : "Initializing spatial workspace...");
-    } else if (pct < 75) {
-      setStatusText(isVi ? "Đang tải ghi chú & người bạn Pip..." : "Loading notes & companion...");
+      setStatusText(isVi ? "Đang chuẩn bị không gian làm việc..." : "Preparing spatial workspace...");
+    } else if (pct < 70) {
+      setStatusText(isVi ? "Đang đánh thức người bạn Pip ✨" : "Waking up Pip companion ✨");
     } else {
-      setStatusText(isVi ? "Sẵn sàng làm việc ✨" : "Ready for workspace ✨");
-    }
-  };
-
-  const toggleMute = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (videoRef.current) {
-      videoRef.current.muted = !isMuted;
-      setIsMuted(!isMuted);
+      setStatusText(isVi ? "Sẵn sàng làm việc 🚀" : "Ready for productivity 🚀");
     }
   };
 
@@ -98,102 +84,63 @@ export function AppStartupLoading() {
   return (
     <div
       className={cn(
-        "interactive-el fixed inset-0 z-[99999] flex items-center justify-center bg-[#0C0D12]/90 backdrop-blur-3xl transition-opacity duration-300 pointer-events-auto select-none overflow-hidden",
-        isClosing && "opacity-0 pointer-events-none",
+        "interactive-el fixed inset-0 z-[99999] flex flex-col items-center justify-center bg-[#0C0D12]/92 backdrop-blur-2xl transition-all duration-500 pointer-events-auto select-none overflow-hidden cursor-pointer",
+        isClosing && "opacity-0 scale-105 pointer-events-none blur-sm",
       )}
       onClick={handleDismiss}
+      title="Nhấp chuột hoặc bấm phím bất kỳ để vào màn hình làm việc"
     >
-      {/* Ambient background glow matching Lumen amber theme */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(245,166,35,0.12),transparent_70%)] pointer-events-none" />
+      {/* 1. Deep Ambient Radial Atmosphere Glow */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_45%,rgba(245,166,35,0.18),rgba(20,22,29,0.95)_65%,#0C0D12_95%)] pointer-events-none" />
 
-      {/* Main Cinematic Video Presentation Card */}
-      <div
-        className={cn(
-          "relative w-[620px] max-w-[94vw] aspect-video rounded-3xl bg-[#14161D] text-[#F4F5F7] shadow-[0_30px_90px_rgba(0,0,0,0.95)] border border-white/10 overflow-hidden flex flex-col justify-between transition-all duration-300 animate-in fade-in zoom-in-95",
-          isClosing && "scale-95 translate-y-2 opacity-0",
-        )}
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* 1. Video Element (with scale-104 crop to eliminate edge artifacts) */}
-        {!videoError ? (
-          <div className="absolute inset-0 w-full h-full overflow-hidden bg-black flex items-center justify-center">
-            <video
-              ref={videoRef}
-              src="/intro.mp4"
-              autoPlay
-              muted={isMuted}
-              playsInline
-              preload="auto"
-              onTimeUpdate={handleTimeUpdate}
-              onEnded={handleDismiss}
-              onError={() => setVideoError(true)}
-              className="size-full object-cover scale-[1.04] select-none pointer-events-none will-change-transform"
-            />
-          </div>
-        ) : (
-          /* Fallback Animated Mascot if video file fails */
-          <div className="absolute inset-0 w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-[#1D2029] to-[#14161D]">
-            <img src="/icon.png" alt="Lumen Logo" className="size-20 object-contain animate-bounce mb-3" />
-            <h2 className="text-lg font-bold text-white tracking-tight">Lumen Desktop</h2>
-          </div>
-        )}
+      {/* 2. Organic Luminous Centerpiece Portal (Feathered Radial Mask - Zero Video Box Borders) */}
+      <div className="relative flex flex-col items-center justify-center">
+        {/* Amber Halo Glow behind Mascot */}
+        <div className="absolute -top-6 size-80 rounded-full bg-[#F5A623]/25 blur-3xl pointer-events-none animate-pulse" />
 
-        {/* 2. Top Header Overlay (Conceals top watermarks & branding) */}
-        <div className="relative z-20 flex items-center justify-between p-4 bg-gradient-to-b from-black/80 via-black/40 to-transparent">
-          {/* Top-Left: Lumen Branding Badge */}
-          <div className="flex items-center gap-2.5 rounded-full bg-[#14161D]/85 px-3 py-1 border border-white/10 backdrop-blur-md shadow-lg">
-            <img src="/icon.png" alt="Lumen Logo" className="size-4.5 object-contain" />
-            <span className="text-xs font-semibold text-white tracking-wide">Lumen</span>
-            <span className="text-[10px] font-mono text-[#F5A623] font-bold px-1.5 py-0.2 rounded-full bg-[#F5A623]/20">
-              v2.0
-            </span>
-          </div>
+        {/* Seamless Masked Video Portal */}
+        <div
+          className="relative size-72 sm:size-80 md:size-96 overflow-hidden flex items-center justify-center pointer-events-none"
+          style={{
+            maskImage: "radial-gradient(ellipse 65% 70% at 50% 48%, black 45%, rgba(0,0,0,0.85) 60%, transparent 85%)",
+            WebkitMaskImage: "radial-gradient(ellipse 65% 70% at 50% 48%, black 45%, rgba(0,0,0,0.85) 60%, transparent 85%)",
+          }}
+        >
+          <video
+            ref={videoRef}
+            src="/intro.mp4"
+            autoPlay
+            muted
+            playsInline
+            preload="auto"
+            onTimeUpdate={handleTimeUpdate}
+            onEnded={handleDismiss}
+            className="size-full object-cover scale-[1.12] select-none pointer-events-none will-change-transform drop-shadow-[0_20px_40px_rgba(0,0,0,0.8)]"
+          />
+        </div>
 
-          {/* Top-Right: Sound Toggle & Skip Button (Conceals top-right watermark) */}
+        {/* 3. Sleek Organic Branding Typography */}
+        <div className="relative z-10 -mt-4 flex flex-col items-center text-center space-y-1.5 pointer-events-none animate-in fade-in slide-in-from-bottom-2 duration-300">
           <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={toggleMute}
-              className="flex size-7.5 items-center justify-center rounded-full bg-[#14161D]/80 hover:bg-[#262A35] text-[#8B90A0] hover:text-white border border-white/10 backdrop-blur-md transition-colors cursor-pointer"
-              title={isMuted ? "Bật âm thanh" : "Tắt âm thanh"}
-              aria-label="Toggle Sound"
-            >
-              {isMuted ? <VolumeX className="size-3.5" /> : <Volume2 className="size-3.5 text-[#F5A623]" />}
-            </button>
-
-            <button
-              type="button"
-              onClick={handleDismiss}
-              className="flex items-center gap-1.5 rounded-full bg-[#14161D]/85 hover:bg-[#262A35] px-3 py-1 text-xs font-medium text-[#F4F5F7] border border-white/10 backdrop-blur-md transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-lg group"
-              title="Bỏ qua (Phím Space hoặc Esc)"
-              aria-label="Skip Intro"
-            >
-              <span>{isVi ? "Bỏ qua" : "Skip"}</span>
-              <span className="text-[10px] font-mono text-[#8B90A0] group-hover:text-white transition-colors">
-                [Space]
-              </span>
-            </button>
-          </div>
-        </div>
-
-        {/* 3. Bottom Corner Mask & Cinematic Vignette (Conceals bottom watermarks) */}
-        <div className="relative z-20 flex flex-col p-4 bg-gradient-to-t from-black/90 via-black/50 to-transparent">
-          <div className="flex items-center justify-between text-xs text-[#8B90A0] mb-2 font-medium">
-            <span className="text-[#F4F5F7] flex items-center gap-1.5">
-              <Sparkles className="size-3.5 text-[#F5A623]" />
-              {statusText}
+            <h1 className="text-xl sm:text-2xl font-extrabold tracking-wider bg-gradient-to-r from-[#F4F5F7] via-[#FFD166] to-[#F5A623] bg-clip-text text-transparent drop-shadow-md">
+              LUMEN
+            </h1>
+            <span className="rounded-full bg-[#F5A623]/20 px-2 py-0.5 text-[10px] font-mono font-bold text-[#F5A623] border border-[#F5A623]/30">
+              DESK
             </span>
-            <span className="font-mono text-[11px] text-[#F5A623] font-semibold">{progress}%</span>
           </div>
 
-          {/* Cinematic Amber Glowing Progress Bar */}
-          <div className="w-full bg-white/10 h-1.5 rounded-full overflow-hidden p-0.5">
-            <div
-              className="h-full rounded-full bg-gradient-to-r from-[#F5A623] to-[#FFD166] shadow-[0_0_12px_rgba(245,166,35,0.75)] transition-all duration-150 ease-out"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
+          <p className="text-xs text-[#8B90A0] font-medium flex items-center gap-1.5 tracking-wide">
+            <Sparkles className="size-3.5 text-[#F5A623] animate-spin" style={{ animationDuration: "3s" }} />
+            <span>{statusText}</span>
+          </p>
         </div>
+      </div>
+
+      {/* 4. Minimalist Natural Interaction Hint at Bottom */}
+      <div className="absolute bottom-8 flex items-center gap-2 text-[11px] text-[#8B90A0]/70 font-mono tracking-wider uppercase pointer-events-none">
+        <span className="size-1.5 rounded-full bg-[#F5A623] animate-ping" />
+        <span>{isVi ? "Nhấp chuột hoặc bấm phím bất kỳ để bắt đầu" : "Click or press any key to enter"}</span>
       </div>
     </div>
   );
