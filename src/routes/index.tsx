@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { MultiWindowRouter } from "@/components/lumen/multi-window-view";
+import { DesktopScene } from "@/components/lumen/desktop-scene";
 
 export const Route = createFileRoute("/")({ component: Home });
 
 function Home() {
-  return <MultiWindowRouter />;
+  return <DesktopScene />;
 }

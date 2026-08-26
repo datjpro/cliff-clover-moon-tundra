@@ -2,7 +2,7 @@ const { app, BrowserWindow, globalShortcut, Tray, Menu, ipcMain, screen } = requ
 const path = require("path");
 const fs = require("fs");
 
-// Prevent Windows DWM & Chromium from occluding and pausing background video players (YouTube, media players)
+// Prevent Chromium / Edge from occluding and pausing background video players (YouTube, media players)
 app.commandLine.appendSwitch("disable-backgrounding-occluded-windows", "true");
 app.commandLine.appendSwitch("disable-renderer-backgrounding", "true");
 app.commandLine.appendSwitch("disable-background-timer-throttling", "true");
@@ -10,23 +10,22 @@ app.commandLine.appendSwitch("disable-features", "CalculateNativeWinOcclusion,In
 
 let mainWindow = null;
 let tray = null;
-const noteWindows = new Map();
-let pipWindow = null;
-let hubWindow = null;
 
-// Hide app icon from macOS Dock if on Darwin, making it a pure background daemon
+// Hide app icon from macOS Dock if on Darwin
 if (process.platform === "darwin" && app.dock) {
   app.dock.hide();
 }
 
 // Single Instance Lock
-const gotTheLock = app.requestSingleInstanceLock();
-if (!gotTheLock) {
-  app.quit();
-} else {
-  app.on("second-instance", () => {
-    restoreAndFocusWindow();
-  });
+if (app.isPackaged) {
+  const gotTheLock = app.requestSingleInstanceLock();
+  if (!gotTheLock) {
+    app.quit();
+  } else {
+    app.on("second-instance", () => {
+      restoreAndFocusWindow();
+    });
+  }
 }
 
 function getAppEntryUrl(queryString = "") {
@@ -47,17 +46,6 @@ function restoreAndFocusWindow() {
     mainWindow.setAlwaysOnTop(true, "normal");
     mainWindow.moveTop();
     mainWindow.focus();
-  }
-  noteWindows.forEach((win) => {
-    if (win && !win.isDestroyed()) {
-      if (win.isMinimized()) win.restore();
-      if (!win.isVisible()) win.show();
-      win.setAlwaysOnTop(true, "normal");
-    }
-  });
-  if (pipWindow && !pipWindow.isDestroyed()) {
-    if (!pipWindow.isVisible()) pipWindow.show();
-    pipWindow.setAlwaysOnTop(true, "normal");
   }
 }
 
@@ -113,129 +101,6 @@ function createMainWindow() {
   screen.on("display-metrics-changed", updateWindowBounds);
   screen.on("display-added", updateWindowBounds);
   screen.on("display-removed", updateWindowBounds);
-}
-
-// 🪟 Create Individual Sticky Note Window (Multi-Window mode)
-function createNoteWindow(noteId, x = 100, y = 100) {
-  if (noteWindows.has(noteId)) {
-    const existing = noteWindows.get(noteId);
-    if (existing && !existing.isDestroyed()) {
-      existing.show();
-      existing.focus();
-      return existing;
-    }
-  }
-
-  const win = new BrowserWindow({
-    x: Math.round(x),
-    y: Math.round(y),
-    width: 280,
-    height: 320,
-    icon: path.join(__dirname, "icon.png"),
-    transparent: true,
-    frame: false,
-    hasShadow: false,
-    alwaysOnTop: true,
-    skipTaskbar: true,
-    focusable: true,
-    acceptFirstMouse: true,
-    backgroundColor: "#00000000",
-    webPreferences: {
-      preload: path.join(__dirname, "preload.cjs"),
-      nodeIntegration: false,
-      contextIsolation: true,
-      webSecurity: false,
-      backgroundThrottling: false,
-    },
-  });
-
-  const url = getAppEntryUrl(`view=note&id=${noteId}`);
-  win.loadURL(url);
-  noteWindows.set(noteId, win);
-
-  win.on("closed", () => {
-    noteWindows.delete(noteId);
-  });
-
-  return win;
-}
-
-// 🦊 Create Pip Companion Mini Window
-function createPipWindow() {
-  if (pipWindow && !pipWindow.isDestroyed()) {
-    pipWindow.show();
-    pipWindow.focus();
-    return pipWindow;
-  }
-
-  const primaryDisplay = screen.getPrimaryDisplay();
-  const { width, height } = primaryDisplay.bounds;
-
-  pipWindow = new BrowserWindow({
-    x: width - 240,
-    y: height - 240,
-    width: 180,
-    height: 180,
-    icon: path.join(__dirname, "icon.png"),
-    transparent: true,
-    frame: false,
-    hasShadow: false,
-    alwaysOnTop: true,
-    skipTaskbar: true,
-    resizable: false,
-    backgroundColor: "#00000000",
-    webPreferences: {
-      preload: path.join(__dirname, "preload.cjs"),
-      nodeIntegration: false,
-      contextIsolation: true,
-      webSecurity: false,
-      backgroundThrottling: false,
-    },
-  });
-
-  const url = getAppEntryUrl("view=pip");
-  pipWindow.loadURL(url);
-
-  pipWindow.on("closed", () => {
-    pipWindow = null;
-  });
-
-  return pipWindow;
-}
-
-// ⚙️ Create Settings Hub Window
-function createHubWindow() {
-  if (hubWindow && !hubWindow.isDestroyed()) {
-    hubWindow.show();
-    hubWindow.focus();
-    return hubWindow;
-  }
-
-  hubWindow = new BrowserWindow({
-    width: 780,
-    height: 600,
-    center: true,
-    icon: path.join(__dirname, "icon.png"),
-    transparent: false,
-    frame: true,
-    title: "Lumen Settings & Pro Hub",
-    backgroundColor: "#14161D",
-    webPreferences: {
-      preload: path.join(__dirname, "preload.cjs"),
-      nodeIntegration: false,
-      contextIsolation: true,
-      webSecurity: false,
-    },
-  });
-
-  const url = getAppEntryUrl("view=hub");
-  hubWindow.loadURL(url);
-
-  hubWindow.on("closed", () => {
-    hubWindow = null;
-  });
-
-  return hubWindow;
 }
 
 function registerShortcuts(accelerators, callback) {
@@ -306,7 +171,7 @@ function createTray() {
 
     const contextMenu = Menu.buildFromTemplate([
       {
-        label: "🌟 Lumen — Spatial Companion",
+        label: "🌟 Lumen — Lightweight Spatial Workspace",
         enabled: false,
       },
       { type: "separator" },
@@ -344,7 +209,7 @@ function createTray() {
       },
     ]);
 
-    tray.setToolTip("Lumen — Transparent Desktop Sticky Notes & Companion");
+    tray.setToolTip("Lumen — Lightweight Spatial Sticky Notes & Companion");
     tray.setContextMenu(contextMenu);
 
     tray.on("click", () => {
@@ -405,20 +270,6 @@ app.whenReady().then(() => {
       win.setAlwaysOnTop(Boolean(flag), "normal");
     }
   });
-
-  // Multi-Window IPC Commands
-  ipcMain.on("create-note-window", (_event, { noteId, initialX, initialY }) => {
-    createNoteWindow(noteId, initialX, initialY);
-  });
-  ipcMain.on("close-note-window", (_event, noteId) => {
-    if (noteWindows.has(noteId)) {
-      const win = noteWindows.get(noteId);
-      if (win && !win.isDestroyed()) win.close();
-      noteWindows.delete(noteId);
-    }
-  });
-  ipcMain.on("open-hub-window", () => createHubWindow());
-  ipcMain.on("open-pro-window", () => createHubWindow());
 
   ipcMain.on("quit-app", () => {
     app.quit();
