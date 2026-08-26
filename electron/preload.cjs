@@ -11,6 +11,11 @@ contextBridge.exposeInMainWorld("desktopAPI", {
   switchToCornerMode: () => ipcRenderer.send("switch-to-corner-mode"),
   switchToFullMode: () => ipcRenderer.send("switch-to-full-mode"),
   switchToTransparentScreenMode: () => ipcRenderer.send("switch-to-transparent-screen-mode"),
+  createNoteWindow: (noteId, initialX, initialY) => ipcRenderer.send("create-note-window", { noteId, initialX, initialY }),
+  closeNoteWindow: (noteId) => ipcRenderer.send("close-note-window", noteId),
+  setWindowPosition: (x, y) => ipcRenderer.send("set-window-position", { x, y }),
+  openHubWindow: () => ipcRenderer.send("open-hub-window"),
+  openProWindow: () => ipcRenderer.send("open-pro-window"),
   on: (channel, callback) => {
     const handler = (_event, ...args) => callback(...args);
     ipcRenderer.on(channel, handler);
