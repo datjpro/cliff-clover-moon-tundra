@@ -349,14 +349,19 @@ function FloatingTrayMenu() {
         </div>
       ) : null}
 
-      {/* 4. Tiny Custom Pet Icon Trigger at Corner of Desktop */}
+      {/* 4. Brand Logo Trigger Button at Corner of Desktop */}
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="flex size-10 items-center justify-center rounded-2xl bg-[#1D2029]/95 hover:bg-[#1D2029] text-white shadow-2xl border border-white/10 backdrop-blur-xl hover:scale-110 active:scale-95 transition-transform duration-140 cursor-pointer"
-        title="Lumen Overlay Menu (Chỉ chuột để hiện khay giấy)"
+        className="flex size-11 items-center justify-center rounded-2xl bg-[#1D2029]/95 hover:bg-[#262A35] text-white shadow-[0_10px_30px_rgba(0,0,0,0.5)] border border-white/10 backdrop-blur-xl hover:scale-110 active:scale-95 transition-transform duration-140 cursor-pointer overflow-hidden p-1.5 group"
+        title="Lumen Workspace (Chỉ chuột để hiện khay giấy)"
+        aria-label="Lumen Menu"
       >
-        <span className="text-xl">🦊</span>
+        <img
+          src="/logo.png"
+          alt="Lumen Logo"
+          className="size-full object-contain rounded-xl drop-shadow-md group-hover:scale-105 transition-transform duration-140 select-none pointer-events-none"
+        />
       </button>
     </div>
   );
