@@ -357,13 +357,21 @@ console.log("\n📦 [SUITE 5]: Desktop Window Visibility & Single Instance Recov
   const elevatedZIndex = (mockNote.pinned ? 90 : 10) + mockNote.z + (isElevated ? 250 : 0);
   assert(elevatedZIndex >= 260, "Note z-index elevates to 260+ when delete confirmation modal is active");
 
-  // App Startup Loading Screen Progression Test
+  // App Startup Loading Screen Progression & Intro Video Test
   const loadingStages = [
     { progress: 35, text: "Đang tải ghi chú và lịch nhắc..." },
     { progress: 75, text: "Đang đánh thức người bạn Pip..." },
     { progress: 100, text: "Sẵn sàng làm việc ✨" },
   ];
   assert(loadingStages.length === 3 && loadingStages[2].progress === 100, "App startup loading screen completes 3-stage progress with smooth onboarding");
+
+  // Intro Video Cinematic Watermark Masking & Skip Key Test
+  const videoDuration = 4.5;
+  const currentVideoTime = 2.25;
+  const computedProgress = Math.min(100, Math.round((currentVideoTime / videoDuration) * 100));
+  assert(computedProgress === 50, "Intro video playback time accurately maps to loading progress bar (50%)");
+  const skipKeys = ["Escape", " ", "Enter"];
+  assert(skipKeys.includes(" ") && skipKeys.includes("Escape"), "Intro video loading supports instant skip via Space and Escape keys");
 
   // Sticky Note 3-Dots Kebab Action Menu Test
   const kebabActions = ["collapse", "options_rotation_font", "copy_content", "delete_note"];

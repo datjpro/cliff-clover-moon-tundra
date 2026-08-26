@@ -245,10 +245,13 @@ export function Hub() {
   const setHubOpen = useLumen((s) => s.setHubOpen);
   const lang = useLumen((s) => s.lang);
   const setLang = useLumen((s) => s.setLang);
+  const isVi = lang === "vi";
   const theme = useLumen((s) => s.theme);
   const setTheme = useLumen((s) => s.setTheme);
   const alwaysOnTop = useLumen((s) => s.alwaysOnTop);
   const setAlwaysOnTop = useLumen((s) => s.setAlwaysOnTop);
+  const introVideoEnabled = useLumen((s) => s.introVideoEnabled ?? true);
+  const setIntroVideoEnabled = useLumen((s) => s.setIntroVideoEnabled);
   const pip = useLumen((s) => s.pip);
   const setPip = useLumen((s) => s.setPip);
   const setPipEnabled = useLumen((s) => s.setPipEnabled);
@@ -1281,6 +1284,16 @@ export function Hub() {
                   <p className="text-[10px] text-[#8B90A0]">{dict.look.alwaysOnTopDesc}</p>
                 </div>
                 <Switch checked={alwaysOnTop} onCheckedChange={handleAlwaysOnTopChange} />
+              </div>
+
+              <div className="flex items-center justify-between gap-3 rounded-2xl bg-[#262A35]/30 px-3 py-2.5 border border-white/5">
+                <div>
+                  <p className="text-xs font-medium text-[#F4F5F7]">{isVi ? "Video Intro khi mở ứng dụng" : "Startup Intro Video"}</p>
+                  <p className="text-[10px] text-[#8B90A0]">
+                    {isVi ? "Phát đoạn intro cinematic khi khởi động (bấm Space để bỏ qua)" : "Play cinematic intro on startup (Space to skip)"}
+                  </p>
+                </div>
+                <Switch checked={introVideoEnabled} onCheckedChange={(val) => setIntroVideoEnabled(val)} />
               </div>
 
               <div className="flex items-center justify-between gap-3 rounded-2xl bg-[#262A35]/30 px-3 py-2.5 border border-white/5">

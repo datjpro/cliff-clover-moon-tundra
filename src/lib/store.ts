@@ -93,6 +93,8 @@ type LumenState = {
   resetDemo: () => void;
   appLoaded: boolean;
   setAppLoaded: (loaded: boolean) => void;
+  introVideoEnabled: boolean;
+  setIntroVideoEnabled: (enabled: boolean) => void;
   pro: ProLicense;
   proModalOpen: boolean;
   proModalFeature: ProFeatureId | null;
@@ -128,6 +130,8 @@ export const useLumen = create<LumenState>()(
       hydrated: false,
       appLoaded: false,
       setAppLoaded: (appLoaded) => set({ appLoaded }),
+      introVideoEnabled: true,
+      setIntroVideoEnabled: (introVideoEnabled) => set({ introVideoEnabled }),
       lang: "vi",
       theme: "ink",
       layout: "stickies",
