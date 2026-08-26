@@ -36,7 +36,9 @@
     "active": true,
     "targets": "all",
     "resources": [
-      "WebView2Loader.dll"
+      "WebView2Loader.dll",
+      "lumen-desktop.exe.manifest",
+      "Lumen.exe.manifest"
     ],
     "icon": [
       "icons/32x32.png",
