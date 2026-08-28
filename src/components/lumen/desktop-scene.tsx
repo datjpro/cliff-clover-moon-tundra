@@ -8,6 +8,7 @@ import {
   listenToDesktopEvent,
   sendDesktopNotification,
   setIgnoreMouseEvents,
+  updateInteractiveHitRects,
 } from "@/lib/desktop-bridge";
 import { useLumen } from "@/lib/store";
 import { AlarmRingingModal } from "./alarm-ringing-modal";
@@ -396,15 +397,14 @@ export function DesktopScene() {
 
   const isAnyModalOpen = captureOpen || quickTimerOpen || hubOpen || searchOpen;
 
-  // Dynamic Click-Through: mousemove-based setIgnoreMouseEvents toggling.
+  // Dynamic Click-Through: mousemove-based setIgnoreMouseEvents toggling + Tauri hit-rects sync
   //
   // Strategy:
   //   • setIgnoreMouseEvents(true) → transparent areas pass clicks to OS apps below
-  //     (e.g., browser, media player). Electron main.cjs uses { forward: true } so
-  //     mousemove events are still forwarded to React for hit-detection.
+  //     (e.g., browser, media player). Electron & Tauri background watcher routes clicks to OS.
   //   • setIgnoreMouseEvents(false) → entered an interactive element; full pointer interaction.
   //
-  // This is the canonical Electron overlay pattern. CSS `pointer-events: none` on the root
+  // This is the canonical Desktop overlay pattern. CSS `pointer-events: none` on the root
   // div with `pointer-events: auto` on interactive elements handles React hit-testing,
   // while this IPC toggle makes transparent areas truly click-through at the OS level.
   useEffect(() => {
@@ -437,13 +437,54 @@ export function DesktopScene() {
     };
     document.documentElement.addEventListener("mouseleave", handleMouseLeave);
 
+    // Sync interactive bounding boxes to native Tauri click-through engine
+    const syncRects = () => {
+      if (isAnyModalOpen) {
+        void updateInteractiveHitRects([], true);
+        return;
+      }
+
+      const elements = document.querySelectorAll(INTERACTIVE_SELECTOR);
+      const dpr = window.devicePixelRatio || 1;
+      const rects: Array<{ x: number; y: number; width: number; height: number }> = [];
+
+      elements.forEach((el) => {
+        const r = el.getBoundingClientRect();
+        if (r.width > 0 && r.height > 0) {
+          // Add 6px padding buffer around elements for seamless cursor entry
+          rects.push({
+            x: Math.max(0, (r.left - 6) * dpr),
+            y: Math.max(0, (r.top - 6) * dpr),
+            width: (r.width + 12) * dpr,
+            height: (r.height + 12) * dpr,
+          });
+        }
+      });
+
+      void updateInteractiveHitRects(rects, false);
+    };
+
+    syncRects();
+    const interval = setInterval(syncRects, 200);
+
+    // Global pointerdown focus helper ensuring Windows HWND & WebView2 focus on interaction
+    const handleGlobalPointerDown = (e: globalThis.PointerEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target && target.closest(INTERACTIVE_SELECTOR)) {
+        void focusDesktopWindow();
+      }
+    };
+    window.addEventListener("pointerdown", handleGlobalPointerDown, { capture: true });
+
     return () => {
       window.removeEventListener("mousemove", throttledHandler);
       document.documentElement.removeEventListener("mouseleave", handleMouseLeave);
+      window.removeEventListener("pointerdown", handleGlobalPointerDown, { capture: true });
+      clearInterval(interval);
       // Restore to fully interactive mode on cleanup (component unmount)
       setIgnoreMouseEvents(false);
     };
-  }, []);
+  }, [isAnyModalOpen, notes, layout, appLoaded]);
 
   // Global & In-App Keyboard Shortcuts
   useEffect(() => {

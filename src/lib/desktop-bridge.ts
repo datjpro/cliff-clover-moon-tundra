@@ -53,6 +53,31 @@ export async function restoreDesktopWindow(): Promise<void> {
   }
 }
 
+export interface HitRect {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+/**
+ * Update interactive bounding rects for native click-through engine in Tauri v2
+ */
+export async function updateInteractiveHitRects(
+  rects: HitRect[],
+  forceInteractive: boolean,
+): Promise<void> {
+  if (typeof window === "undefined") return;
+  if (window.__TAURI_INTERNALS__ || window.__TAURI__) {
+    try {
+      const { invoke } = await import("@tauri-apps/api/core");
+      await invoke("update_interactive_rects", { rects, forceInteractive });
+    } catch (err) {
+      console.debug("[DesktopBridge] update_interactive_rects error:", err);
+    }
+  }
+}
+
 /**
  * Focus Desktop Window and input web contents immediately
  */
@@ -63,11 +88,16 @@ export async function focusDesktopWindow(): Promise<void> {
   }
   if (typeof window !== "undefined" && (window.__TAURI_INTERNALS__ || window.__TAURI__)) {
     try {
-      const { getCurrentWindow } = await import("@tauri-apps/api/window");
-      const win = getCurrentWindow();
-      await win.setFocus();
-    } catch (err) {
-      console.debug("[DesktopBridge] focus error:", err);
+      const { invoke } = await import("@tauri-apps/api/core");
+      await invoke("focus_window");
+    } catch {
+      try {
+        const { getCurrentWindow } = await import("@tauri-apps/api/window");
+        const win = getCurrentWindow();
+        await win.setFocus();
+      } catch (err) {
+        console.debug("[DesktopBridge] focus error:", err);
+      }
     }
   }
 }
@@ -137,7 +167,13 @@ export function setIgnoreMouseEvents(ignore: boolean): void {
     window.desktopAPI.setIgnoreMouseEvents(ignore);
     return;
   }
-  // In Tauri Desktop, cursor events remain enabled so notes, inputs, buttons, and companion are 100% interactive.
+  if (typeof window !== "undefined" && (window.__TAURI_INTERNALS__ || window.__TAURI__)) {
+    void import("@tauri-apps/api/core").then(({ invoke }) => {
+      invoke("set_ignore_cursor_events", { ignore }).catch((err) => {
+        console.debug("[DesktopBridge] set_ignore_cursor_events error:", err);
+      });
+    });
+  }
 }
 
 /**

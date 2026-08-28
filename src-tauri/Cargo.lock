@@ -2055,6 +2055,7 @@ dependencies = [
  "tauri-plugin-global-shortcut",
  "tauri-plugin-notification",
  "tauri-plugin-shell",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
