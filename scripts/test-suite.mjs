@@ -702,6 +702,84 @@ console.log("\n📦 [SUITE 5]: Desktop Window Visibility & Single Instance Recov
   );
 }
 
+// TEST SUITE 7: PRO LICENSE & 3-DAY TRIAL ENGINE (v1.0.1)
+console.log("\n📦 [SUITE 7]: Pro License & 3-Day Trial Engine (v1.0.1)");
+{
+  function simulateActivatePro(licenseKey, currentTime = Date.now()) {
+    const cleaned = (licenseKey || "").trim().toUpperCase();
+    if (cleaned.length < 4) {
+      return { success: false, message: "Invalid license key format" };
+    }
+    const isTrial3Day =
+      cleaned === "LUMENTRIAL3DAY" ||
+      cleaned === "TRIAL3DAY" ||
+      cleaned === "LUMEN-TRIAL-3DAY";
+    const isTrial = isTrial3Day || cleaned.includes("TRIAL");
+    const durationMs = isTrial ? 3 * 24 * 60 * 60 * 1000 : undefined;
+    const expiresAt = durationMs ? currentTime + durationMs : undefined;
+
+    return {
+      success: true,
+      pro: {
+        isPro: true,
+        licenseKey: cleaned,
+        activatedAt: currentTime,
+        plan: isTrial ? "trial" : "lifetime",
+        expiresAt,
+      },
+    };
+  }
+
+  // 1. Invalid key rejection
+  const resInvalid = simulateActivatePro("ABC");
+  assert(!resInvalid.success, "Invalid license key shorter than 4 characters is cleanly rejected");
+
+  // 2. LUMENTRIAL3DAY 3-Day Trial activation
+  const testNow = 1788800000000;
+  const resTrial = simulateActivatePro("LUMENTRIAL3DAY", testNow);
+  assert(resTrial.success, "LUMENTRIAL3DAY code activates successfully");
+  assert(resTrial.pro.isPro === true, "LUMENTRIAL3DAY sets isPro to true");
+  assert(resTrial.pro.plan === "trial", "LUMENTRIAL3DAY assigns 'trial' plan");
+  assert(
+    resTrial.pro.expiresAt === testNow + 3 * 24 * 60 * 60 * 1000,
+    "LUMENTRIAL3DAY expiresAt is set exactly 3 days (72 hours) in the future"
+  );
+
+  // 3. Lifetime Pro activation
+  const resLifetime = simulateActivatePro("LUMEN-PRO-LIFETIME-2026", testNow);
+  assert(resLifetime.success, "Lifetime Pro key activates successfully");
+  assert(resLifetime.pro.plan === "lifetime", "Lifetime Pro key assigns 'lifetime' plan");
+  assert(resLifetime.pro.expiresAt === undefined, "Lifetime Pro has no expiration date");
+
+  // 4. Trial Expiration Check Logic
+  function checkTrialExpired(proState, checkTime) {
+    if (proState.isPro && proState.plan === "trial" && proState.expiresAt && checkTime > proState.expiresAt) {
+      return { isPro: false, plan: "free" };
+    }
+    return proState;
+  }
+
+  const activeTrialState = resTrial.pro;
+  // Check 1 day later (should still be active)
+  const stateDay1 = checkTrialExpired(activeTrialState, testNow + 1 * 24 * 60 * 60 * 1000);
+  assert(stateDay1.isPro === true, "Trial remains active on Day 1");
+
+  // Check 3 days + 1 second later (should expire)
+  const stateExpired = checkTrialExpired(activeTrialState, testNow + 3 * 24 * 60 * 60 * 1000 + 1000);
+  assert(stateExpired.isPro === false && stateExpired.plan === "free", "Trial expires gracefully after 3 days");
+
+  // 5. Trial Time Remaining Formatter
+  function formatTrialRemaining(expiresAt, current) {
+    const diffMs = expiresAt - current;
+    if (diffMs <= 0) return "Expired";
+    const days = Math.floor(diffMs / (24 * 60 * 60 * 1000));
+    const hours = Math.floor((diffMs % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
+    return `${days}d ${hours}h`;
+  }
+  const remainingStr = formatTrialRemaining(activeTrialState.expiresAt, testNow + 12 * 60 * 60 * 1000); // 12 hrs elapsed
+  assert(remainingStr === "2d 12h", "Trial remaining time formatted accurately as '2d 12h'");
+}
+
 console.log(`\n========================================`);
 console.log(`📊 FINAL TEST REPORT: ${passed}/${total} Tests Passed (100% Success)`);
 console.log(`========================================\n`);

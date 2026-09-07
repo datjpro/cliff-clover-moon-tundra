@@ -203,17 +203,37 @@ export const useLumen = create<LumenState>()(
             message: get().lang === "vi" ? "Mã bản quyền không hợp lệ" : "Invalid license key format",
           };
         }
+
+        const isTrial3Day =
+          cleaned === "LUMENTRIAL3DAY" ||
+          cleaned === "TRIAL3DAY" ||
+          cleaned === "LUMEN-TRIAL-3DAY";
+        const isTrial = isTrial3Day || cleaned.includes("TRIAL");
+        const now = Date.now();
+        const durationMs = isTrial ? 3 * 24 * 60 * 60 * 1000 : undefined;
+        const expiresAt = durationMs ? now + durationMs : undefined;
+
         sounds.playChime();
         set({
           pro: {
             isPro: true,
             licenseKey: cleaned,
-            activatedAt: Date.now(),
-            plan: "lifetime",
+            activatedAt: now,
+            plan: isTrial ? "trial" : "lifetime",
+            expiresAt,
           },
           proModalOpen: false,
         });
-        return { success: true, message: "OK" };
+        return {
+          success: true,
+          message: isTrial
+            ? get().lang === "vi"
+              ? "🎉 Đã kích hoạt gói Dùng Thử Lumen Pro 3 Ngày thành công!"
+              : "🎉 3-Day Lumen Pro Trial activated successfully!"
+            : get().lang === "vi"
+            ? "👑 Đã kích hoạt bản quyền Lumen Pro Trọn Đời thành công!"
+            : "👑 Lifetime Lumen Pro License activated successfully!",
+        };
       },
       deactivatePro: () => {
         sounds.playPop(400);
@@ -830,6 +850,18 @@ export const useLumen = create<LumenState>()(
           if (cleaned.length !== state.calendarEvents.length) {
             state.calendarEvents = cleaned;
           }
+        }
+        if (
+          state &&
+          state.pro?.isPro &&
+          state.pro?.plan === "trial" &&
+          state.pro?.expiresAt &&
+          Date.now() > state.pro.expiresAt
+        ) {
+          state.pro = {
+            isPro: false,
+            plan: "free",
+          };
         }
       },
       partialize: (s) => ({

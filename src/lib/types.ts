@@ -144,6 +144,6 @@ export type ProLicense = {
   isPro: boolean;
   licenseKey?: string;
   activatedAt?: number;
-  plan?: "lifetime" | "annual" | "monthly" | "free";
+  plan?: "lifetime" | "annual" | "monthly" | "trial" | "free";
   expiresAt?: number;
 };
