@@ -491,195 +491,200 @@ export function StandaloneCalendar() {
         role="region"
         aria-label="Lumen Today Agenda Dock"
         className={cn(
-          "interactive-el fixed z-[88] flex flex-col w-84 sm:w-88 rounded-3xl bg-[#181A22]/98 border border-white/12 text-[#F4F5F7] shadow-[0_20px_50px_rgba(0,0,0,0.85)] backdrop-blur-2xl select-none overflow-hidden animate-in fade-in zoom-in-95 duration-140 max-h-[480px]",
+          "interactive-el fixed z-[88] flex flex-col w-84 sm:w-88 rounded-3xl bg-[#181A22]/98 border border-white/12 text-[#F4F5F7] shadow-[0_20px_50px_rgba(0,0,0,0.85)] backdrop-blur-2xl select-none overflow-hidden animate-in fade-in zoom-in-95 duration-140 max-h-[500px]",
           dockClass,
         )}
       >
-        {/* Compact Dock Header: Today's Date & Actions */}
-        <div className="flex items-center justify-between px-3.5 py-3 bg-[#14161D]/80 border-b border-white/8">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="size-7 rounded-xl bg-[#F5A623]/20 text-[#F5A623] flex items-center justify-center shrink-0 border border-[#F5A623]/30">
-              <CalendarIcon className="size-4" />
-            </div>
-            <div className="min-w-0">
-              <div className="flex items-center gap-1.5">
-                <span className="font-bold text-xs text-[#F4F5F7] truncate block">
-                  {isVi ? "Lịch Trình Hôm Nay" : "Today's Agenda"}
-                </span>
-                <span className="text-[9px] font-mono px-1.5 py-0.2 rounded-full bg-[#F5A623]/15 text-[#F5A623] border border-[#F5A623]/30">
-                  {todayItems.length}
-                </span>
-              </div>
-              <span className="text-[10px] text-[#8B90A0] block truncate">{todayFormatted}</span>
-            </div>
+        {modalOpen ? (
+          <div className="p-3.5 h-[460px] flex flex-col">
+            {renderEmbeddedEventForm(true)}
           </div>
-
-          <div className="flex items-center gap-1 shrink-0">
-            <Button
-              size="icon"
-              variant="ghost"
-              onClick={() => handleOpenCreateModal(todayKey)}
-              className="size-7 rounded-lg bg-[#F5A623]/10 hover:bg-[#F5A623]/20 text-[#F5A623] cursor-pointer"
-              title={isVi ? "Thêm việc hôm nay" : "Add event today"}
-            >
-              <Plus className="size-3.5" />
-            </Button>
-            <button
-              type="button"
-              onClick={toggleCompact}
-              className="size-7 flex items-center justify-center rounded-lg hover:bg-white/10 text-[#8B90A0] hover:text-[#F5A623] transition-colors cursor-pointer"
-              title={isVi ? "Mở rộng lịch lớn (Expansive Mode)" : "Maximize calendar"}
-            >
-              <Maximize2 className="size-3.5" />
-            </button>
-            <button
-              type="button"
-              onClick={() => setCalendarOpen(false)}
-              className="size-7 flex items-center justify-center rounded-lg hover:bg-white/10 text-[#8B90A0] hover:text-white transition-colors cursor-pointer"
-              title="Đóng (Escape)"
-            >
-              <X className="size-3.5" />
-            </button>
-          </div>
-        </div>
-
-        {/* Compact Body: Strictly Filtered to Today's Scheduled Events & Notes */}
-        <div className="p-3 space-y-2 overflow-y-auto max-h-[360px] custom-scrollbar flex-1 min-h-0">
-          {todayItems.length === 0 ? (
-            <div className="py-7 flex flex-col items-center justify-center text-center text-[#8B90A0] space-y-2">
-              <div className="size-10 rounded-2xl bg-white/5 border border-white/8 flex items-center justify-center text-white/25">
-                <CalendarIcon className="size-5" />
+        ) : (
+          <>
+            {/* Compact Dock Header: Today's Date & Actions */}
+            <div className="flex items-center justify-between px-3.5 py-3 bg-[#14161D]/80 border-b border-white/8">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="size-7 rounded-xl bg-[#F5A623]/20 text-[#F5A623] flex items-center justify-center shrink-0 border border-[#F5A623]/30">
+                  <CalendarIcon className="size-4" />
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-bold text-xs text-[#F4F5F7] truncate block">
+                      {isVi ? "Lịch Trình Hôm Nay" : "Today's Agenda"}
+                    </span>
+                    <span className="text-[9px] font-mono px-1.5 py-0.2 rounded-full bg-[#F5A623]/15 text-[#F5A623] border border-[#F5A623]/30">
+                      {todayItems.length}
+                    </span>
+                  </div>
+                  <span className="text-[10px] text-[#8B90A0] block truncate">{todayFormatted}</span>
+                </div>
               </div>
-              <div className="space-y-0.5">
-                <p className="text-xs font-semibold text-[#F4F5F7]">
-                  {isVi ? "Hôm nay chưa có sự kiện nào" : "No events scheduled today"}
-                </p>
-                <p className="text-[10px] text-[#8B90A0] max-w-[210px]">
-                  {isVi ? "Tận hưởng ngày làm việc thảnh thơi hoặc lên lịch sự kiện mới!" : "Enjoy your focus time or create a new agenda item."}
-                </p>
+
+              <div className="flex items-center gap-1 shrink-0">
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={() => handleOpenCreateModal(todayKey)}
+                  className="size-7 rounded-lg bg-[#F5A623]/10 hover:bg-[#F5A623]/20 text-[#F5A623] cursor-pointer"
+                  title={isVi ? "Thêm việc hôm nay" : "Add event today"}
+                >
+                  <Plus className="size-3.5" />
+                </Button>
+                <button
+                  type="button"
+                  onClick={toggleCompact}
+                  className="size-7 flex items-center justify-center rounded-lg hover:bg-white/10 text-[#8B90A0] hover:text-[#F5A623] transition-colors cursor-pointer"
+                  title={isVi ? "Mở rộng lịch lớn (Expansive Mode)" : "Maximize calendar"}
+                >
+                  <Maximize2 className="size-3.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCalendarOpen(false)}
+                  className="size-7 flex items-center justify-center rounded-lg hover:bg-white/10 text-[#8B90A0] hover:text-white transition-colors cursor-pointer"
+                  title="Đóng (Escape)"
+                >
+                  <X className="size-3.5" />
+                </button>
               </div>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => handleOpenCreateModal(todayKey)}
-                className="mt-1 h-7 text-[11px] border-white/10 bg-white/5 hover:bg-[#F5A623]/20 hover:text-[#F5A623] text-[#8B90A0] rounded-xl cursor-pointer"
-              >
-                <Plus className="size-3 mr-1" />
-                <span>{isVi ? "Lên lịch hôm nay" : "Schedule today"}</span>
-              </Button>
             </div>
-          ) : (
-            todayItems.map((entry, idx) => {
-              if (entry.type === "event") {
-                const ev = entry.item;
-                const meta = CATEGORY_META[ev.category];
-                return (
-                  <div
-                    key={ev.id || idx}
-                    className={cn(
-                      "flex items-center justify-between p-2 rounded-2xl border transition-all duration-120 group",
-                      ev.completed
-                        ? "bg-[#14161D]/40 border-white/5 opacity-60"
-                        : "bg-[#1D2029] border-white/10 hover:border-white/20",
-                    )}
+
+            {/* Compact Body: Strictly Filtered to Today's Scheduled Events & Notes */}
+            <div className="p-3 space-y-2 overflow-y-auto max-h-[360px] custom-scrollbar flex-1 min-h-0">
+              {todayItems.length === 0 ? (
+                <div className="py-7 flex flex-col items-center justify-center text-center text-[#8B90A0] space-y-2">
+                  <div className="size-10 rounded-2xl bg-white/5 border border-white/8 flex items-center justify-center text-white/25">
+                    <CalendarIcon className="size-5" />
+                  </div>
+                  <div className="space-y-0.5">
+                    <p className="text-xs font-semibold text-[#F4F5F7]">
+                      {isVi ? "Hôm nay chưa có sự kiện nào" : "No events scheduled today"}
+                    </p>
+                    <p className="text-[10px] text-[#8B90A0] max-w-[210px]">
+                      {isVi ? "Tận hưởng ngày làm việc thảnh thơi hoặc lên lịch sự kiện mới!" : "Enjoy your focus time or create a new agenda item."}
+                    </p>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleOpenCreateModal(todayKey)}
+                    className="mt-1 h-7 text-[11px] border-white/10 bg-white/5 hover:bg-[#F5A623]/20 hover:text-[#F5A623] text-[#8B90A0] rounded-xl cursor-pointer"
                   >
-                    <div className="flex items-center gap-2 min-w-0 flex-1">
-                      <button
-                        type="button"
-                        onClick={() => toggleCalendarEventComplete(ev.id)}
+                    <Plus className="size-3 mr-1" />
+                    <span>{isVi ? "Lên lịch hôm nay" : "Schedule today"}</span>
+                  </Button>
+                </div>
+              ) : (
+                todayItems.map((entry, idx) => {
+                  if (entry.type === "event") {
+                    const ev = entry.item;
+                    const meta = CATEGORY_META[ev.category];
+                    return (
+                      <div
+                        key={ev.id || idx}
                         className={cn(
-                          "size-4 rounded-md border flex items-center justify-center cursor-pointer shrink-0 transition-colors",
+                          "flex items-center justify-between p-2 rounded-2xl border transition-all duration-120 group",
                           ev.completed
-                            ? "bg-emerald-500 border-emerald-500 text-white"
-                            : "border-white/20 hover:border-[#F5A623]",
+                            ? "bg-[#14161D]/40 border-white/5 opacity-60"
+                            : "bg-[#1D2029] border-white/10 hover:border-white/20",
                         )}
                       >
-                        {ev.completed && <Check className="size-3 stroke-[3]" />}
-                      </button>
-
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <p
+                        <div className="flex items-center gap-2 min-w-0 flex-1">
+                          <button
+                            type="button"
+                            onClick={() => toggleCalendarEventComplete(ev.id)}
                             className={cn(
-                              "text-xs font-semibold tracking-tight text-[#F4F5F7] truncate",
-                              ev.completed && "line-through text-[#8B90A0]",
+                              "size-4 rounded-md border flex items-center justify-center cursor-pointer shrink-0 transition-colors",
+                              ev.completed
+                                ? "bg-emerald-500 border-emerald-500 text-white"
+                                : "border-white/20 hover:border-[#F5A623]",
                             )}
                           >
-                            {ev.title}
-                          </p>
-                          <Badge className={cn("text-[8px] py-0 px-1 shrink-0", meta.colorClass)}>
-                            {isVi ? meta.labelVi : meta.labelEn}
-                          </Badge>
+                            {ev.completed && <Check className="size-3 stroke-[3]" />}
+                          </button>
+
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <p
+                                className={cn(
+                                  "text-xs font-semibold tracking-tight text-[#F4F5F7] truncate",
+                                  ev.completed && "line-through text-[#8B90A0]",
+                                )}
+                              >
+                                {ev.title}
+                              </p>
+                              <Badge className={cn("text-[8px] py-0 px-1 shrink-0", meta.colorClass)}>
+                                {isVi ? meta.labelVi : meta.labelEn}
+                              </Badge>
+                            </div>
+                            <div className="flex items-center gap-2 text-[10px] text-[#8B90A0]">
+                              <span className="flex items-center gap-1">
+                                <Clock className="size-2.5" />
+                                {ev.allDay ? dict.calendar.allDay : `${ev.startTime || "09:00"} - ${ev.endTime || "10:00"}`}
+                              </span>
+                              {ev.alarmEnabled && <Bell className="size-2.5 text-amber-400" />}
+                            </div>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2 text-[10px] text-[#8B90A0]">
-                          <span className="flex items-center gap-1">
-                            <Clock className="size-2.5" />
-                            {ev.allDay ? dict.calendar.allDay : `${ev.startTime || "09:00"} - ${ev.endTime || "10:00"}`}
-                          </span>
-                          {ev.alarmEnabled && <Bell className="size-2.5 text-amber-400" />}
+
+                        <div className="flex items-center gap-0.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button
+                            type="button"
+                            onClick={() => handleOpenEditModal(ev)}
+                            className="p-1 rounded-md hover:bg-white/10 text-[#8B90A0] hover:text-white cursor-pointer"
+                            title="Sửa sự kiện"
+                          >
+                            <Sparkles className="size-3" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => deleteCalendarEvent(ev.id)}
+                            className="p-1 rounded-md hover:bg-red-500/20 text-[#8B90A0] hover:text-red-400 cursor-pointer"
+                            title="Xóa sự kiện"
+                          >
+                            <Trash2 className="size-3" />
+                          </button>
                         </div>
                       </div>
-                    </div>
-
-                    <div className="flex items-center gap-0.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button
-                        type="button"
-                        onClick={() => handleOpenEditModal(ev)}
-                        className="p-1 rounded-md hover:bg-white/10 text-[#8B90A0] hover:text-white cursor-pointer"
-                        title="Sửa sự kiện"
+                    );
+                  } else {
+                    const note = entry.item;
+                    return (
+                      <div
+                        key={`compact_note_${note.id}`}
+                        className="flex items-center justify-between p-2 rounded-2xl border border-amber-500/20 bg-amber-500/5 hover:border-amber-500/40 transition-all group"
                       >
-                        <Sparkles className="size-3" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => deleteCalendarEvent(ev.id)}
-                        className="p-1 rounded-md hover:bg-red-500/20 text-[#8B90A0] hover:text-red-400 cursor-pointer"
-                        title="Xóa sự kiện"
-                      >
-                        <Trash2 className="size-3" />
-                      </button>
-                    </div>
-                  </div>
-                );
-              } else {
-                const note = entry.item;
-                return (
-                  <div
-                    key={`compact_note_${note.id}`}
-                    className="flex items-center justify-between p-2 rounded-2xl border border-amber-500/20 bg-amber-500/5 hover:border-amber-500/40 transition-all group"
-                  >
-                    <div className="flex items-center gap-2 min-w-0 flex-1">
-                      <NoteIcon className="size-3.5 text-amber-400 shrink-0" />
-                      <div className="min-w-0">
-                        <p className="text-xs font-semibold text-[#F4F5F7] truncate">
-                          {note.title || (note.body.split("\n")[0] ?? "Sticky Note")}
-                        </p>
-                        <p className="text-[9px] text-amber-400/80">
-                          {note.dueTime ? `Hạn: ${note.dueTime}` : "Ghi chú hôm nay"}
-                        </p>
+                        <div className="flex items-center gap-2 min-w-0 flex-1">
+                          <NoteIcon className="size-3.5 text-amber-400 shrink-0" />
+                          <div className="min-w-0">
+                            <p className="text-xs font-semibold text-[#F4F5F7] truncate">
+                              {note.title || (note.body.split("\n")[0] ?? "Sticky Note")}
+                            </p>
+                            <p className="text-[9px] text-amber-400/80">
+                              {note.dueTime ? `Hạn: ${note.dueTime}` : "Ghi chú hôm nay"}
+                            </p>
+                          </div>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => {
+                            bringNote(note.id);
+                            setCalendarOpen(false);
+                          }}
+                          className="h-5 text-[9px] px-1.5 rounded-md bg-amber-500/10 hover:bg-amber-500/20 text-amber-300"
+                        >
+                          <ExternalLink className="size-2.5 mr-0.5" />
+                          {isVi ? "Xem" : "View"}
+                        </Button>
                       </div>
-                    </div>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => {
-                        bringNote(note.id);
-                        setCalendarOpen(false);
-                      }}
-                      className="h-5 text-[9px] px-1.5 rounded-md bg-amber-500/10 hover:bg-amber-500/20 text-amber-300"
-                    >
-                      <ExternalLink className="size-2.5 mr-0.5" />
-                      {isVi ? "Xem" : "View"}
-                    </Button>
-                  </div>
-                );
-              }
-            })
-          )}
-        </div>
-
-        {/* Modal Event Creator when launched from Compact Mode */}
-        {modalOpen && renderEventModal()}
+                    );
+                  }
+                })
+              )}
+            </div>
+          </>
+        )}
       </aside>
     );
   }
@@ -690,7 +695,11 @@ export function StandaloneCalendar() {
       role="dialog"
       aria-modal="true"
       className="fixed inset-0 z-[220] flex items-center justify-center p-4 bg-black/55 backdrop-blur-xs select-none pointer-events-auto animate-in fade-in duration-150"
-      onClick={() => setCalendarOpen(false)}
+      onClick={() => {
+        if (!modalOpen && !activeScopePicker) {
+          setCalendarOpen(false);
+        }
+      }}
     >
       {/* Hidden ICS File Input */}
       <input
@@ -984,195 +993,201 @@ export function StandaloneCalendar() {
             </div>
           </div>
 
-          {/* RIGHT PANE: Selected Date Agenda & Task Details (40% width) */}
+          {/* RIGHT PANE: Selected Date Agenda & Task Details (40% width) OR Embedded Event Form */}
           <div className="flex flex-col flex-1 min-w-0 p-3.5 space-y-3 bg-[#14161D]/40 overflow-hidden">
-            {/* Selected Date Header Bar */}
-            <div className="flex items-center justify-between pb-2 border-b border-white/6">
-              <div>
-                <div className="flex items-center gap-2">
-                  <h4 className="font-bold text-sm text-[#F4F5F7]">{selectedDateKey}</h4>
-                  {selectedDateKey === todayKey && (
-                    <Badge className="bg-[#F5A623]/20 text-[#F5A623] border-[#F5A623]/40 text-[9px] px-1.5 py-0">
-                      {dict.calendar.today}
-                    </Badge>
-                  )}
-                  {selectedDateKey < todayKey && (
-                    <Badge className="bg-white/10 text-[#8B90A0] border-white/10 text-[9px] px-1.5 py-0">
-                      {isVi ? "Đã qua" : "Past"}
-                    </Badge>
-                  )}
-                </div>
-                <p className="text-[10px] text-[#8B90A0]">
-                  {selectedDayItems.length} {isVi ? "nhiệm vụ & lịch hẹn" : "events & tasks"}
-                </p>
-              </div>
-
-              <Button
-                size="sm"
-                onClick={() => handleOpenCreateModal(selectedDateKey)}
-                className="h-7 text-xs font-semibold bg-[#F5A623] hover:bg-[#D6871A] text-[#14161D] rounded-xl shadow-xs cursor-pointer gap-1 px-2.5"
-              >
-                <Plus className="size-3.5" />
-                <span>{isVi ? "Thêm việc" : "Add"}</span>
-              </Button>
-            </div>
-
-            {/* Agenda Items List or Clean Empty State */}
-            <div className="flex-1 min-h-0 space-y-2 overflow-y-auto custom-scrollbar pr-1">
-              {selectedDayItems.length === 0 ? (
-                <div className="h-full flex flex-col items-center justify-center text-center p-6 text-[#8B90A0] space-y-2">
-                  <div className="size-12 rounded-3xl bg-white/5 flex items-center justify-center text-white/20 border border-white/5">
-                    <CalendarIcon className="size-6" />
+            {modalOpen ? (
+              renderEmbeddedEventForm(false)
+            ) : (
+              <>
+                {/* Selected Date Header Bar */}
+                <div className="flex items-center justify-between pb-2 border-b border-white/6 shrink-0">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h4 className="font-bold text-sm text-[#F4F5F7]">{selectedDateKey}</h4>
+                      {selectedDateKey === todayKey && (
+                        <Badge className="bg-[#F5A623]/20 text-[#F5A623] border-[#F5A623]/40 text-[9px] px-1.5 py-0">
+                          {dict.calendar.today}
+                        </Badge>
+                      )}
+                      {selectedDateKey < todayKey && (
+                        <Badge className="bg-white/10 text-[#8B90A0] border-white/10 text-[9px] px-1.5 py-0">
+                          {isVi ? "Đã qua" : "Past"}
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="text-[10px] text-[#8B90A0]">
+                      {selectedDayItems.length} {isVi ? "nhiệm vụ & lịch hẹn" : "events & tasks"}
+                    </p>
                   </div>
-                  <p className="text-xs font-medium text-[#F4F5F7]">{dict.calendar.noEvents}</p>
-                  <p className="text-[11px] text-[#8B90A0]/70 max-w-[220px]">
-                    {selectedDateKey < todayKey
-                      ? isVi
-                        ? "Không có sự kiện được lên lịch trong ngày đã qua."
-                        : "No events recorded for this past date."
-                      : isVi
-                      ? "Chưa có sự kiện nào. Bấm '+ Thêm việc' để lên lịch trình mới!"
-                      : "No events scheduled yet. Click '+ Add' to plan your agenda!"}
-                  </p>
-                  {selectedDateKey >= todayKey && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleOpenCreateModal(selectedDateKey)}
-                      className="mt-1 h-7 text-xs border-white/10 bg-white/5 hover:bg-[#F5A623]/20 hover:text-[#F5A623] text-[#8B90A0] rounded-xl cursor-pointer"
-                    >
-                      <Plus className="size-3.5 mr-1" />
-                      <span>{isVi ? "Lên lịch trình ngay" : "Schedule now"}</span>
-                    </Button>
-                  )}
+
+                  <Button
+                    size="sm"
+                    onClick={() => handleOpenCreateModal(selectedDateKey)}
+                    className="h-7 text-xs font-semibold bg-[#F5A623] hover:bg-[#D6871A] text-[#14161D] rounded-xl shadow-xs cursor-pointer gap-1 px-2.5"
+                  >
+                    <Plus className="size-3.5" />
+                    <span>{isVi ? "Thêm việc" : "Add"}</span>
+                  </Button>
                 </div>
-              ) : (
-                selectedDayItems.map((entry, idx) => {
-                  if (entry.type === "event") {
-                    const ev = entry.item;
-                    const meta = CATEGORY_META[ev.category];
-                    return (
-                      <div
-                        key={ev.id || idx}
-                        className={cn(
-                          "flex items-start justify-between p-2.5 rounded-2xl border transition-all duration-120 group",
-                          ev.completed
-                            ? "bg-[#14161D]/40 border-white/5 opacity-60"
-                            : "bg-[#1D2029] border-white/10 hover:border-white/20",
-                        )}
-                      >
-                        <div className="flex items-start gap-2.5 min-w-0 flex-1">
-                          <button
-                            type="button"
-                            onClick={() => toggleCalendarEventComplete(ev.id)}
-                            className={cn(
-                              "size-4 rounded-md border flex items-center justify-center mt-0.5 shrink-0 transition-colors cursor-pointer",
-                              ev.completed
-                                ? "bg-emerald-500 border-emerald-500 text-white"
-                                : "border-white/20 hover:border-[#F5A623]",
-                            )}
-                          >
-                            {ev.completed && <Check className="size-3 stroke-[3]" />}
-                          </button>
 
-                          <div className="min-w-0 flex-1 space-y-1">
-                            <div className="flex items-center gap-1.5 flex-wrap">
-                              <p
-                                className={cn(
-                                  "text-xs font-semibold tracking-tight text-[#F4F5F7] truncate",
-                                  ev.completed && "line-through text-[#8B90A0]",
-                                )}
-                              >
-                                {ev.title}
-                              </p>
-                              <Badge className={cn("text-[9px] py-0 px-1.5", meta.colorClass)}>
-                                {isVi ? meta.labelVi : meta.labelEn}
-                              </Badge>
-                              {ev.alarmEnabled && (
-                                <span className="text-[9px] text-amber-400">
-                                  <Bell className="size-2.5" />
-                                </span>
-                              )}
-                            </div>
-
-                            {ev.description && (
-                              <p className="text-[11px] text-[#8B90A0] line-clamp-2">{ev.description}</p>
-                            )}
-
-                            <div className="flex items-center gap-3 text-[10px] text-[#8B90A0]">
-                              <span className="flex items-center gap-1">
-                                <Clock className="size-3" />
-                                {ev.allDay ? dict.calendar.allDay : `${ev.startTime || "09:00"} - ${ev.endTime || "10:00"}`}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button
-                            type="button"
-                            onClick={() => createNoteFromEvent(ev.id)}
-                            className="p-1 rounded-md hover:bg-white/10 text-[#8B90A0] hover:text-[#F5A623] cursor-pointer"
-                            title={dict.calendar.createNoteFromEvent}
-                          >
-                            <NoteIcon className="size-3.5" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleOpenEditModal(ev)}
-                            className="p-1 rounded-md hover:bg-white/10 text-[#8B90A0] hover:text-white cursor-pointer"
-                            title="Sửa sự kiện"
-                          >
-                            <Sparkles className="size-3.5" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => deleteCalendarEvent(ev.id)}
-                            className="p-1 rounded-md hover:bg-red-500/20 text-[#8B90A0] hover:text-red-400 cursor-pointer"
-                            title="Xóa sự kiện"
-                          >
-                            <Trash2 className="size-3.5" />
-                          </button>
-                        </div>
+                {/* Agenda Items List or Clean Empty State */}
+                <div className="flex-1 min-h-0 space-y-2 overflow-y-auto custom-scrollbar pr-1">
+                  {selectedDayItems.length === 0 ? (
+                    <div className="h-full flex flex-col items-center justify-center text-center p-6 text-[#8B90A0] space-y-2">
+                      <div className="size-12 rounded-3xl bg-white/5 flex items-center justify-center text-white/20 border border-white/5">
+                        <CalendarIcon className="size-6" />
                       </div>
-                    );
-                  } else {
-                    const note = entry.item;
-                    return (
-                      <div
-                        key={`note_${note.id}`}
-                        className="flex items-center justify-between p-2.5 rounded-2xl border border-amber-500/20 bg-amber-500/5 hover:border-amber-500/40 transition-all duration-120 group"
-                      >
-                        <div className="flex items-center gap-2 min-w-0 flex-1">
-                          <NoteIcon className="size-4 text-amber-400 shrink-0" />
-                          <div className="min-w-0">
-                            <p className="text-xs font-semibold text-[#F4F5F7] truncate">
-                              {note.title || (note.body.split("\n")[0] ?? "Sticky Note")}
-                            </p>
-                            <p className="text-[10px] text-amber-400/80">
-                              {isVi ? `Hạn chót Note: ${note.dueTime || "Cả ngày"}` : `Note Due: ${note.dueTime || "All day"}`}
-                            </p>
-                          </div>
-                        </div>
-
+                      <p className="text-xs font-medium text-[#F4F5F7]">{dict.calendar.noEvents}</p>
+                      <p className="text-[11px] text-[#8B90A0]/70 max-w-[220px]">
+                        {selectedDateKey < todayKey
+                          ? isVi
+                            ? "Không có sự kiện được lên lịch trong ngày đã qua."
+                            : "No events recorded for this past date."
+                          : isVi
+                          ? "Chưa có sự kiện nào. Bấm '+ Thêm việc' để lên lịch trình mới!"
+                          : "No events scheduled yet. Click '+ Add' to plan your agenda!"}
+                      </p>
+                      {selectedDateKey >= todayKey && (
                         <Button
                           size="sm"
-                          variant="ghost"
-                          onClick={() => {
-                            bringNote(note.id);
-                            setCalendarOpen(false);
-                          }}
-                          className="h-6 text-[10px] px-2 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-300"
+                          variant="outline"
+                          onClick={() => handleOpenCreateModal(selectedDateKey)}
+                          className="mt-1 h-7 text-xs border-white/10 bg-white/5 hover:bg-[#F5A623]/20 hover:text-[#F5A623] text-[#8B90A0] rounded-xl cursor-pointer"
                         >
-                          <ExternalLink className="size-3 mr-1" />
-                          {isVi ? "Xem Note" : "Focus Note"}
+                          <Plus className="size-3.5 mr-1" />
+                          <span>{isVi ? "Lên lịch trình ngay" : "Schedule now"}</span>
                         </Button>
-                      </div>
-                    );
-                  }
-                })
-              )}
-            </div>
+                      )}
+                    </div>
+                  ) : (
+                    selectedDayItems.map((entry, idx) => {
+                      if (entry.type === "event") {
+                        const ev = entry.item;
+                        const meta = CATEGORY_META[ev.category];
+                        return (
+                          <div
+                            key={ev.id || idx}
+                            className={cn(
+                              "flex items-start justify-between p-2.5 rounded-2xl border transition-all duration-120 group",
+                              ev.completed
+                                ? "bg-[#14161D]/40 border-white/5 opacity-60"
+                                : "bg-[#1D2029] border-white/10 hover:border-white/20",
+                            )}
+                          >
+                            <div className="flex items-start gap-2.5 min-w-0 flex-1">
+                              <button
+                                type="button"
+                                onClick={() => toggleCalendarEventComplete(ev.id)}
+                                className={cn(
+                                  "size-4 rounded-md border flex items-center justify-center mt-0.5 shrink-0 transition-colors cursor-pointer",
+                                  ev.completed
+                                    ? "bg-emerald-500 border-emerald-500 text-white"
+                                    : "border-white/20 hover:border-[#F5A623]",
+                                )}
+                              >
+                                {ev.completed && <Check className="size-3 stroke-[3]" />}
+                              </button>
+
+                              <div className="min-w-0 flex-1 space-y-1">
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                  <p
+                                    className={cn(
+                                      "text-xs font-semibold tracking-tight text-[#F4F5F7] truncate",
+                                      ev.completed && "line-through text-[#8B90A0]",
+                                    )}
+                                  >
+                                    {ev.title}
+                                  </p>
+                                  <Badge className={cn("text-[9px] py-0 px-1.5", meta.colorClass)}>
+                                    {isVi ? meta.labelVi : meta.labelEn}
+                                  </Badge>
+                                  {ev.alarmEnabled && (
+                                    <span className="text-[9px] text-amber-400">
+                                      <Bell className="size-2.5" />
+                                    </span>
+                                  )}
+                                </div>
+
+                                {ev.description && (
+                                  <p className="text-[11px] text-[#8B90A0] line-clamp-2">{ev.description}</p>
+                                )}
+
+                                <div className="flex items-center gap-3 text-[10px] text-[#8B90A0]">
+                                  <span className="flex items-center gap-1">
+                                    <Clock className="size-3" />
+                                    {ev.allDay ? dict.calendar.allDay : `${ev.startTime || "09:00"} - ${ev.endTime || "10:00"}`}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <button
+                                type="button"
+                                onClick={() => createNoteFromEvent(ev.id)}
+                                className="p-1 rounded-md hover:bg-white/10 text-[#8B90A0] hover:text-[#F5A623] cursor-pointer"
+                                title={dict.calendar.createNoteFromEvent}
+                              >
+                                <NoteIcon className="size-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleOpenEditModal(ev)}
+                                className="p-1 rounded-md hover:bg-white/10 text-[#8B90A0] hover:text-white cursor-pointer"
+                                title="Sửa sự kiện"
+                              >
+                                <Sparkles className="size-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => deleteCalendarEvent(ev.id)}
+                                className="p-1 rounded-md hover:bg-red-500/20 text-[#8B90A0] hover:text-red-400 cursor-pointer"
+                                title="Xóa sự kiện"
+                              >
+                                <Trash2 className="size-3.5" />
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      } else {
+                        const note = entry.item;
+                        return (
+                          <div
+                            key={`note_${note.id}`}
+                            className="flex items-center justify-between p-2.5 rounded-2xl border border-amber-500/20 bg-amber-500/5 hover:border-amber-500/40 transition-all duration-120 group"
+                          >
+                            <div className="flex items-center gap-2 min-w-0 flex-1">
+                              <NoteIcon className="size-4 text-amber-400 shrink-0" />
+                              <div className="min-w-0">
+                                <p className="text-xs font-semibold text-[#F4F5F7] truncate">
+                                  {note.title || (note.body.split("\n")[0] ?? "Sticky Note")}
+                                </p>
+                                <p className="text-[10px] text-amber-400/80">
+                                  {isVi ? `Hạn chót Note: ${note.dueTime || "Cả ngày"}` : `Note Due: ${note.dueTime || "All day"}`}
+                                </p>
+                              </div>
+                            </div>
+
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => {
+                                bringNote(note.id);
+                                setCalendarOpen(false);
+                              }}
+                              className="h-6 text-[10px] px-2 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-300"
+                            >
+                              <ExternalLink className="size-3 mr-1" />
+                              {isVi ? "Xem Note" : "Focus Note"}
+                            </Button>
+                          </div>
+                        );
+                      }
+                    })
+                  )}
+                </div>
+              </>
+            )}
           </div>
         </div>
 
@@ -1188,325 +1203,7 @@ export function StandaloneCalendar() {
           <div className="size-2 border-r-2 border-b-2 border-current group-hover:scale-110 transition-transform" />
         </div>
 
-        {/* CREATE / EDIT EVENT MODAL */}
-        {modalOpen && renderEventModal()}
-      </div>
-    </div>
-  );
-
-  // FLUID, PROPORTIONATELY SCALED EVENT CREATOR MODAL WITH PINNED ACTIONS & TACTICAL SCOPE SUB-MODAL
-  function renderEventModal() {
-    return (
-      <div
-        role="dialog"
-        aria-modal="true"
-        className="fixed inset-0 z-[250] flex items-center justify-center bg-black/75 backdrop-blur-sm p-3 sm:p-4 select-none animate-in fade-in duration-120"
-        onClick={() => {
-          setModalOpen(false);
-          setActiveScopePicker(null);
-        }}
-      >
-        <div
-          onClick={(e) => e.stopPropagation()}
-          className="w-full max-w-lg max-h-[90vh] flex flex-col rounded-3xl bg-[#181A22] border border-white/15 shadow-[0_30px_70px_rgba(0,0,0,0.95)] text-[#F4F5F7] overflow-hidden animate-in zoom-in-95 duration-140"
-        >
-          {/* 1. Fixed Modal Header */}
-          <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/8 bg-[#14161D]/80 shrink-0">
-            <div className="flex items-center gap-2.5 min-w-0">
-              <div className="size-8 rounded-xl bg-[#F5A623]/20 text-[#F5A623] flex items-center justify-center border border-[#F5A623]/30 shrink-0">
-                <Target className="size-4" />
-              </div>
-              <div className="min-w-0">
-                <h3 className="text-sm font-bold text-[#F4F5F7] truncate">
-                  {editingEventId
-                    ? isVi
-                      ? "Chỉnh sửa Sự kiện"
-                      : "Edit Event"
-                    : isVi
-                    ? "Tạo Sự kiện Lịch mới"
-                    : "Create New Event"}
-                </h3>
-                <p className="text-[10px] text-[#8B90A0] truncate">
-                  {isVi ? "Lên lịch trình, danh mục và mốc thời gian chi tiết" : "Configure title, schedule, and category"}
-                </p>
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={() => {
-                setModalOpen(false);
-                setActiveScopePicker(null);
-                sounds.playPop(420);
-              }}
-              className="size-7 rounded-xl hover:bg-white/10 flex items-center justify-center text-[#8B90A0] hover:text-white cursor-pointer transition-colors shrink-0"
-              title="Đóng (Escape)"
-            >
-              <X className="size-4" />
-            </button>
-          </div>
-
-          {/* 2. Scrollable Modal Body */}
-          <form id="calendar-event-form" onSubmit={handleSaveEvent} className="flex-1 overflow-y-auto custom-scrollbar p-5 space-y-3.5 min-h-0 text-xs">
-            {/* Validation Alert Banner */}
-            {validationError && (
-              <div className="flex items-center gap-2 p-2.5 rounded-xl bg-red-500/15 border border-red-500/30 text-red-300 text-xs animate-in fade-in">
-                <AlertCircle className="size-4 text-red-400 shrink-0" />
-                <span>{validationError}</span>
-              </div>
-            )}
-
-            {/* Title Input */}
-            <div className="space-y-1">
-              <label className="text-[11px] font-bold text-[#F4F5F7] flex items-center justify-between">
-                <span>{dict.calendar.eventTitle} <span className="text-[#F5A623]">*</span></span>
-                <span className="text-[10px] text-[#8B90A0] font-mono">{title.length}/100</span>
-              </label>
-              <Input
-                autoFocus
-                required
-                maxLength={100}
-                placeholder={dict.calendar.eventTitlePlaceholder}
-                value={title}
-                onChange={(e) => {
-                  setTitle(e.target.value);
-                  if (validationError) setValidationError(null);
-                }}
-                className="bg-[#14161D] border-white/10 text-xs text-[#F4F5F7] focus:border-[#F5A623] h-9 rounded-xl shadow-inner w-full"
-              />
-            </div>
-
-            {/* Quick Date Shortcuts */}
-            <div className="space-y-1">
-              <span className="text-[10px] text-[#8B90A0] font-medium block">Phím chọn ngày nhanh:</span>
-              <div className="flex flex-wrap gap-1.5">
-                <button
-                  type="button"
-                  onClick={() => handleSetQuickDate(0)}
-                  className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-[#F5A623]/20 hover:text-[#F5A623] text-[#8B90A0] text-[10px] font-semibold border border-white/5 cursor-pointer transition-colors"
-                >
-                  📅 Hôm nay
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleSetQuickDate(1)}
-                  className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-[#F5A623]/20 hover:text-[#F5A623] text-[#8B90A0] text-[10px] font-semibold border border-white/5 cursor-pointer transition-colors"
-                >
-                  ⚡ Ngày mai (+1)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleSetQuickDate(7)}
-                  className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-[#F5A623]/20 hover:text-[#F5A623] text-[#8B90A0] text-[10px] font-semibold border border-white/5 cursor-pointer transition-colors"
-                >
-                  🗓️ Tuần sau (+7)
-                </button>
-              </div>
-            </div>
-
-            {/* Date Pickers Row */}
-            <div className="grid grid-cols-2 gap-2.5">
-              <div className="space-y-1">
-                <label className="text-[11px] font-semibold text-[#8B90A0]">
-                  {dict.calendar.startDate}
-                </label>
-                <Input
-                  type="date"
-                  required
-                  min={editingEventId ? undefined : todayKey}
-                  value={startDate}
-                  onChange={(e) => {
-                    setStartDate(e.target.value);
-                    if (endDate < e.target.value) setEndDate(e.target.value);
-                    if (validationError) setValidationError(null);
-                  }}
-                  className="bg-[#14161D] border-white/10 text-xs text-[#F4F5F7] h-9 rounded-xl w-full"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-[11px] font-semibold text-[#8B90A0]">
-                  {dict.calendar.endDate}
-                </label>
-                <Input
-                  type="date"
-                  min={startDate}
-                  value={endDate}
-                  onChange={(e) => {
-                    setEndDate(e.target.value);
-                    if (validationError) setValidationError(null);
-                  }}
-                  className="bg-[#14161D] border-white/10 text-xs text-[#F4F5F7] h-9 rounded-xl w-full"
-                />
-              </div>
-            </div>
-
-            {/* Time Controls & Scope Rotary Trigger Box */}
-            <div className="p-3 rounded-2xl bg-[#14161D]/70 border border-white/6 space-y-2.5">
-              <div className="flex items-center justify-between">
-                <label className="text-xs font-semibold text-[#F4F5F7] flex items-center gap-2 cursor-pointer">
-                  <Switch checked={allDay} onCheckedChange={setAllDay} />
-                  <span>{dict.calendar.allDay}</span>
-                </label>
-                {!allDay && calculatedDuration && (
-                  <span className="text-[10px] font-mono text-[#F5A623] bg-[#F5A623]/15 border border-[#F5A623]/30 px-2 py-0.5 rounded-full">
-                    ⏱️ {calculatedDuration}
-                  </span>
-                )}
-              </div>
-
-              {/* Scope Time Triggers */}
-              {!allDay && (
-                <div className="grid grid-cols-2 gap-2 pt-1 border-t border-white/5">
-                  <div className="space-y-1">
-                    <span className="text-[10px] text-[#8B90A0] font-mono uppercase">Giờ bắt đầu</span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        sounds.playMechanicalClick(1.0);
-                        setActiveScopePicker("start");
-                      }}
-                      className={cn(
-                        "w-full flex items-center justify-between px-2.5 h-9 rounded-xl border text-xs font-mono cursor-pointer transition-all",
-                        activeScopePicker === "start"
-                          ? "bg-[#262A35] border-[#F5A623] text-[#F5A623] shadow-md ring-1 ring-[#F5A623]/50"
-                          : "bg-[#14161D] border-white/10 hover:border-[#F5A623]/60 text-[#F4F5F7]",
-                      )}
-                    >
-                      <span className="flex items-center gap-1.5 font-bold truncate">
-                        <Crosshair className="size-3.5 text-[#F5A623] shrink-0" />
-                        <span>{startTime || "09:00"}</span>
-                      </span>
-                      <span className="text-[9px] text-[#8B90A0] shrink-0">Xoay 24H</span>
-                    </button>
-                  </div>
-
-                  <div className="space-y-1">
-                    <span className="text-[10px] text-[#8B90A0] font-mono uppercase">Giờ kết thúc</span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        sounds.playMechanicalClick(1.0);
-                        setActiveScopePicker("end");
-                      }}
-                      className={cn(
-                        "w-full flex items-center justify-between px-2.5 h-9 rounded-xl border text-xs font-mono cursor-pointer transition-all",
-                        activeScopePicker === "end"
-                          ? "bg-[#262A35] border-[#F5A623] text-[#F5A623] shadow-md ring-1 ring-[#F5A623]/50"
-                          : "bg-[#14161D] border-white/10 hover:border-[#F5A623]/60 text-[#F4F5F7]",
-                      )}
-                    >
-                      <span className="flex items-center gap-1.5 font-bold truncate">
-                        <Target className="size-3.5 text-[#F5A623] shrink-0" />
-                        <span>{endTime || "10:00"}</span>
-                      </span>
-                      <span className="text-[9px] text-[#8B90A0] shrink-0">Xoay 24H</span>
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Category Selector Chips */}
-            <div className="space-y-1.5">
-              <label className="text-[11px] font-semibold text-[#8B90A0]">
-                {dict.calendar.category}
-              </label>
-              <div className="grid grid-cols-5 gap-1.5">
-                {CATEGORY_OPTIONS.map((cat) => {
-                  const isSelected = category === cat.id;
-                  const Icon = cat.icon;
-                  return (
-                    <button
-                      key={cat.id}
-                      type="button"
-                      onClick={() => {
-                        setCategory(cat.id);
-                        sounds.playPop(520);
-                      }}
-                      className={cn(
-                        "flex flex-col items-center justify-center py-1.5 px-1 rounded-xl border text-[10px] font-semibold cursor-pointer transition-all duration-120",
-                        isSelected
-                          ? cn("bg-[#262A35] shadow-xs ring-1 ring-white/20", cat.color)
-                          : "bg-[#14161D]/70 border-white/5 hover:border-white/15 text-[#8B90A0]",
-                      )}
-                    >
-                      <Icon className="size-3.5 mb-0.5" />
-                      <span className="truncate w-full text-center">{isVi ? cat.nameVi : cat.nameEn}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Recurrence & Alarm Toggle */}
-            <div className="grid grid-cols-2 gap-2.5">
-              <div className="space-y-1">
-                <label className="text-[11px] font-semibold text-[#8B90A0]">
-                  {dict.calendar.recurrence}
-                </label>
-                <select
-                  value={recurrence}
-                  onChange={(e) => setRecurrence(e.target.value as RecurrenceRule)}
-                  className="w-full bg-[#14161D] text-[#F4F5F7] text-[11px] font-medium rounded-xl border border-white/10 px-2.5 h-9 outline-none cursor-pointer"
-                >
-                  <option value="none">{dict.calendar.recurrences.none}</option>
-                  <option value="daily">{dict.calendar.recurrences.daily}</option>
-                  <option value="weekdays">{dict.calendar.recurrences.weekdays}</option>
-                  <option value="weekly">{dict.calendar.recurrences.weekly}</option>
-                  <option value="monthly">{dict.calendar.recurrences.monthly}</option>
-                </select>
-              </div>
-
-              <div className="flex flex-col justify-end">
-                <div className="flex items-center justify-between h-9 px-3 rounded-xl bg-[#14161D] border border-white/10">
-                  <label className="flex items-center gap-2 text-[11px] font-medium text-[#F4F5F7] cursor-pointer">
-                    <Switch checked={alarmEnabled} onCheckedChange={setAlarmEnabled} />
-                    <span className="truncate">{dict.calendar.alarmEnabled}</span>
-                  </label>
-                </div>
-              </div>
-            </div>
-
-            {/* Description Textarea */}
-            <div className="space-y-1">
-              <label className="text-[11px] font-semibold text-[#8B90A0]">
-                {isVi ? "Ghi chú thêm & Chi tiết" : "Description / Notes"}
-              </label>
-              <textarea
-                rows={2}
-                placeholder={isVi ? "Thêm ghi chú, liên kết cuộc họp Zoom, danh sách việc cần làm…" : "Add notes, Zoom links, agenda…"}
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className="w-full bg-[#14161D] border border-white/10 rounded-xl p-2.5 text-xs text-[#F4F5F7] placeholder:text-[#8B90A0]/50 resize-none outline-none focus:border-[#F5A623]/60"
-              />
-            </div>
-          </form>
-
-          {/* 3. Pinned Modal Actions Footer */}
-          <div className="flex items-center justify-end gap-2 px-5 py-3 border-t border-white/8 bg-[#14161D]/90 shrink-0">
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={() => {
-                setModalOpen(false);
-                setActiveScopePicker(null);
-                sounds.playPop(420);
-              }}
-              className="text-xs text-[#8B90A0] hover:text-white px-4 h-9 rounded-xl cursor-pointer"
-            >
-              {dict.cancel}
-            </Button>
-            <Button
-              type="submit"
-              form="calendar-event-form"
-              className="bg-[#F5A623] hover:bg-[#D6871A] text-[#14161D] font-bold text-xs px-5 h-9 rounded-xl shadow-md cursor-pointer transition-transform active:scale-98"
-            >
-              {dict.save}
-            </Button>
-          </div>
-        </div>
-
-        {/* Tactical Scope Rotary Sub-Modal Overlay (Fluid & Perfectly Contained) */}
+        {/* Tactical Scope Rotary Sub-Modal Overlay (HUD Picker) */}
         {activeScopePicker && (
           <div
             className="fixed inset-0 z-[280] flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-100"
@@ -1532,6 +1229,327 @@ export function StandaloneCalendar() {
             </div>
           </div>
         )}
+      </div>
+    </div>
+  );
+
+  // IN-PLACE EMBEDDED EVENT CONFIGURATION FORM (NO MODAL POPUP, NEVER ACCIDENTALLY DISMISSED)
+  function renderEmbeddedEventForm(compact: boolean = false) {
+    return (
+      <div className="flex flex-col h-full overflow-hidden select-none animate-in fade-in duration-140">
+        {/* Form Sub-Header Bar */}
+        <div className="flex items-center justify-between pb-2 mb-2 border-b border-white/8 shrink-0">
+          <div className="flex items-center gap-2 min-w-0">
+            <button
+              type="button"
+              onClick={() => {
+                setModalOpen(false);
+                setActiveScopePicker(null);
+                sounds.playPop(420);
+              }}
+              className="p-1 rounded-lg hover:bg-white/10 text-[#8B90A0] hover:text-white transition-colors cursor-pointer shrink-0"
+              title="Quay lại danh sách"
+            >
+              <ChevronLeft className="size-4" />
+            </button>
+            <div className="min-w-0">
+              <h4 className="font-bold text-xs text-[#F4F5F7] truncate">
+                {editingEventId
+                  ? isVi
+                    ? "Chỉnh sửa sự kiện"
+                    : "Edit Event"
+                  : isVi
+                  ? "Tạo sự kiện mới"
+                  : "Create New Event"}
+              </h4>
+              <p className="text-[10px] text-[#8B90A0] truncate">
+                {startDate === todayKey
+                  ? isVi
+                    ? "Hôm nay"
+                    : "Today"
+                  : startDate}
+              </p>
+            </div>
+          </div>
+
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            onClick={() => {
+              setModalOpen(false);
+              setActiveScopePicker(null);
+              sounds.playPop(420);
+            }}
+            className="h-6 text-[10px] text-[#8B90A0] hover:text-white px-2 rounded-lg cursor-pointer"
+          >
+            {dict.cancel}
+          </Button>
+        </div>
+
+        {/* Scrollable Form Body */}
+        <form
+          id="calendar-event-form"
+          onSubmit={handleSaveEvent}
+          className="flex-1 overflow-y-auto custom-scrollbar space-y-3 pr-1 min-h-0 text-xs"
+        >
+          {/* Validation Alert */}
+          {validationError && (
+            <div className="flex items-center gap-2 p-2 rounded-xl bg-red-500/15 border border-red-500/30 text-red-300 text-[11px] animate-in fade-in">
+              <AlertCircle className="size-3.5 text-red-400 shrink-0" />
+              <span>{validationError}</span>
+            </div>
+          )}
+
+          {/* Title Input */}
+          <div className="space-y-1">
+            <label className="text-[11px] font-bold text-[#F4F5F7] flex items-center justify-between">
+              <span>
+                {dict.calendar.eventTitle} <span className="text-[#F5A623]">*</span>
+              </span>
+              <span className="text-[10px] text-[#8B90A0] font-mono">{title.length}/100</span>
+            </label>
+            <Input
+              autoFocus
+              required
+              maxLength={100}
+              placeholder={dict.calendar.eventTitlePlaceholder}
+              value={title}
+              onChange={(e) => {
+                setTitle(e.target.value);
+                if (validationError) setValidationError(null);
+              }}
+              className="bg-[#14161D] border-white/10 text-xs text-[#F4F5F7] focus:border-[#F5A623] h-8 rounded-xl w-full"
+            />
+          </div>
+
+          {/* Quick Date Shortcuts (Expansive & Compact) */}
+          <div className="space-y-1">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <button
+                type="button"
+                onClick={() => handleSetQuickDate(0)}
+                className="px-2 py-0.5 rounded-lg bg-white/5 hover:bg-[#F5A623]/20 hover:text-[#F5A623] text-[#8B90A0] text-[10px] font-semibold border border-white/5 cursor-pointer transition-colors"
+              >
+                📅 Hôm nay
+              </button>
+              <button
+                type="button"
+                onClick={() => handleSetQuickDate(1)}
+                className="px-2 py-0.5 rounded-lg bg-white/5 hover:bg-[#F5A623]/20 hover:text-[#F5A623] text-[#8B90A0] text-[10px] font-semibold border border-white/5 cursor-pointer transition-colors"
+              >
+                ⚡ Ngày mai
+              </button>
+              <button
+                type="button"
+                onClick={() => handleSetQuickDate(7)}
+                className="px-2 py-0.5 rounded-lg bg-white/5 hover:bg-[#F5A623]/20 hover:text-[#F5A623] text-[#8B90A0] text-[10px] font-semibold border border-white/5 cursor-pointer transition-colors"
+              >
+                🗓️ +7 Ngày
+              </button>
+            </div>
+          </div>
+
+          {/* Date Pickers */}
+          <div className={cn("gap-2", compact ? "space-y-2" : "grid grid-cols-2")}>
+            <div className="space-y-1">
+              <label className="text-[10px] font-semibold text-[#8B90A0]">
+                {dict.calendar.startDate}
+              </label>
+              <Input
+                type="date"
+                required
+                min={editingEventId ? undefined : todayKey}
+                value={startDate}
+                onChange={(e) => {
+                  setStartDate(e.target.value);
+                  if (endDate < e.target.value) setEndDate(e.target.value);
+                  if (validationError) setValidationError(null);
+                }}
+                className="bg-[#14161D] border-white/10 text-xs text-[#F4F5F7] h-8 rounded-xl w-full"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-[10px] font-semibold text-[#8B90A0]">
+                {dict.calendar.endDate}
+              </label>
+              <Input
+                type="date"
+                min={startDate}
+                value={endDate}
+                onChange={(e) => {
+                  setEndDate(e.target.value);
+                  if (validationError) setValidationError(null);
+                }}
+                className="bg-[#14161D] border-white/10 text-xs text-[#F4F5F7] h-8 rounded-xl w-full"
+              />
+            </div>
+          </div>
+
+          {/* Time Controls & Scope Rotary Triggers */}
+          <div className="p-2.5 rounded-2xl bg-[#14161D]/70 border border-white/6 space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-semibold text-[#F4F5F7] flex items-center gap-2 cursor-pointer">
+                <Switch checked={allDay} onCheckedChange={setAllDay} />
+                <span>{dict.calendar.allDay}</span>
+              </label>
+              {!allDay && calculatedDuration && (
+                <span className="text-[10px] font-mono text-[#F5A623] bg-[#F5A623]/15 border border-[#F5A623]/30 px-2 py-0.5 rounded-full">
+                  ⏱️ {calculatedDuration}
+                </span>
+              )}
+            </div>
+
+            {!allDay && (
+              <div className="grid grid-cols-2 gap-2 pt-1 border-t border-white/5">
+                <div className="space-y-1">
+                  <span className="text-[9px] text-[#8B90A0] font-mono uppercase">Bắt đầu</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      sounds.playMechanicalClick(1.0);
+                      setActiveScopePicker("start");
+                    }}
+                    className={cn(
+                      "w-full flex items-center justify-between px-2 h-8 rounded-xl border text-xs font-mono cursor-pointer transition-all",
+                      activeScopePicker === "start"
+                        ? "bg-[#262A35] border-[#F5A623] text-[#F5A623] shadow-xs"
+                        : "bg-[#14161D] border-white/10 hover:border-[#F5A623]/60 text-[#F4F5F7]",
+                    )}
+                  >
+                    <span className="flex items-center gap-1 font-bold truncate">
+                      <Crosshair className="size-3 text-[#F5A623] shrink-0" />
+                      <span>{startTime || "09:00"}</span>
+                    </span>
+                    <span className="text-[8px] text-[#8B90A0]">24H</span>
+                  </button>
+                </div>
+
+                <div className="space-y-1">
+                  <span className="text-[9px] text-[#8B90A0] font-mono uppercase">Kết thúc</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      sounds.playMechanicalClick(1.0);
+                      setActiveScopePicker("end");
+                    }}
+                    className={cn(
+                      "w-full flex items-center justify-between px-2 h-8 rounded-xl border text-xs font-mono cursor-pointer transition-all",
+                      activeScopePicker === "end"
+                        ? "bg-[#262A35] border-[#F5A623] text-[#F5A623] shadow-xs"
+                        : "bg-[#14161D] border-white/10 hover:border-[#F5A623]/60 text-[#F4F5F7]",
+                    )}
+                  >
+                    <span className="flex items-center gap-1 font-bold truncate">
+                      <Target className="size-3 text-[#F5A623] shrink-0" />
+                      <span>{endTime || "10:00"}</span>
+                    </span>
+                    <span className="text-[8px] text-[#8B90A0]">24H</span>
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Category Chips */}
+          <div className="space-y-1">
+            <label className="text-[10px] font-semibold text-[#8B90A0]">
+              {dict.calendar.category}
+            </label>
+            <div className="grid grid-cols-5 gap-1">
+              {CATEGORY_OPTIONS.map((cat) => {
+                const isSelected = category === cat.id;
+                const Icon = cat.icon;
+                return (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => {
+                      setCategory(cat.id);
+                      sounds.playPop(520);
+                    }}
+                    className={cn(
+                      "flex flex-col items-center justify-center py-1.5 px-0.5 rounded-xl border text-[9px] font-semibold cursor-pointer transition-all duration-120",
+                      isSelected
+                        ? cn("bg-[#262A35] shadow-xs ring-1 ring-white/20", cat.color)
+                        : "bg-[#14161D]/70 border-white/5 hover:border-white/15 text-[#8B90A0]",
+                    )}
+                  >
+                    <Icon className="size-3 mb-0.5" />
+                    <span className="truncate w-full text-center">{isVi ? cat.nameVi : cat.nameEn}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Recurrence & Alarm Toggle */}
+          <div className="grid grid-cols-2 gap-2">
+            <div className="space-y-1">
+              <label className="text-[10px] font-semibold text-[#8B90A0]">
+                {dict.calendar.recurrence}
+              </label>
+              <select
+                value={recurrence}
+                onChange={(e) => setRecurrence(e.target.value as RecurrenceRule)}
+                className="w-full bg-[#14161D] text-[#F4F5F7] text-[10px] font-medium rounded-xl border border-white/10 px-2 h-8 outline-none cursor-pointer"
+              >
+                <option value="none">{dict.calendar.recurrences.none}</option>
+                <option value="daily">{dict.calendar.recurrences.daily}</option>
+                <option value="weekdays">{dict.calendar.recurrences.weekdays}</option>
+                <option value="weekly">{dict.calendar.recurrences.weekly}</option>
+                <option value="monthly">{dict.calendar.recurrences.monthly}</option>
+              </select>
+            </div>
+
+            <div className="flex flex-col justify-end">
+              <div className="flex items-center justify-between h-8 px-2.5 rounded-xl bg-[#14161D] border border-white/10">
+                <label className="flex items-center gap-1.5 text-[10px] font-medium text-[#F4F5F7] cursor-pointer">
+                  <Switch checked={alarmEnabled} onCheckedChange={setAlarmEnabled} />
+                  <span className="truncate">{dict.calendar.alarmEnabled}</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          {/* Description Textarea */}
+          <div className="space-y-1">
+            <label className="text-[10px] font-semibold text-[#8B90A0]">
+              {isVi ? "Ghi chú thêm & Chi tiết" : "Description / Notes"}
+            </label>
+            <textarea
+              rows={2}
+              placeholder={isVi ? "Thêm ghi chú, liên kết Zoom..." : "Add notes, Zoom links..."}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="w-full bg-[#14161D] border border-white/10 rounded-xl p-2 text-xs text-[#F4F5F7] placeholder:text-[#8B90A0]/50 resize-none outline-none focus:border-[#F5A623]/60"
+            />
+          </div>
+        </form>
+
+        {/* Pinned Form Action Footer */}
+        <div className="flex items-center justify-end gap-2 pt-2 mt-1 border-t border-white/8 shrink-0">
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={() => {
+              setModalOpen(false);
+              setActiveScopePicker(null);
+              sounds.playPop(420);
+            }}
+            className="text-xs text-[#8B90A0] hover:text-white px-3 h-8 rounded-xl cursor-pointer"
+          >
+            {dict.cancel}
+          </Button>
+          <Button
+            type="submit"
+            form="calendar-event-form"
+            className="bg-[#F5A623] hover:bg-[#D6871A] text-[#14161D] font-bold text-xs px-4 h-8 rounded-xl shadow-md cursor-pointer transition-transform active:scale-98"
+          >
+            {dict.save}
+          </Button>
+        </div>
       </div>
     );
   }
