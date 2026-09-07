@@ -1,39 +1,23 @@
 import { useState, useRef, useEffect, type PointerEvent } from "react";
 import {
   Activity,
-  Bell,
-  Calendar,
   Check,
-  Clock,
   Cookie,
   Download,
-  FileText,
-  Folder,
-  FolderPlus,
-  Globe,
   GripHorizontal,
   Heart,
   Maximize2,
-  Move,
-  Pin,
   Play,
-  Plus,
-  RotateCcw,
-  Search,
   Sliders,
   Sparkles,
-  Sun,
   Trash2,
   Upload,
   Volume2,
   VolumeX,
-  Wand2,
   X,
   Zap,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toggleAlwaysOnTop } from "@/lib/desktop-bridge";
@@ -41,10 +25,9 @@ import { DICTIONARY } from "@/lib/i18n";
 import { sounds } from "@/lib/audio";
 import { THEMES } from "@/lib/themes";
 import { useLumen } from "@/lib/store";
-import type { AlarmSoundTone, PetBodyItem, PetHat, PetType, Reminder, ThemeId } from "@/lib/types";
+import type { AlarmSoundTone, PetBodyItem, PetHat, PetType, ThemeId } from "@/lib/types";
 import { triggerThrowBall } from "./ball-toy";
 import { PipFigure } from "./pip";
-import { CalendarHub } from "./calendar-hub";
 import { cn } from "@/lib/utils";
 
 const PET_TYPES: { id: PetType; name: string; icon: string; desc: string }[] = [
@@ -87,162 +70,6 @@ const THEME_PREVIEWS: Record<ThemeId, { bg: string; accent: string; border: stri
   ink: { bg: "bg-stone-900", accent: "bg-[#F5A623]", border: "border-stone-700" },
 };
 
-function parseTimerInput(raw: string): { title: string; durationMs: number } {
-  let title = raw.trim();
-  let hours = 0;
-  let mins = 0;
-  let secs = 0;
-
-  const parts = raw.split(/[:\-–—]/);
-  let timeStr = "";
-  if (parts.length >= 2) {
-    title = parts[0].trim();
-    timeStr = parts.slice(1).join(" ").trim();
-  } else {
-    timeStr = raw;
-  }
-
-  const hMatch = timeStr.match(/(\d+)\s*(?:g|h|giờ|hour|hours)/i);
-  if (hMatch) hours = parseInt(hMatch[1], 10);
-
-  const mMatch = timeStr.match(/(\d+)\s*(?:p|m|phút|min|mins|minute|minutes)/i);
-  if (mMatch) mins = parseInt(mMatch[1], 10);
-
-  const sMatch = timeStr.match(/(\d+)\s*(?:s|giây|sec|secs|second|seconds)/i);
-  if (sMatch) secs = parseInt(sMatch[1], 10);
-
-  if (parts.length === 1 && (hMatch || mMatch || sMatch)) {
-    title =
-      raw
-        .replace(/(\d+)\s*(?:g|h|giờ|hour|hours)/gi, "")
-        .replace(/(\d+)\s*(?:p|m|phút|min|mins|minute|minutes)/gi, "")
-        .replace(/(\d+)\s*(?:s|giây|sec|secs|second|seconds)/gi, "")
-        .trim() || "Hẹn giờ";
-  }
-
-  let totalMs = (hours * 3600 + mins * 60 + secs) * 1000;
-  if (totalMs <= 0) {
-    const numOnly = parseInt(timeStr.trim(), 10);
-    if (!isNaN(numOnly) && numOnly > 0) {
-      totalMs = numOnly * 60 * 1000;
-    } else {
-      totalMs = 5 * 60 * 1000;
-    }
-  }
-
-  return { title: title || "Hẹn giờ mới", durationMs: totalMs };
-}
-
-function formatCountdown(ms: number) {
-  if (ms <= 0) return "00:00:00";
-  const sec = Math.floor(ms / 1000);
-  const h = Math.floor(sec / 3600);
-  const m = Math.floor((sec % 3600) / 60);
-  const s = sec % 60;
-  const pad = (n: number) => n.toString().padStart(2, "0");
-  if (h > 0) return `${pad(h)}:${pad(m)}:${pad(s)}`;
-  return `${pad(m)}:${pad(s)}`;
-}
-
-function HubTimerRow({
-  reminder: r,
-  onPin,
-  onFire,
-  onComplete,
-  onRemove,
-}: {
-  reminder: Reminder;
-  onPin: (id: string) => void;
-  onFire: (id: string) => void;
-  onComplete: (id: string) => void;
-  onRemove: (id: string) => void;
-}) {
-  const [diff, setDiff] = useState(Math.max(0, r.fireAt - Date.now()));
-
-  useEffect(() => {
-    if (r.done) return;
-    const interval = setInterval(() => {
-      setDiff(Math.max(0, r.fireAt - Date.now()));
-    }, 500);
-    return () => clearInterval(interval);
-  }, [r.fireAt, r.done]);
-
-  return (
-    <div
-      className={cn(
-        "flex items-center justify-between rounded-xl px-3 py-2.5 text-xs border transition-all duration-140",
-        r.done
-          ? "bg-[#14161D]/40 border-white/5 text-[#8B90A0]"
-          : "bg-[#262A35]/60 border-white/5 text-[#F4F5F7] hover:border-white/15 shadow-xs",
-      )}
-    >
-      <div className="min-w-0 flex-1 space-y-0.5">
-        <div className="flex items-center gap-1.5">
-          <span className="text-xs">{r.done ? "✓" : "⏱"}</span>
-          <p className={cn("font-medium truncate text-xs", r.done && "line-through text-[#8B90A0]")}>
-            {r.title}
-          </p>
-          {r.pinToScreen && !r.done ? (
-            <span className="bg-[#F5A623]/20 text-[#F5A623] text-[10px] px-1.5 py-0.2 rounded-md font-semibold border border-[#F5A623]/30">
-              Ghim Desktop
-            </span>
-          ) : null}
-        </div>
-        <p className="font-mono text-xs font-semibold text-[#F5A623] tabular-nums">
-          {r.done ? "Đã xong" : `Còn lại: ${formatCountdown(diff)}`}
-        </p>
-      </div>
-
-      <div className="flex items-center gap-1 shrink-0 ml-2">
-        {!r.done ? (
-          <>
-            <button
-              type="button"
-              onClick={() => onPin(r.id)}
-              title={r.pinToScreen ? "Bỏ ghim Desktop" : "Ghim ra Desktop"}
-              className={cn(
-                "p-1.5 rounded-lg border transition-colors cursor-pointer text-xs",
-                r.pinToScreen
-                  ? "bg-[#F5A623]/20 text-[#F5A623] border-[#F5A623]/40"
-                  : "bg-[#14161D] hover:bg-white/10 text-[#8B90A0] border-white/10",
-              )}
-            >
-              <Pin className={cn("size-3", r.pinToScreen && "fill-[#F5A623] text-[#F5A623]")} />
-            </button>
-            <Button
-              size="sm"
-              variant="outline"
-              type="button"
-              onClick={() => onFire(r.id)}
-              className="text-[10px] h-6.5 px-2 border-white/10 bg-[#14161D] hover:bg-[#F5A623]/20 hover:text-[#F5A623] cursor-pointer"
-            >
-              Báo ngay
-            </Button>
-          </>
-        ) : (
-          <Button
-            size="sm"
-            variant="ghost"
-            type="button"
-            onClick={() => onComplete(r.id)}
-            className="text-[10px] h-6.5 px-2 hover:bg-white/10 text-[#8B90A0] cursor-pointer"
-          >
-            Đóng
-          </Button>
-        )}
-        <button
-          type="button"
-          onClick={() => onRemove(r.id)}
-          title="Xóa hẹn giờ"
-          className="p-1.5 rounded-lg hover:bg-red-500/20 text-[#8B90A0] hover:text-[#EF4444] transition-colors cursor-pointer"
-        >
-          <Trash2 className="size-3" />
-        </button>
-      </div>
-    </div>
-  );
-}
-
 export function Hub() {
   const open = useLumen((s) => s.hubOpen);
   const setHubOpen = useLumen((s) => s.setHubOpen);
@@ -265,102 +92,18 @@ export function Hub() {
   const toggleSound = useLumen((s) => s.toggleSound);
   const notes = useLumen((s) => s.notes);
   const reminders = useLumen((s) => s.reminders);
-  const addReminder = useLumen((s) => s.addReminder);
-  const removeReminder = useLumen((s) => s.removeReminder);
-  const togglePinReminder = useLumen((s) => s.togglePinReminder);
-  const fireReminder = useLumen((s) => s.fireReminder);
-  const completeReminder = useLumen((s) => s.completeReminder);
+  const calendarEvents = useLumen((s) => s.calendarEvents);
   const alarmSettings = useLumen((s) => s.alarmSettings || { volume: 100, tone: "bell_arpeggio", loopIntervalSec: 3 });
   const setAlarmSettings = useLumen((s) => s.setAlarmSettings);
   const resetDemo = useLumen((s) => s.resetDemo);
   const pushToast = useLumen((s) => s.pushToast);
 
-  const selectedCluster = useLumen((s) => s.selectedCluster);
-  const setSelectedCluster = useLumen((s) => s.setSelectedCluster);
-  const addNote = useLumen((s) => s.addNote);
-  const updateNote = useLumen((s) => s.updateNote);
-  const removeNote = useLumen((s) => s.removeNote);
-  const trashNotes = useLumen((s) => s.trashNotes || []);
-  const restoreNote = useLumen((s) => s.restoreNote);
-  const emptyTrash = useLumen((s) => s.emptyTrash);
-  const permanentDeleteNote = useLumen((s) => s.permanentDeleteNote);
-
-  const [clusterSearch, setClusterSearch] = useState("");
-  const txtImportRef = useRef<HTMLInputElement>(null);
-
-  // Group notes by cluster
-  const clustersMap = notes.reduce<Record<string, typeof notes>>((acc, note) => {
-    const clusterName = note.cluster || "Chung (Không nhóm)";
-    if (!acc[clusterName]) acc[clusterName] = [];
-    acc[clusterName].push(note);
-    return acc;
-  }, {});
-
-  const handleExportClusterTxt = (clusterName: string, clusterNotes: typeof notes) => {
-    let content = `=== CỤM GHI CHÚ: ${clusterName.toUpperCase()} ===\n`;
-    content += `Thời gian xuất: ${new Date().toLocaleString("vi-VN")}\n`;
-    content += `Số lượng ghi chú: ${clusterNotes.length}\n\n`;
-
-    clusterNotes.forEach((n, idx) => {
-      content += `----------------------------------------\n`;
-      content += `[#${idx + 1}] (${new Date(n.createdAt).toLocaleDateString("vi-VN")})\n`;
-      if (n.title) content += `Tiêu đề: ${n.title}\n`;
-      content += `${n.body}\n`;
-      if (n.checkItems && n.checkItems.length > 0) {
-        content += `\nChecklist:\n`;
-        n.checkItems.forEach((c) => {
-          content += `  ${c.done ? "[x]" : "[ ]"} ${c.text}\n`;
-        });
-      }
-      content += `\n`;
-    });
-
-    const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `Lumen_Cluster_${clusterName.replace(/[^a-zA-Z0-9_\u00C0-\u024F\u1E00-\u1EFF]/g, "_")}.txt`;
-    a.click();
-    URL.revokeObjectURL(url);
-    sounds.playChime();
-    pushToast("Đã lưu file .txt", `Đã xuất cụm "${clusterName}" thành công!`);
-  };
-
-  const handleTxtFileImport = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    if (!files.length) return;
-
-    files.forEach((file, index) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const text = (reader.result as string) || "";
-        const title = file.name.replace(/\.[^/.]+$/, "");
-        addNote({
-          title,
-          body: text,
-          x: 20 + Math.random() * 40,
-          y: 15 + Math.random() * 40,
-          tint: index % 2 === 0 ? "cream" : "sage",
-          cluster: selectedCluster || undefined,
-        });
-      };
-      reader.readAsText(file);
-    });
-
-    sounds.playPop(700);
-    pushToast("Nhập file thành công", `Đã tạo ${files.length} ghi chú từ file .txt!`);
-    if (e.target) e.target.value = "";
-  };
-
   // Position & Drag state for Settings Modal
   const [pos, setPos] = useState<{ x: number; y: number } | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const dragRef = useRef<{ startX: number; startY: number; initX: number; initY: number } | null>(null);
-
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [smartInput, setSmartInput] = useState("xây nhà trong COC : 2g14p");
-  const [pinToDesktop, setPinToDesktop] = useState(true);
-  const [activeTab, setActiveTab] = useState<string>("remind");
+  const [activeTab, setActiveTab] = useState<string>("look");
 
   const dict = DICTIONARY[lang];
 
@@ -369,7 +112,7 @@ export function Hub() {
     if (open && pos === null && typeof window !== "undefined") {
       const modalWidth = Math.min(540, window.innerWidth - 32);
       const initialX = Math.max(16, Math.round((window.innerWidth - modalWidth) / 2));
-      const initialY = Math.max(20, Math.round((window.innerHeight - 600) / 2));
+      const initialY = Math.max(20, Math.round((window.innerHeight - 560) / 2));
       setPos({ x: initialX, y: initialY });
     }
   }, [open, pos]);
@@ -379,16 +122,6 @@ export function Hub() {
   const handleAlwaysOnTopChange = (val: boolean) => {
     setAlwaysOnTop(val);
     void toggleAlwaysOnTop(val);
-  };
-
-  const handleSmartSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!smartInput.trim()) return;
-    const parsed = parseTimerInput(smartInput);
-    addReminder(parsed.title, parsed.durationMs, pinToDesktop);
-    sounds.playPop(620);
-    pushToast("Đã tạo hẹn giờ", `"${parsed.title}" (${formatCountdown(parsed.durationMs)})`);
-    setSmartInput("");
   };
 
   const handleTestAlarm = () => {
@@ -415,7 +148,7 @@ export function Hub() {
     const dx = e.clientX - dragRef.current.startX;
     const dy = e.clientY - dragRef.current.startY;
     const modalWidth = Math.min(540, window.innerWidth - 32);
-    const modalHeight = Math.min(600, window.innerHeight - 32);
+    const modalHeight = Math.min(560, window.innerHeight - 32);
     const newX = Math.max(8, Math.min(window.innerWidth - modalWidth - 8, dragRef.current.initX + dx));
     const newY = Math.max(8, Math.min(window.innerHeight - 80, dragRef.current.initY + dy));
     setPos({ x: newX, y: newY });
@@ -430,7 +163,7 @@ export function Hub() {
     const modalWidth = Math.min(540, window.innerWidth - 32);
     setPos({
       x: Math.max(16, Math.round((window.innerWidth - modalWidth) / 2)),
-      y: Math.max(20, Math.round((window.innerHeight - 600) / 2)),
+      y: Math.max(20, Math.round((window.innerHeight - 560) / 2)),
     });
     sounds.playPop(520);
   };
@@ -440,6 +173,7 @@ export function Hub() {
     const data = {
       notes,
       reminders,
+      calendarEvents,
       theme,
       pip,
       alarmSettings,
@@ -449,9 +183,10 @@ export function Hub() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `lumen-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = `lumen-settings-backup-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
+    sounds.playChime();
     pushToast("Sao lưu dữ liệu", "Đã xuất file JSON thành công!");
   };
 
@@ -465,8 +200,18 @@ export function Hub() {
         const parsed = JSON.parse(event.target?.result as string);
         if (parsed.notes && Array.isArray(parsed.notes)) {
           useLumen.setState({ notes: parsed.notes });
-          pushToast("Khôi phục dữ liệu", `Đã nạp ${parsed.notes.length} ghi chú!`);
         }
+        if (parsed.calendarEvents && Array.isArray(parsed.calendarEvents)) {
+          useLumen.setState({ calendarEvents: parsed.calendarEvents });
+        }
+        if (parsed.theme) {
+          useLumen.setState({ theme: parsed.theme });
+        }
+        if (parsed.alarmSettings) {
+          useLumen.setState({ alarmSettings: parsed.alarmSettings });
+        }
+        sounds.playPop(620);
+        pushToast("Khôi phục dữ liệu", "Đã nạp cài đặt và dữ liệu thành công!");
       } catch {
         pushToast("Lỗi nhập dữ liệu", "File JSON không hợp lệ.");
       }
@@ -474,13 +219,11 @@ export function Hub() {
     reader.readAsText(file);
   };
 
-  const activeTimersCount = reminders.filter((r) => !r.done).length;
-
   return (
     <section
       className={cn(
         "interactive-el fixed z-[90] flex flex-col overflow-hidden bg-[#1D2029]/95 text-[#F4F5F7] shadow-[0_24px_60px_rgba(0,0,0,0.75)] border border-white/6 rounded-2xl select-none backdrop-blur-2xl",
-        "w-[calc(100vw-1.5rem)] max-w-[540px] h-[600px] max-h-[calc(100vh-2rem)]",
+        "w-[calc(100vw-1.5rem)] max-w-[540px] h-[560px] max-h-[calc(100vh-2rem)]",
         isDragging && "ring-1 ring-[#F5A623]/50 shadow-[0_30px_70px_rgba(0,0,0,0.85)]",
       )}
       style={
@@ -500,16 +243,6 @@ export function Hub() {
       role="dialog"
       aria-label="Lumen Settings"
     >
-      {/* Hidden file input for .txt file import */}
-      <input
-        type="file"
-        ref={txtImportRef}
-        onChange={handleTxtFileImport}
-        accept=".txt,.md,.json,.csv,.log"
-        multiple
-        className="hidden"
-      />
-
       {/* Sleek Draggable Header */}
       <header
         onPointerDown={handlePointerDownHeader}
@@ -528,7 +261,7 @@ export function Hub() {
           <div className="flex items-center gap-1.5 min-w-0">
             <img src="/icon.png" alt="Lumen Logo" className="size-4 object-contain rounded-sm" />
             <p className="font-semibold text-xs tracking-tight text-[#F4F5F7]">
-              Lumen Settings & Trung Tâm Cài Đặt
+              {isVi ? "Cài Đặt Hệ Thống & Tùy Biến" : "System Preferences & Settings"}
             </p>
           </div>
         </div>
@@ -553,135 +286,180 @@ export function Hub() {
         </div>
       </header>
 
-      {/* Pill-Switch Navigation Tabs */}
+      {/* Streamlined Pill-Switch Navigation Tabs (4 strictly preference tabs) */}
       <Tabs
         value={activeTab}
         onValueChange={setActiveTab}
         className="flex min-h-0 flex-1 flex-col"
       >
         <div className="px-3.5 pt-2.5 pb-2 bg-[#14161D]/30 border-b border-white/5">
-          <TabsList className="grid grid-cols-7 bg-[#14161D] p-1 rounded-xl h-10 border border-white/6 gap-1">
+          <TabsList className="grid grid-cols-4 bg-[#14161D] p-1 rounded-xl h-10 border border-white/6 gap-1">
             <TabsTrigger
-              value="calendar"
+              value="look"
               className="text-[11px] font-semibold rounded-lg transition-all duration-180 data-[state=active]:bg-[#F5A623] data-[state=active]:text-[#14161D] data-[state=active]:shadow-sm flex items-center justify-center gap-1 text-[#8B90A0] px-1 py-1"
             >
-              <span>📅</span>
-              <span className="truncate">{lang === "vi" ? "Lịch trình" : "Calendar"}</span>
+              <span>🎨</span>
+              <span className="truncate">{isVi ? "Giao diện" : "Appearance"}</span>
             </TabsTrigger>
             <TabsTrigger
-              value="remind"
+              value="preferences"
               className="text-[11px] font-semibold rounded-lg transition-all duration-180 data-[state=active]:bg-[#F5A623] data-[state=active]:text-[#14161D] data-[state=active]:shadow-sm flex items-center justify-center gap-1 text-[#8B90A0] px-1 py-1"
             >
-              <span>⏱</span>
-              <span className="truncate">Hẹn giờ</span>
-              {activeTimersCount > 0 ? (
-                <span className="size-3.5 rounded-full bg-[#14161D] text-[#F5A623] text-[9px] flex items-center justify-center font-bold shrink-0 border border-[#F5A623]/30">
-                  {activeTimersCount}
-                </span>
-              ) : null}
-            </TabsTrigger>
-            <TabsTrigger
-              value="clusters"
-              className="text-[11px] font-semibold rounded-lg transition-all duration-180 data-[state=active]:bg-[#F5A623] data-[state=active]:text-[#14161D] data-[state=active]:shadow-sm flex items-center justify-center gap-1 text-[#8B90A0] px-1 py-1"
-            >
-              <span>🗂</span>
-              <span className="truncate">Cụm Note</span>
-            </TabsTrigger>
-            <TabsTrigger
-              value="trash"
-              className="text-[11px] font-semibold rounded-lg transition-all duration-180 data-[state=active]:bg-[#F5A623] data-[state=active]:text-[#14161D] data-[state=active]:shadow-sm flex items-center justify-center gap-1 text-[#8B90A0] px-1 py-1"
-            >
-              <span>🗑</span>
-              <span className="truncate">Thùng rác</span>
-              {trashNotes && trashNotes.length > 0 ? (
-                <span className="size-3.5 rounded-full bg-red-500/20 text-[#EF4444] text-[9px] flex items-center justify-center font-bold shrink-0 border border-red-500/30">
-                  {trashNotes.length}
-                </span>
-              ) : null}
+              <span>⚙️</span>
+              <span className="truncate">{isVi ? "Tùy chọn" : "Preferences"}</span>
             </TabsTrigger>
             <TabsTrigger
               value="pip"
               className="text-[11px] font-semibold rounded-lg transition-all duration-180 data-[state=active]:bg-[#F5A623] data-[state=active]:text-[#14161D] data-[state=active]:shadow-sm flex items-center justify-center gap-1 text-[#8B90A0] px-1 py-1"
             >
               <span>🐾</span>
-              <span className="truncate">Thú cưng</span>
-            </TabsTrigger>
-            <TabsTrigger
-              value="look"
-              className="text-[11px] font-semibold rounded-lg transition-all duration-180 data-[state=active]:bg-[#F5A623] data-[state=active]:text-[#14161D] data-[state=active]:shadow-sm flex items-center justify-center gap-1 text-[#8B90A0] px-1 py-1"
-            >
-              <span>🎨</span>
-              <span className="truncate">Giao diện</span>
+              <span className="truncate">{isVi ? "Thú cưng" : "Companion"}</span>
             </TabsTrigger>
             <TabsTrigger
               value="about"
               className="text-[11px] font-semibold rounded-lg transition-all duration-180 data-[state=active]:bg-[#F5A623] data-[state=active]:text-[#14161D] data-[state=active]:shadow-sm flex items-center justify-center gap-1 text-[#8B90A0] px-1 py-1"
             >
-              <span>⚙️</span>
-              <span className="truncate">Hệ thống</span>
+              <span>📊</span>
+              <span className="truncate">{isVi ? "Hệ thống" : "System & About"}</span>
             </TabsTrigger>
           </TabsList>
         </div>
 
         <div className="min-h-0 flex-1 overflow-y-auto px-3.5 py-3 space-y-3 custom-scrollbar">
-          {/* TAB 0: SPATIAL CALENDAR MODULE */}
-          <TabsContent value="calendar" className="space-y-3 mt-0">
-            <CalendarHub />
-          </TabsContent>
-
-          {/* TAB 1: SMART TIMERS & COUNTDOWN */}
-          <TabsContent value="remind" className="space-y-3 mt-0">
-            {/* Quick Smart Input Box */}
-            <div className="rounded-2xl bg-[#262A35]/50 p-3 border border-white/6 space-y-2.5 shadow-xs">
-              <form onSubmit={handleSmartSubmit} className="space-y-2">
-                <div className="flex gap-1.5">
-                  <Input
-                    placeholder="Ví dụ: xây nhà COC : 2g14p, Nấu canh : 15p..."
-                    value={smartInput}
-                    onChange={(e) => setSmartInput(e.target.value)}
-                    className="bg-[#14161D] border-white/10 focus:border-[#F5A623]/60 text-xs text-[#F4F5F7] placeholder:text-[#8B90A0]/60 h-8 rounded-xl"
-                  />
-                  <Button
-                    type="submit"
-                    className="cursor-pointer font-semibold bg-[#F5A623] hover:bg-[#D6871A] text-[#14161D] text-xs px-3 h-8 shadow-xs shrink-0 rounded-xl transition-colors duration-140"
-                  >
-                    + Đặt giờ
-                  </Button>
-                </div>
-
-                {/* Preset Chips */}
-                <div className="flex flex-wrap gap-1">
-                  {[
-                    { label: "🏰 COC: 2g14p", val: "xây nhà trong COC : 2g14p" },
-                    { label: "🍅 Pomodoro: 25p", val: "Tập trung Pomodoro : 25p" },
-                    { label: "☕ Nghỉ: 5p", val: "Nghỉ ngơi giải lao : 5p" },
-                    { label: "🍲 Nấu ăn: 15p", val: "Nấu ăn canh súp : 15p" },
-                    { label: "⏳ 1 Giờ", val: "Hẹn giờ làm việc : 1g" },
-                  ].map((preset) => (
+          {/* TAB 1: LOOK & THEMES */}
+          <TabsContent value="look" className="space-y-3 mt-0">
+            {/* Themes Grid */}
+            <div className="space-y-1.5">
+              <p className="text-[10px] font-semibold text-[#8B90A0] uppercase tracking-wider">
+                {isVi ? "Bảng màu chủ đề (Spatial Themes)" : "Spatial Themes"}
+              </p>
+              <div className="space-y-1">
+                {THEMES.map((t) => {
+                  const preview = THEME_PREVIEWS[t.id] || { bg: "bg-[#262A35]", accent: "bg-[#F5A623]", border: "border-white/10" };
+                  return (
                     <button
-                      key={preset.label}
+                      key={t.id}
                       type="button"
-                      onClick={() => setSmartInput(preset.val)}
-                      className="text-[10px] px-2.5 py-0.5 rounded-full bg-[#14161D] hover:bg-[#F5A623]/20 hover:text-[#F5A623] text-[#8B90A0] border border-white/6 transition-colors duration-120 cursor-pointer"
+                      onClick={() => {
+                        setTheme(t.id);
+                        sounds.playPop(540);
+                      }}
+                      className={cn(
+                        "flex w-full items-center justify-between rounded-xl px-3 py-2 text-left border cursor-pointer transition-all duration-120",
+                        theme === t.id
+                          ? "border-[#F5A623]/60 bg-[#F5A623]/15 text-[#F4F5F7]"
+                          : "border-white/5 bg-[#262A35]/30 hover:border-white/15 text-[#8B90A0]",
+                      )}
                     >
-                      {preset.label}
+                      <div className="flex items-center gap-2.5">
+                        <div className={cn("size-5 rounded-md border flex items-center justify-center", preview.bg, preview.border)}>
+                          <div className={cn("size-1.5 rounded-full", preview.accent)} />
+                        </div>
+                        <span className="text-xs font-medium">{t.name}</span>
+                      </div>
+                      {theme === t.id ? (
+                        <span className="text-[10px] bg-[#F5A623]/20 text-[#F5A623] px-1.5 py-0.2 rounded-md font-semibold border border-[#F5A623]/30">
+                          Active
+                        </span>
+                      ) : null}
                     </button>
-                  ))}
-                </div>
-
-                <div className="flex items-center justify-between pt-1.5 border-t border-white/5">
-                  <span className="text-[11px] text-[#8B90A0]">Ghim đồng hồ nổi trên Desktop</span>
-                  <Switch checked={pinToDesktop} onCheckedChange={setPinToDesktop} />
-                </div>
-              </form>
+                  );
+                })}
+              </div>
             </div>
 
-            {/* Alarm Audio Customizer */}
+            {/* Language Selection */}
+            <div className="space-y-1.5 pt-1">
+              <p className="text-[10px] font-semibold text-[#8B90A0] uppercase tracking-wider">
+                {isVi ? "Ngôn ngữ hiển thị (Language)" : "Display Language"}
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLang("vi");
+                    sounds.playPop(520);
+                  }}
+                  className={cn(
+                    "flex items-center justify-between rounded-xl px-3 py-2 text-left border cursor-pointer transition-all duration-120",
+                    lang === "vi"
+                      ? "border-[#F5A623]/60 bg-[#F5A623]/15 text-[#F4F5F7]"
+                      : "border-white/5 bg-[#262A35]/30 hover:border-white/15 text-[#8B90A0]",
+                  )}
+                >
+                  <div className="flex items-center gap-1.5">
+                    <span>🇻🇳</span>
+                    <span className="text-xs font-semibold">Tiếng Việt</span>
+                  </div>
+                  {lang === "vi" ? <span className="size-1.5 rounded-full bg-[#F5A623]" /> : null}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLang("en");
+                    sounds.playPop(520);
+                  }}
+                  className={cn(
+                    "flex items-center justify-between rounded-xl px-3 py-2 text-left border cursor-pointer transition-all duration-120",
+                    lang === "en"
+                      ? "border-[#F5A623]/60 bg-[#F5A623]/15 text-[#F4F5F7]"
+                      : "border-white/5 bg-[#262A35]/30 hover:border-white/15 text-[#8B90A0]",
+                  )}
+                >
+                  <div className="flex items-center gap-1.5">
+                    <span>🇬🇧</span>
+                    <span className="text-xs font-semibold">English</span>
+                  </div>
+                  {lang === "en" ? <span className="size-1.5 rounded-full bg-[#F5A623]" /> : null}
+                </button>
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* TAB 2: SYSTEM PREFERENCES & AUDIO */}
+          <TabsContent value="preferences" className="space-y-3 mt-0">
+            {/* Window & App Behavior */}
+            <div className="space-y-1.5">
+              <p className="text-[10px] font-semibold text-[#8B90A0] uppercase tracking-wider">
+                {isVi ? "Cửa sổ & Khởi động" : "Window & Startup"}
+              </p>
+              <div className="divide-y divide-white/5 rounded-2xl bg-[#262A35]/30 border border-white/5 overflow-hidden">
+                <div className="flex items-center justify-between gap-3 px-3 py-2.5">
+                  <div>
+                    <p className="text-xs font-medium text-[#F4F5F7]">{dict.look.alwaysOnTop}</p>
+                    <p className="text-[10px] text-[#8B90A0]">{dict.look.alwaysOnTopDesc}</p>
+                  </div>
+                  <Switch checked={alwaysOnTop} onCheckedChange={handleAlwaysOnTopChange} />
+                </div>
+
+                <div className="flex items-center justify-between gap-3 px-3 py-2.5">
+                  <div>
+                    <p className="text-xs font-medium text-[#F4F5F7]">
+                      {isVi ? "Video Intro khi khởi động" : "Startup Intro Video"}
+                    </p>
+                    <p className="text-[10px] text-[#8B90A0]">
+                      {isVi ? "Phát cinematic intro khi mở app (phím Space để bỏ qua)" : "Play cinematic intro on startup (Space to skip)"}
+                    </p>
+                  </div>
+                  <Switch checked={introVideoEnabled} onCheckedChange={(val) => setIntroVideoEnabled(val)} />
+                </div>
+
+                <div className="flex items-center justify-between gap-3 px-3 py-2.5">
+                  <div>
+                    <p className="text-xs font-medium text-[#F4F5F7]">{dict.look.proceduralAudio}</p>
+                    <p className="text-[10px] text-[#8B90A0]">{dict.look.audioDesc}</p>
+                  </div>
+                  <Switch checked={pip.soundEnabled} onCheckedChange={(val) => toggleSound(val)} />
+                </div>
+              </div>
+            </div>
+
+            {/* Alarm & Sound Tone Preferences */}
             <div className="rounded-2xl bg-[#262A35]/50 p-3 border border-white/6 space-y-2.5 shadow-xs">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5 text-xs font-semibold text-[#F4F5F7]">
                   <Volume2 className="size-3.5 text-[#F5A623]" />
-                  <span>Chuông báo thức</span>
+                  <span>{isVi ? "Âm thanh chuông báo (Alarm Tone)" : "Alarm Sound Tone"}</span>
                 </div>
                 <button
                   type="button"
@@ -689,7 +467,7 @@ export function Hub() {
                   className="flex items-center gap-1 text-[11px] font-semibold text-[#F5A623] hover:text-[#F4F5F7] bg-[#F5A623]/15 border border-[#F5A623]/30 px-2 py-0.5 rounded-lg cursor-pointer transition-colors duration-120"
                 >
                   <Play className="size-2.5 fill-current" />
-                  <span>Thử chuông</span>
+                  <span>{isVi ? "Thử chuông" : "Test Tone"}</span>
                 </button>
               </div>
 
@@ -702,7 +480,7 @@ export function Hub() {
                     ) : (
                       <Volume2 className="size-3.5 text-[#F5A623]" />
                     )}
-                    <span>{alarmSettings.muted ? "Đã tắt âm thanh chuông" : "Phát âm thanh chuông"}</span>
+                    <span>{alarmSettings.muted ? (isVi ? "Đã tắt âm chuông" : "Muted") : (isVi ? "Bật âm chuông báo" : "Sound Enabled")}</span>
                   </div>
                   <Switch
                     checked={!alarmSettings.muted}
@@ -715,7 +493,7 @@ export function Hub() {
 
                 {!alarmSettings.muted && (
                   <div className="flex items-center gap-2.5 pt-1 border-t border-white/5">
-                    <span className="text-[10px] text-[#8B90A0] shrink-0">Âm lượng</span>
+                    <span className="text-[10px] text-[#8B90A0] shrink-0">{isVi ? "Âm lượng" : "Volume"}</span>
                     <input
                       type="range"
                       min="10"
@@ -763,264 +541,9 @@ export function Hub() {
                 })}
               </div>
             </div>
-
-            {/* Active Timers List */}
-            <div className="space-y-1.5">
-              <p className="text-[10px] font-semibold text-[#8B90A0] uppercase tracking-wider">
-                Hẹn giờ đang chạy ({activeTimersCount})
-              </p>
-
-              {reminders.length === 0 ? (
-                <div className="rounded-2xl bg-[#262A35]/30 p-4 text-center border border-white/5">
-                  <p className="text-[11px] text-[#8B90A0]">Chưa có hẹn giờ nào đang chạy.</p>
-                </div>
-              ) : (
-                <div className="space-y-1.5">
-                  {reminders.map((r) => (
-                    <HubTimerRow
-                      key={r.id}
-                      reminder={r}
-                      onPin={togglePinReminder}
-                      onFire={fireReminder}
-                      onComplete={completeReminder}
-                      onRemove={removeReminder}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
           </TabsContent>
 
-          {/* TAB 2: NOTE CLUSTERS & ARCHIVE HUB */}
-          <TabsContent value="clusters" className="space-y-3 mt-0">
-            {/* Action Bar: Search, Import .txt, Export All */}
-            <div className="rounded-2xl bg-[#262A35]/50 p-3 border border-white/6 space-y-2.5 shadow-xs">
-              <div className="flex items-center justify-between gap-2">
-                <div className="relative flex-1">
-                  <Search className="size-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-[#8B90A0]" />
-                  <Input
-                    placeholder="Tìm kiếm trong các cụm ghi chú..."
-                    value={clusterSearch}
-                    onChange={(e) => setClusterSearch(e.target.value)}
-                    className="bg-[#14161D] border-white/10 focus:border-[#F5A623]/60 text-xs text-[#F4F5F7] placeholder:text-[#8B90A0]/60 h-8 pl-8 rounded-xl"
-                  />
-                </div>
-                <button
-                  type="button"
-                  onClick={() => txtImportRef.current?.click()}
-                  className="flex items-center gap-1.5 px-3 h-8 rounded-xl bg-[#F5A623] hover:bg-[#D6871A] text-[#14161D] text-xs font-bold shadow-xs transition-colors shrink-0 cursor-pointer"
-                  title="Mở file .txt hoặc .md từ máy tính để sinh note"
-                >
-                  <FileText className="size-3.5" />
-                  <span>+ Nạp .txt</span>
-                </button>
-              </div>
-
-              {/* Quick Summary & Desktop Filter state */}
-              <div className="flex items-center justify-between text-[11px] text-[#8B90A0] pt-1 border-t border-white/5">
-                <span>
-                  Tổng cộng: <b className="text-[#F4F5F7]">{notes.length}</b> note trong <b className="text-[#F5A623]">{Object.keys(clustersMap).length}</b> cụm
-                </span>
-                {selectedCluster ? (
-                  <button
-                    type="button"
-                    onClick={() => setSelectedCluster(null)}
-                    className="text-[#F5A623] hover:underline flex items-center gap-1 cursor-pointer font-semibold"
-                  >
-                    <span>Bỏ lọc: {selectedCluster}</span>
-                    <X className="size-3" />
-                  </button>
-                ) : (
-                  <span className="text-[#3FAE6C]">Đang hiện tất cả note</span>
-                )}
-              </div>
-            </div>
-
-            {/* Clusters List */}
-            <div className="space-y-2.5">
-              {Object.entries(clustersMap).map(([clusterName, clusterNotes]) => {
-                const isCurrentFilter = selectedCluster === clusterName;
-                const filteredClusterNotes = clusterSearch.trim()
-                  ? clusterNotes.filter(
-                      (n) =>
-                        n.body.toLowerCase().includes(clusterSearch.toLowerCase()) ||
-                        (n.title && n.title.toLowerCase().includes(clusterSearch.toLowerCase())),
-                    )
-                  : clusterNotes;
-
-                if (clusterSearch.trim() && filteredClusterNotes.length === 0) return null;
-
-                return (
-                  <div
-                    key={clusterName}
-                    className={cn(
-                      "rounded-2xl p-3 border transition-all space-y-2",
-                      isCurrentFilter
-                        ? "bg-[#262A35]/80 border-[#F5A623]/60 shadow-md ring-1 ring-[#F5A623]/30"
-                        : "bg-[#262A35]/40 border-white/6 hover:border-white/12",
-                    )}
-                  >
-                    {/* Cluster Header */}
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2 min-w-0">
-                        <div className="size-6 rounded-lg bg-[#F5A623]/15 text-[#F5A623] flex items-center justify-center shrink-0">
-                          <Folder className="size-3.5" />
-                        </div>
-                        <span className="font-bold text-xs text-[#F4F5F7] truncate">
-                          {clusterName}
-                        </span>
-                        <span className="px-1.5 py-0.2 rounded-md bg-white/10 text-[10px] font-mono text-[#8B90A0]">
-                          {clusterNotes.length}
-                        </span>
-                      </div>
-
-                      {/* Cluster Actions */}
-                      <div className="flex items-center gap-1 shrink-0">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (isCurrentFilter) {
-                              setSelectedCluster(null);
-                            } else {
-                              setSelectedCluster(clusterName === "Chung (Không nhóm)" ? null : clusterName);
-                            }
-                          }}
-                          className={cn(
-                            "px-2 py-1 rounded-lg text-[10px] font-semibold transition-colors cursor-pointer flex items-center gap-1",
-                            isCurrentFilter
-                              ? "bg-[#F5A623] text-[#14161D]"
-                              : "bg-white/10 hover:bg-white/15 text-[#F4F5F7]",
-                          )}
-                          title="Lọc chỉ hiển thị cụm này trên Desktop"
-                        >
-                          <Pin className="size-2.5" />
-                          <span>{isCurrentFilter ? "Đang lọc" : "Lọc Desktop"}</span>
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => handleExportClusterTxt(clusterName, clusterNotes)}
-                          className="p-1 rounded-lg bg-white/10 hover:bg-white/15 text-[#8B90A0] hover:text-white transition-colors cursor-pointer"
-                          title="Lưu toàn bộ cụm này thành 1 file .txt"
-                        >
-                          <Download className="size-3" />
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Note Item Previews in this cluster */}
-                    <div className="space-y-1.5 pt-1">
-                      {filteredClusterNotes.slice(0, 4).map((n) => (
-                        <div
-                          key={n.id}
-                          className="flex items-center justify-between p-2 rounded-xl bg-[#14161D]/60 border border-white/5 text-xs text-[#8B90A0] hover:text-[#F4F5F7] transition-colors"
-                        >
-                          <div className="flex items-center gap-2 min-w-0 pr-2">
-                            <span className={cn("size-2 rounded-full shrink-0", `note-${n.tint}`)} />
-                            <span className="truncate text-[11px]">
-                              {n.title ? `[${n.title}] ` : ""}
-                              {n.body.trim().slice(0, 50) || "Ghi chú trống"}
-                            </span>
-                          </div>
-                          <span className="text-[10px] font-mono shrink-0 opacity-60">
-                            {new Date(n.createdAt).toLocaleDateString("vi-VN", { month: "numeric", day: "numeric" })}
-                          </span>
-                        </div>
-                      ))}
-                      {filteredClusterNotes.length > 4 && (
-                        <p className="text-[10px] text-center text-[#8B90A0] pt-0.5">
-                          + {filteredClusterNotes.length - 4} ghi chú khác trong cụm
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </TabsContent>
-
-          {/* TAB 3: TRASH & RECOVERY BIN */}
-          <TabsContent value="trash" className="space-y-3 mt-0">
-            <div className="flex items-center justify-between gap-2 p-2.5 rounded-2xl bg-[#262A35]/50 border border-white/6">
-              <div>
-                <h4 className="text-xs font-bold text-[#F4F5F7]">Thùng rác ghi chú</h4>
-                <p className="text-[10px] text-[#8B90A0]">
-                  Lưu trữ {trashNotes?.length || 0} ghi chú đã xóa gần đây (Ctrl+Z để hoàn tác tức thì)
-                </p>
-              </div>
-              {trashNotes && trashNotes.length > 0 && (
-                <button
-                  type="button"
-                  onClick={() => emptyTrash()}
-                  className="px-2.5 py-1.5 rounded-xl bg-red-500/15 hover:bg-red-500/25 text-[#EF4444] text-[11px] font-semibold transition-colors cursor-pointer flex items-center gap-1.5"
-                >
-                  <Trash2 className="size-3" />
-                  <span>Dọn sạch</span>
-                </button>
-              )}
-            </div>
-
-            {/* Trash Items List */}
-            <div className="space-y-2 max-h-96 overflow-y-auto note-scrollbar">
-              {(!trashNotes || trashNotes.length === 0) ? (
-                <div className="py-12 text-center text-[#8B90A0] flex flex-col items-center gap-2">
-                  <Trash2 className="size-8 text-white/20" />
-                  <p className="text-xs">Thùng rác trống</p>
-                  <p className="text-[10px] text-[#8B90A0]/60">Các ghi chú bạn xóa sẽ xuất hiện ở đây để khôi phục khi cần</p>
-                </div>
-              ) : (
-                trashNotes.map((n) => (
-                  <div
-                    key={n.id}
-                    className="p-3 rounded-2xl bg-[#14161D]/70 border border-white/6 space-y-2 hover:border-white/12 transition-all"
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex items-start gap-2 min-w-0 flex-1">
-                        <span className={cn("size-2.5 rounded-full mt-1 shrink-0", `note-${n.tint}`)} />
-                        <div className="min-w-0 flex-1">
-                          <p className="text-xs text-[#F4F5F7] font-medium line-clamp-3 leading-relaxed">
-                            {n.body.trim() || "(Ghi chú không có nội dung)"}
-                          </p>
-                          <div className="flex items-center gap-2 mt-1.5 text-[10px] text-[#8B90A0]">
-                            {n.cluster && (
-                              <span className="text-[#F5A623] bg-[#F5A623]/10 px-1.5 py-0.2 rounded border border-[#F5A623]/20">
-                                {n.cluster}
-                              </span>
-                            )}
-                            {n.deletedAt && (
-                              <span>Xóa lúc: {new Date(n.deletedAt).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}</span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-1 shrink-0">
-                        <button
-                          type="button"
-                          onClick={() => restoreNote(n.id)}
-                          className="px-2.5 py-1 rounded-xl bg-[#F5A623] hover:bg-[#D6871A] text-[#14161D] text-[11px] font-bold transition-all shadow-xs cursor-pointer flex items-center gap-1"
-                          title="Khôi phục ghi chú này lên Desktop"
-                        >
-                          <RotateCcw className="size-3" />
-                          <span>Khôi phục</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => permanentDeleteNote(n.id)}
-                          className="p-1.5 rounded-xl hover:bg-red-500/15 text-[#8B90A0] hover:text-[#EF4444] transition-colors cursor-pointer"
-                          title="Xóa vĩnh viễn"
-                        >
-                          <Trash2 className="size-3.5" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </TabsContent>
-
-          {/* TAB 4: VIRTUAL PET STUDIO & WARDROBE */}
+          {/* TAB 3: VIRTUAL PET STUDIO & WARDROBE */}
           <TabsContent value="pip" className="space-y-3 mt-0">
             <div className="flex items-center justify-between gap-3 rounded-2xl bg-[#262A35]/50 px-3 py-2.5 border border-white/6">
               <div>
@@ -1203,127 +726,6 @@ export function Hub() {
             )}
           </TabsContent>
 
-          {/* TAB 3: LOOK & THEMES */}
-          <TabsContent value="look" className="space-y-3 mt-0">
-            {/* Language Selector */}
-            <div className="space-y-1.5">
-              <p className="text-[10px] font-semibold text-[#8B90A0] uppercase tracking-wider">
-                Ngôn ngữ (Language)
-              </p>
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setLang("vi");
-                    sounds.playPop(520);
-                  }}
-                  className={cn(
-                    "flex items-center justify-between rounded-xl px-3 py-2 text-left border cursor-pointer transition-all duration-120",
-                    lang === "vi"
-                      ? "border-[#F5A623]/60 bg-[#F5A623]/15 text-[#F4F5F7]"
-                      : "border-white/5 bg-[#262A35]/30 hover:border-white/15 text-[#8B90A0]",
-                  )}
-                >
-                  <div className="flex items-center gap-1.5">
-                    <span>🇻🇳</span>
-                    <span className="text-xs font-semibold">Tiếng Việt</span>
-                  </div>
-                  {lang === "vi" ? <span className="size-1.5 rounded-full bg-[#F5A623]" /> : null}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setLang("en");
-                    sounds.playPop(520);
-                  }}
-                  className={cn(
-                    "flex items-center justify-between rounded-xl px-3 py-2 text-left border cursor-pointer transition-all duration-120",
-                    lang === "en"
-                      ? "border-[#F5A623]/60 bg-[#F5A623]/15 text-[#F4F5F7]"
-                      : "border-white/5 bg-[#262A35]/30 hover:border-white/15 text-[#8B90A0]",
-                  )}
-                >
-                  <div className="flex items-center gap-1.5">
-                    <span>🇬🇧</span>
-                    <span className="text-xs font-semibold">English</span>
-                  </div>
-                  {lang === "en" ? <span className="size-1.5 rounded-full bg-[#F5A623]" /> : null}
-                </button>
-              </div>
-            </div>
-
-            {/* Themes Grid */}
-            <div className="space-y-1.5">
-              <p className="text-[10px] font-semibold text-[#8B90A0] uppercase tracking-wider">
-                Chủ đề không gian
-              </p>
-              <div className="space-y-1">
-                {THEMES.map((t) => {
-                  const preview = THEME_PREVIEWS[t.id] || { bg: "bg-[#262A35]", accent: "bg-[#F5A623]", border: "border-white/10" };
-                  return (
-                    <button
-                      key={t.id}
-                      type="button"
-                      onClick={() => {
-                        setTheme(t.id);
-                        sounds.playPop(540);
-                      }}
-                      className={cn(
-                        "flex w-full items-center justify-between rounded-xl px-3 py-2 text-left border cursor-pointer transition-all duration-120",
-                        theme === t.id
-                          ? "border-[#F5A623]/60 bg-[#F5A623]/15 text-[#F4F5F7]"
-                          : "border-white/5 bg-[#262A35]/30 hover:border-white/15 text-[#8B90A0]",
-                      )}
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <div className={cn("size-5 rounded-md border flex items-center justify-center", preview.bg, preview.border)}>
-                          <div className={cn("size-1.5 rounded-full", preview.accent)} />
-                        </div>
-                        <span className="text-xs font-medium">{t.name}</span>
-                      </div>
-                      {theme === t.id ? (
-                        <span className="text-[10px] bg-[#F5A623]/20 text-[#F5A623] px-1.5 py-0.2 rounded-md font-semibold border border-[#F5A623]/30">
-                          Active
-                        </span>
-                      ) : null}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Always on top & audio switches */}
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between gap-3 rounded-2xl bg-[#262A35]/30 px-3 py-2.5 border border-white/5">
-                <div>
-                  <p className="text-xs font-medium text-[#F4F5F7]">{dict.look.alwaysOnTop}</p>
-                  <p className="text-[10px] text-[#8B90A0]">{dict.look.alwaysOnTopDesc}</p>
-                </div>
-                <Switch checked={alwaysOnTop} onCheckedChange={handleAlwaysOnTopChange} />
-              </div>
-
-              <div className="flex items-center justify-between gap-3 rounded-2xl bg-[#262A35]/30 px-3 py-2.5 border border-white/5">
-                <div>
-                  <p className="text-xs font-medium text-[#F4F5F7]">{isVi ? "Video Intro khi mở ứng dụng" : "Startup Intro Video"}</p>
-                  <p className="text-[10px] text-[#8B90A0]">
-                    {isVi ? "Phát đoạn intro cinematic khi khởi động (bấm Space để bỏ qua)" : "Play cinematic intro on startup (Space to skip)"}
-                  </p>
-                </div>
-                <Switch checked={introVideoEnabled} onCheckedChange={(val) => setIntroVideoEnabled(val)} />
-              </div>
-
-
-
-              <div className="flex items-center justify-between gap-3 rounded-2xl bg-[#262A35]/30 px-3 py-2.5 border border-white/5">
-                <div>
-                  <p className="text-xs font-medium text-[#F4F5F7]">{dict.look.proceduralAudio}</p>
-                  <p className="text-[10px] text-[#8B90A0]">{dict.look.audioDesc}</p>
-                </div>
-                <Switch checked={pip.soundEnabled} onCheckedChange={(val) => toggleSound(val)} />
-              </div>
-            </div>
-          </TabsContent>
-
           {/* TAB 4: SYSTEM & TELEMETRY */}
           <TabsContent value="about" className="space-y-3 text-xs text-[#8B90A0] mt-0">
             {/* Live Performance Telemetry */}
@@ -1385,6 +787,12 @@ export function Hub() {
               <p className="font-semibold text-[#F4F5F7] text-xs mb-1">Tổ hợp phím tắt nhanh (Alt):</p>
               <div className="divide-y divide-white/5 text-[11px]">
                 <div className="flex items-center justify-between py-1">
+                  <span>Lịch trình & Kế hoạch (Calendar):</span>
+                  <span className="font-mono bg-[#14161D] px-1.5 py-0.5 rounded-md border border-white/5 text-[#F5A623] font-semibold">
+                    Alt + C
+                  </span>
+                </div>
+                <div className="flex items-center justify-between py-1">
                   <span>Ghi chú nhanh:</span>
                   <div className="flex gap-1">
                     <span className="font-mono bg-[#14161D] px-1.5 py-0.5 rounded-md border border-white/5 text-[#F5A623] font-semibold">
@@ -1402,7 +810,7 @@ export function Hub() {
                   </span>
                 </div>
                 <div className="flex items-center justify-between py-1">
-                  <span>Bảng cài đặt (Hub):</span>
+                  <span>Bảng cài đặt (Settings):</span>
                   <div className="flex gap-1">
                     <span className="font-mono bg-[#14161D] px-1.5 py-0.5 rounded-md border border-white/5 text-[#F5A623] font-semibold">
                       Alt + S
@@ -1431,21 +839,9 @@ export function Hub() {
                   </span>
                 </div>
                 <div className="flex items-center justify-between py-1">
-                  <span>Hiện cửa sổ lên trên:</span>
+                  <span>Tìm kiếm nhanh (Spotlight):</span>
                   <span className="font-mono bg-[#14161D] px-1.5 py-0.5 rounded-md border border-white/5 text-[#F5A623] font-semibold">
-                    Alt + L
-                  </span>
-                </div>
-                <div className="flex items-center justify-between py-1">
-                  <span>Tạo note tại con trỏ:</span>
-                  <span className="bg-[#14161D] px-1.5 py-0.5 rounded-md border border-white/5 text-[#3FAE6C] font-semibold text-[10px]">
-                    Nhấp đúp chuột trên màn hình
-                  </span>
-                </div>
-                <div className="flex items-center justify-between py-1">
-                  <span>Xoay góc nghiêng note:</span>
-                  <span className="bg-[#14161D] px-1.5 py-0.5 rounded-md border border-white/5 text-[#3FAE6C] font-semibold text-[10px]">
-                    Kéo icon xoay ở góc note
+                    Alt + F
                   </span>
                 </div>
                 <div className="flex items-center justify-between py-1">

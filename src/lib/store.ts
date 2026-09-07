@@ -85,6 +85,8 @@ type LumenState = {
   hubOpen: boolean;
   captureOpen: boolean;
   quickTimerOpen: boolean;
+  calendarOpen: boolean;
+  calendarCompact: boolean;
   onboarding: boolean;
   notes: Note[];
   reminders: Reminder[];
@@ -100,6 +102,9 @@ type LumenState = {
   setHubOpen: (open: boolean) => void;
   setCaptureOpen: (open: boolean) => void;
   setQuickTimerOpen: (open: boolean) => void;
+  setCalendarOpen: (open: boolean) => void;
+  setCalendarCompact: (compact: boolean) => void;
+  toggleCalendarCompact: () => void;
   dismissOnboarding: () => void;
   addNote: (partial?: Partial<Note>) => string;
   updateNote: (id: string, patch: Partial<Note>) => void;
@@ -213,6 +218,8 @@ export const useLumen = create<LumenState>()(
       hubOpen: false,
       captureOpen: false,
       quickTimerOpen: false,
+      calendarOpen: false,
+      calendarCompact: false,
       onboarding: false,
       notes: SEED_NOTES,
       reminders: SEED_TIMERS,
@@ -289,6 +296,7 @@ export const useLumen = create<LumenState>()(
           hubOpen,
           captureOpen: hubOpen ? false : get().captureOpen,
           quickTimerOpen: hubOpen ? false : get().quickTimerOpen,
+          calendarOpen: hubOpen ? false : get().calendarOpen,
         });
       },
       setCaptureOpen: (captureOpen) => {
@@ -297,6 +305,7 @@ export const useLumen = create<LumenState>()(
           captureOpen,
           hubOpen: captureOpen ? false : get().hubOpen,
           quickTimerOpen: captureOpen ? false : get().quickTimerOpen,
+          calendarOpen: captureOpen ? false : get().calendarOpen,
         });
       },
       setQuickTimerOpen: (quickTimerOpen) => {
@@ -305,7 +314,25 @@ export const useLumen = create<LumenState>()(
           quickTimerOpen,
           hubOpen: quickTimerOpen ? false : get().hubOpen,
           captureOpen: quickTimerOpen ? false : get().captureOpen,
+          calendarOpen: quickTimerOpen ? false : get().calendarOpen,
         });
+      },
+      setCalendarOpen: (calendarOpen) => {
+        sounds.playPop(520);
+        set({
+          calendarOpen,
+          hubOpen: calendarOpen ? false : get().hubOpen,
+          captureOpen: calendarOpen ? false : get().captureOpen,
+          quickTimerOpen: calendarOpen ? false : get().quickTimerOpen,
+        });
+      },
+      setCalendarCompact: (calendarCompact) => {
+        sounds.playPop(540);
+        set({ calendarCompact });
+      },
+      toggleCalendarCompact: () => {
+        sounds.playPop(540);
+        set((s) => ({ calendarCompact: !s.calendarCompact }));
       },
       selectedCluster: null,
       setSelectedCluster: (selectedCluster) => {
@@ -807,6 +834,9 @@ export const useLumen = create<LumenState>()(
           transparentOverlay: true,
           hubOpen: false,
           captureOpen: false,
+          quickTimerOpen: false,
+          calendarOpen: false,
+          calendarCompact: false,
           onboarding: true,
           notes: SEED_NOTES,
           reminders: SEED_TIMERS,
@@ -833,6 +863,7 @@ export const useLumen = create<LumenState>()(
         calendarEvents: s.calendarEvents,
         selectedCalendarDate: s.selectedCalendarDate,
         calendarViewMode: s.calendarViewMode,
+        calendarCompact: s.calendarCompact,
         alarmSettings: s.alarmSettings,
         pro: s.pro,
         pip: {

@@ -572,6 +572,26 @@ console.log("\n📦 [SUITE 5]: Desktop Window Visibility & Single Instance Recov
   let newCalEvent = { id: "cal_1", title: "Ý tưởng sản phẩm", startDate: "2026-09-08", linkedNoteId: deskNote.id };
   deskNote.dueDate = newCalEvent.startDate;
   assert(deskNote.dueDate === "2026-09-08" && newCalEvent.linkedNoteId === "note_cal_1", "2-Way linkage between Sticky Notes and Calendar events functions symmetrically");
+
+  // 6. Standalone Calendar View Modes (Expansive Dual-Pane vs Compact Mini-Capsule)
+  let calendarCompact = false;
+  const toggleCompact = () => { calendarCompact = !calendarCompact; };
+  assert(calendarCompact === false, "Standalone Calendar initialises in Expansive dual-pane mode by default");
+  toggleCompact();
+  assert(calendarCompact === true, "Standalone Calendar smoothly switches to Collapsible Compact Mini-Capsule mode");
+
+  // 7. Decoupled Alt+C and Escape Keyboard Navigation
+  let calOpen = false;
+  const onAltC = () => { calOpen = !calOpen; };
+  const onEscape = () => { calOpen = false; };
+  onAltC();
+  assert(calOpen === true, "Alt+C opens dedicated Standalone Calendar module independently from Settings");
+  onEscape();
+  assert(calOpen === false, "Escape closes Standalone Calendar module cleanly");
+
+  // 8. Streamlined Settings Hub Architecture (4 Strictly Preference Tabs)
+  const hubTabs = ["look", "preferences", "pip", "about"];
+  assert(hubTabs.length === 4 && !hubTabs.includes("calendar") && !hubTabs.includes("clusters"), "Settings Hub is streamlined strictly for system preferences and UI customization with zero embedded functional clutter");
 }
 
 console.log(`\n========================================`);

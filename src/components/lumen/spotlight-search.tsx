@@ -22,6 +22,7 @@ export function SpotlightSearch() {
   const notes = useLumen((s) => s.notes);
   const trashNotes = useLumen((s) => s.trashNotes);
   const calendarEvents = useLumen((s) => s.calendarEvents);
+  const setCalendarOpen = useLumen((s) => s.setCalendarOpen);
   const setHubOpen = useLumen((s) => s.setHubOpen);
   const setSelectedCalendarDate = useLumen((s) => s.setSelectedCalendarDate);
   const bringNote = useLumen((s) => s.bringNote);
@@ -96,7 +97,7 @@ export function SpotlightSearch() {
     sounds.playChime();
     setSelectedCalendarDate(event.startDate);
     setSearchOpen(false);
-    setHubOpen(true);
+    setCalendarOpen(true);
   };
 
   const handleSelectNote = (targetNote: Note, isTrash = false) => {

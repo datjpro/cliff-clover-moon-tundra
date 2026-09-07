@@ -25,6 +25,7 @@ import { QuickTimer, triggerOpenQuickTimer } from "./quick-timer";
 import { SpotlightSearch } from "./spotlight-search";
 import { StickyNote } from "./sticky-note";
 import { SetupWizardModal } from "./installer-wizard";
+import { StandaloneCalendar } from "./standalone-calendar";
 import { ToastStack } from "./toasts";
 import { cn } from "@/lib/utils";
 
@@ -44,6 +45,7 @@ function FloatingTrayMenu() {
   const addNote = useLumen((s) => s.addNote);
   const setCaptureOpen = useLumen((s) => s.setCaptureOpen);
   const setQuickTimerOpen = useLumen((s) => s.setQuickTimerOpen);
+  const setCalendarOpen = useLumen((s) => s.setCalendarOpen);
   const setHubOpen = useLumen((s) => s.setHubOpen);
   const setSearchOpen = useLumen((s) => s.setSearchOpen);
   const tidyNotes = useLumen((s) => s.tidyNotes);
@@ -189,7 +191,7 @@ function FloatingTrayMenu() {
             <button
               type="button"
               onClick={() => {
-                setHubOpen(true);
+                setCalendarOpen(true);
                 setOpen(false);
               }}
               className="flex items-center justify-between px-2.5 h-9 rounded-xl hover:bg-[#262A35] transition-colors duration-120 text-left cursor-pointer group"
@@ -400,6 +402,8 @@ export function DesktopScene() {
   const setCaptureOpen = useLumen((s) => s.setCaptureOpen);
   const quickTimerOpen = useLumen((s) => s.quickTimerOpen);
   const setQuickTimerOpen = useLumen((s) => s.setQuickTimerOpen);
+  const calendarOpen = useLumen((s) => s.calendarOpen);
+  const setCalendarOpen = useLumen((s) => s.setCalendarOpen);
   const hubOpen = useLumen((s) => s.hubOpen);
   const setHubOpen = useLumen((s) => s.setHubOpen);
   const searchOpen = useLumen((s) => s.searchOpen);
@@ -411,7 +415,7 @@ export function DesktopScene() {
     void Promise.resolve(useLumen.persist.rehydrate()).then(() => markHydrated());
   }, [markHydrated]);
 
-  const isAnyModalOpen = captureOpen || quickTimerOpen || hubOpen || searchOpen;
+  const isAnyModalOpen = captureOpen || quickTimerOpen || calendarOpen || hubOpen || searchOpen;
 
   // Dynamic Click-Through: mousemove-based setIgnoreMouseEvents toggling + Tauri hit-rects sync
   //
@@ -536,7 +540,7 @@ export function DesktopScene() {
       // Calendar Hub: Alt+C
       if (e.altKey && key === "c") {
         e.preventDefault();
-        setHubOpen(!useLumen.getState().hubOpen);
+        setCalendarOpen(!useLumen.getState().calendarOpen);
       }
       // Settings Hub: Alt+S, Alt+H
       if ((e.altKey && key === "s") || (e.altKey && key === "h")) {
@@ -561,6 +565,7 @@ export function DesktopScene() {
       if (e.key === "Escape") {
         setCaptureOpen(false);
         setQuickTimerOpen(false);
+        setCalendarOpen(false);
         setHubOpen(false);
         setSearchOpen(false);
       }
@@ -578,6 +583,11 @@ export function DesktopScene() {
       unlisteners.push(
         listenToDesktopEvent("open-quick-timer", () => {
           setQuickTimerOpen(true);
+        }),
+      );
+      unlisteners.push(
+        listenToDesktopEvent("open-calendar", () => {
+          setCalendarOpen(true);
         }),
       );
       unlisteners.push(
@@ -622,7 +632,7 @@ export function DesktopScene() {
         }
       }
     };
-  }, [setCaptureOpen, setQuickTimerOpen, setHubOpen, addNote, tidyNotes, setLayout, setPipEnabled]);
+  }, [setCaptureOpen, setQuickTimerOpen, setCalendarOpen, setHubOpen, addNote, tidyNotes, setLayout, setPipEnabled]);
 
   // Reminder scheduler
   useEffect(() => {
@@ -738,6 +748,7 @@ export function DesktopScene() {
       <QuickCapture />
       <QuickTimer />
       <SpotlightSearch />
+      <StandaloneCalendar />
       <Hub />
       <ProUpgradeModal />
       <SetupWizardModal />
