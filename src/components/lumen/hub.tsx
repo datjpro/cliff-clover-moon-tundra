@@ -6,6 +6,7 @@ import {
   Download,
   GripHorizontal,
   Heart,
+  History,
   Maximize2,
   Play,
   RefreshCw,
@@ -29,6 +30,7 @@ import { THEMES } from "@/lib/themes";
 import { useLumen } from "@/lib/store";
 import type { AlarmSoundTone, AppUpdateInfo, CalendarDockPosition, PetBodyItem, PetHat, PetType, ThemeId } from "@/lib/types";
 import { checkForAppUpdates, CURRENT_APP_VERSION } from "@/lib/updater";
+import { APP_RELEASES } from "@/lib/changelog-data";
 import { UpdateNotificationModal } from "./update-notification-modal";
 import { triggerThrowBall } from "./ball-toy";
 import { PipFigure } from "./pip";
@@ -675,27 +677,48 @@ export function Hub() {
                     </span>
                   </div>
                   <p className="text-[10px] text-[#8B90A0]">
-                    {isVi ? "Tự động kiểm tra phát hành mới từ GitHub Releases" : "Check for latest release on GitHub"}
+                    {isVi ? "Tự động phát hiện phiên bản mới từ GitHub Releases" : "Check for latest release on GitHub"}
                   </p>
                 </div>
 
-                <Button
-                  size="sm"
-                  onClick={handleCheckUpdateManual}
-                  disabled={checkingUpdate}
-                  className="h-7 text-xs font-semibold bg-[#F5A623] hover:bg-[#D6871A] text-[#14161D] rounded-xl cursor-pointer gap-1 px-2.5 shadow-xs"
-                >
-                  <RefreshCw className={cn("size-3", checkingUpdate && "animate-spin")} />
-                  <span>
-                    {checkingUpdate
-                      ? isVi
-                        ? "Đang kiểm tra..."
-                        : "Checking..."
-                      : isVi
-                      ? "Kiểm tra cập nhật"
-                      : "Check Update"}
-                  </span>
-                </Button>
+                <div className="flex items-center gap-1.5">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      sounds.playPop(500);
+                      setUpdateModalInfo({
+                        version: CURRENT_APP_VERSION,
+                        name: `Lumen v${CURRENT_APP_VERSION}`,
+                        body: "",
+                        downloadUrl: `https://github.com/datjpro/cliff-clover-moon-tundra/releases/tag/v${CURRENT_APP_VERSION}`,
+                      });
+                      setShowUpdateModal(true);
+                    }}
+                    className="h-7 text-xs font-medium border-white/10 bg-[#14161D] text-[#8B90A0] hover:text-[#F4F5F7] hover:border-white/20 rounded-xl cursor-pointer gap-1 px-2 shadow-xs"
+                  >
+                    <Sparkles className="size-3 text-[#F5A623]" />
+                    <span>{isVi ? "Tính năng mới" : "What's New"}</span>
+                  </Button>
+
+                  <Button
+                    size="sm"
+                    onClick={handleCheckUpdateManual}
+                    disabled={checkingUpdate}
+                    className="h-7 text-xs font-semibold bg-[#F5A623] hover:bg-[#D6871A] text-[#14161D] rounded-xl cursor-pointer gap-1 px-2.5 shadow-xs"
+                  >
+                    <RefreshCw className={cn("size-3", checkingUpdate && "animate-spin")} />
+                    <span>
+                      {checkingUpdate
+                        ? isVi
+                          ? "Đang kiểm tra..."
+                          : "Checking..."
+                        : isVi
+                        ? "Kiểm tra cập nhật"
+                        : "Check Update"}
+                    </span>
+                  </Button>
+                </div>
               </div>
 
               {updateResultText && (
@@ -1013,6 +1036,49 @@ export function Hub() {
                     Escape
                   </span>
                 </div>
+              </div>
+            </div>
+
+            {/* Version History & Changelog Accordion */}
+            <div className="rounded-2xl bg-[#262A35]/50 p-3 space-y-2.5 border border-white/6 shadow-xs">
+              <div className="flex items-center justify-between">
+                <p className="font-semibold text-[#F4F5F7] text-xs flex items-center gap-1.5">
+                  <History className="size-3.5 text-[#F5A623]" />
+                  <span>{isVi ? "Lịch sử cập nhật phiên bản (Changelog)" : "Release History & Changelog"}</span>
+                </p>
+                <span className="text-[10px] text-[#F5A623] font-mono font-bold bg-[#F5A623]/15 border border-[#F5A623]/30 px-1.5 py-0.2 rounded-md">
+                  v{CURRENT_APP_VERSION}
+                </span>
+              </div>
+
+              <div className="space-y-2 max-h-56 overflow-y-auto custom-scrollbar pr-0.5">
+                {APP_RELEASES.map((rel) => (
+                  <div
+                    key={rel.version}
+                    className="p-2.5 rounded-xl bg-[#14161D]/80 border border-white/5 space-y-1.5"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-bold text-xs text-white">v{rel.version}</span>
+                        {rel.isLatest && (
+                          <span className="px-1.5 py-0.2 rounded text-[8px] font-bold bg-[#3FAE6C]/20 text-[#3FAE6C] border border-[#3FAE6C]/40 uppercase">
+                            {isVi ? "Mới nhất" : "Latest"}
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-[9px] text-[#8B90A0] font-mono">{rel.releaseDate}</span>
+                    </div>
+
+                    <ul className="space-y-1 text-[10.5px] text-[#A0A5B5] pl-1">
+                      {rel.highlights.map((h, hIdx) => (
+                        <li key={hIdx} className="flex items-start gap-1.5">
+                          <span className="text-xs shrink-0">{h.icon}</span>
+                          <span className="leading-tight">{isVi ? h.titleVi : h.titleEn}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
               </div>
             </div>
 

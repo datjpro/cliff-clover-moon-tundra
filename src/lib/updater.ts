@@ -1,6 +1,6 @@
 import type { AppUpdateInfo } from "./types";
 
-export const CURRENT_APP_VERSION = "1.0.1";
+export const CURRENT_APP_VERSION = "1.1.0";
 export const GITHUB_REPO = "datjpro/cliff-clover-moon-tundra";
 
 /**

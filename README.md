@@ -7,8 +7,8 @@
 [![React](https://img.shields.io/badge/React-19.2+-61DAFB.svg?style=flat-square&logo=react)](https://react.dev/)
 [![TailwindCSS](https://img.shields.io/badge/TailwindCSS-v4-38B2AC.svg?style=flat-square&logo=tailwindcss)](https://tailwindcss.com/)
 [![Zustand](https://img.shields.io/badge/Zustand-v5.0-orange.svg?style=flat-square)](https://zustand-demo.pmnd.rs/)
-[![Electron](https://img.shields.io/badge/Electron-Desktop_Overlay-47848F.svg?style=flat-square&logo=electron)](https://www.electronjs.org/)
-[![Tests](https://img.shields.io/badge/Tests-75%2F75_PASS-brightgreen.svg?style=flat-square)](scripts/test-suite.mjs)
+[![Version](https://img.shields.io/badge/Version-v1.1.0-blue.svg?style=flat-square)](CHANGELOG.md)
+[![Tests](https://img.shields.io/badge/Tests-143%2F143_PASS-brightgreen.svg?style=flat-square)](scripts/test-suite.mjs)
 
 ---
 
@@ -25,7 +25,7 @@
   - [Automated Verification Suite](#automated-verification-suite)
 - [🇻🇳 Tài Liệu Tiếng Việt](#-tài-liệu-tiếng-việt)
   - [Tổng Quan Dự Án](#tổng-quan-dự-án)
-  - [Các Tính Năng Trọng Tâm](#các-tính-năng-trọng-tâm)
+  - [Các Tính Năng Trọng Tâm (v1.1.0)](#các-tính-năng-trọng-tâm-v110)
   - [Tối Ưu Desktop Shell & Windows DWM](#tối-ưu-desktop-shell--windows-dwm)
   - [⚖️ Kiến Trúc Desktop Kép: Electron vs. Tauri (Rust)](#️-kiến-trúc-desktop-kép-electron-vs-tauri-rust)
   - [Bảng Phím Tắt Toàn Diện](#bảng-phím-tắt-toàn-diện)
@@ -39,7 +39,7 @@
 
 ## Overview
 
-**Lumen** is a high-performance spatial desktop companion and productivity workspace. Built for deep focus and joyful daily workflows, Lumen features **Pip** (an animated virtual desktop pet with procedural physics) living side-by-side with spatial sticky notes, natural language smart timers, instant spotlight search, and a zero-occlusion transparent desktop overlay.
+**Lumen** is a high-performance spatial desktop companion and productivity workspace. Built for deep focus and joyful daily workflows, Lumen features **Pip** (an animated virtual desktop pet with procedural physics) living side-by-side with spatial sticky notes, natural language smart timers, standalone spatial calendar, instant spotlight search, and a zero-occlusion transparent desktop overlay.
 
 ```
  ┌────────────────────────────────────────────────────────────────────────┐
@@ -71,13 +71,29 @@
 - **Dynamic Z-Index Elevation:** Auto-elevates above other notes when color palettes or kebab menus open.
 - **4 Pastel Tints & Dark Obsidian:** Cream, Mint, Lavender, Peach, and Dark Charcoal with high-contrast text carets.
 
-### ⏱️ 3. Natural Language Smart Timers & Procedural Alarms
+### 📅 3. Standalone Spatial Calendar & Tactical Scope Time Picker (`v1.1.0`)
+- **Decoupled Standalone Window (`Alt+C`):** Fully independent spatial calendar modal with month grid and daily agenda split-view.
+- **Tactical 24H Scope Rotary Time Picker:** Mechanical barrel wheel selector with audio click feedback and infinite wrapping.
+- **Corner-Docked Mini Widget:** Compact mini-capsule docked to any of the 4 screen corners strictly filtering **Today's Agenda**.
+- **2-Way Sticky Note Linkage:** Converts calendar schedules into interactive sticky notes on your canvas.
+
+### 🔄 4. Smart In-App Update Engine & Offline Guard (`v1.1.0`)
+- **On-Demand Update Verification:** User-initiated update checks without wasteful startup network polling.
+- **Strict Offline Guard:** Detects network disconnection (`navigator.onLine`) and surfaces polite offline guidance.
+- **Rich Release Modal:** Displays new version highlights, badges (Feature, UI, Pro, Bugfix, Performance), and choices to **Update Now**, **Skip Version**, or **Remind Later**.
+- **Version Changelog Registry:** Centralized release notes accessible directly inside Hub Settings.
+
+### 🎁 5. Pro License & 3-Day Free Trial Engine (`v1.1.0`)
+- **Luxury Pro Upgrade Modal:** Dynamic feature matrix with Lifetime Pro key validation and temporary trial handling.
+- **Instant 3-Day Pass:** Activate full Pro features immediately using code **`LUMENTRIAL3DAY`** with live expiration timer.
+
+### ⏱️ 6. Natural Language Smart Timers & Procedural Alarms
 - **Natural Language Parsing:** Type `"xây nhà trong COC 2h14p"`, `"Pomodoro 25p"`, or `"Nấu canh chua 15m30s"` to auto-extract titles and millisecond durations.
 - **Procedural Web Audio Synthesizer:** 4 high-volume alarm melodies (`Bell Arpeggio`, `Digital Alarm`, `Gentle Chime`, `Vintage Clock`) synthesized natively with zero external audio asset lag.
 - **Pinned Desktop Timer Widget:** Real-time countdown on your wallpaper that survives app reboots based on persistent `fireAt` timestamps.
 - **Offline Expiration Recovery:** Detects reminders that elapsed while computer was off upon next boot.
 
-### 🔍 4. Spotlight Search & Productivity Hub
+### 🔍 7. Spotlight Search & Productivity Hub
 - **Global Spotlight Search (`Alt+F` / `Ctrl+F`):** Instant fuzzy search across titles, note bodies, checklist items, and clusters with keyboard navigation.
 - **Cluster Filter Dock:** Group notes into active clusters (`Work`, `Personal`, `Ideas`, `Urgent`) and filter via interactive dock pills.
 - **Trash Bin & `Ctrl+Z` Undo:** Safety trash bin with instant `Ctrl+Z` undo restore and permanent purge management in Hub Settings.
@@ -231,7 +247,7 @@ npm test
 
 ---
 
-## Các Tính Năng Trọng Tâm
+## Các Tính Năng Trọng Tâm (v1.1.0)
 
 ### 🐾 1. Thú Cưng Desktop (Pip) & Tương Tác Sống Động
 - **5 Loài Thú Procedural SVG:** Cáo con (Fox), Mèo máy (Cat), Chó Shiba, Rồng nhỏ (Dragon), và Cyberpet.
@@ -246,12 +262,28 @@ npm test
 - **Khóa Vị Trí (Lock Position):** Khóa không cho di chuyển nhầm trong khi vẫn gõ chữ và tick todo bình thường.
 - **Bảng Màu Pastel & Nền Tối:** Cream, Mint, Lavender, Peach, Dark Charcoal với con trỏ văn bản màu đen tương phản cao nhấp nháy rõ nét.
 
-### ⏱️ 3. Hẹn Giờ Thông Minh (Smart Timers) & Chuông Báo Âm Lượng Lớn
+### 📅 3. Module Lịch Trình Độc Lập & Bộ Chọn Giờ Ống Ngắm 24H (`v1.1.0`)
+- **Cửa Sổ Lịch Không Gian Riêng Biệt (`Alt+C`):** Tách độc lập hoàn toàn với giao diện 2 cột xem lịch tháng và chi tiết đầu việc trong ngày.
+- **Bộ Chọn Giờ Xoay 24H Ống Ngắm (Scope Rotary Time Picker):** Xoay vô tận 24H (`00-23h`, `00-59m`) với âm thanh click cơ học chân thực.
+- **Widget Thu Gọn Gắn 4 Góc:** Thu gọn thành mini-capsule gắn vào 1 trong 4 góc màn hình, chỉ hiển thị đúng các việc trong ngày hôm nay.
+- **Liên Kết 2 Chiều Với Ghi Chú Dán:** Chuyển đổi lịch trình thành ghi chú dán trực tiếp trên màn hình desktop.
+
+### 🔄 4. Kiểm Tra Cập Nhật Thông Minh & Guard Ngoại Tuyến (`v1.1.0`)
+- **Kiểm Tra Theo Nhu Cầu (On-Demand):** Người dùng chủ động bấm kiểm tra trong Cài đặt mà không lo bị spam mạng khi khởi động.
+- **Tự Động Bắt Lỗi Mất Mạng:** Nhận diện trạng thái Offline (`navigator.onLine`) và hiển thị thông báo hướng dẫn bật lại mạng.
+- **Modal Cập Nhật Đầy Đủ:** Xem trước toàn bộ tính năng mới, badge phân loại và 3 nút lựa chọn: **Cập nhật ngay**, **Bỏ qua bản này**, **Nhắc tôi sau**.
+- **Nhật Ký Cập Nhật (Changelog):** Theo dõi toàn bộ lịch sử các phiên bản phát hành trực tiếp trong ứng dụng.
+
+### 🎁 5. Bản Quyền Pro & Mã Dùng Thử 3 Ngày Miễn Phí (`v1.1.0`)
+- **Giao Diện Nâng Cấp Pro Sang Trọng:** Quản lý License Key vĩnh viễn và gói dùng thử có hạn.
+- **Mã Dùng Thử 3 Ngày:** Nhập mã **`LUMENTRIAL3DAY`** để mở khóa toàn bộ tính năng Pro với bộ đếm ngược thời hạn.
+
+### ⏱️ 6. Hẹn Giờ Thông Minh (Smart Timers) & Chuông Báo Âm Lượng Lớn
 - **Nhận Diện Ngôn Ngữ Tự Nhiên:** Tự động tách tiêu đề và thời gian từ câu nhập: `"xây nhà trong COC 2h14p"`, `"Pomodoro 25p"`, `"Nấu canh chua 15m30s"`.
 - **Tổng Hợp Âm Thanh Procedural:** 4 giai điệu chuông báo âm lượng lớn (`Chuông Arpeggio`, `Báo thức số Digital`, `Chuông gió Chime`, `Đồng hồ cổ Vintage`) tạo trực tiếp bằng Web Audio API, không phụ thuộc file âm thanh ngoài.
 - **Ghim Đồng Hồ Đếm Ngược Lên Màn Hình:** Widget đếm ngược ghim trên desktop, duy trì chính xác qua các lần tắt/mở ứng dụng nhờ mốc thời gian `fireAt`.
 
-### 🔍 4. Tìm Kiếm Spotlight & Quản Lý Thùng Rác
+### 🔍 7. Tìm Kiếm Spotlight & Quản Lý Thùng Rác
 - **Tìm Kiếm Spotlight Nhanh (`Alt+F` / `Ctrl+F`):** Tìm kiếm tức thì theo từ khóa trong nội dung, tiêu đề, mục việc todo, hoặc nhóm cluster, hỗ trợ phím mũi tên điều hướng và nhấp nháy làm nổi bật ghi chú.
 - **Phân Nhóm Cluster & Thanh Lọc Nhanh:** Gom nhóm ghi chú theo chủ đề (`Công việc`, `Cá nhân`, `Ý tưởng`, `Khẩn cấp`) và lọc nhanh bằng thanh dock góc dưới.
 - **Thùng Rác & Hoàn Tác `Ctrl+Z`:** Xóa ghi chú an toàn vào thùng rác, bấm `Ctrl+Z` để khôi phục ngay lập tức, có tab quản trị Thùng rác riêng trong Cài đặt Hub.

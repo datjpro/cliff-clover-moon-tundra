@@ -859,14 +859,19 @@ console.log("\n📦 [SUITE 8]: In-App Auto-Update & Semver Engine");
     };
   }
 
-  const offlineCheck = simulateUpdateCheckWithNetwork(false, "1.0.1", "1.0.2");
+  const offlineCheck = simulateUpdateCheckWithNetwork(false, "1.1.0", "1.1.1");
   assert(offlineCheck.isOffline === true, "Offline state correctly detected without making network call");
   assert(offlineCheck.hasUpdate === false, "No update triggered when offline");
   assert(offlineCheck.error.includes("Không có kết nối Internet"), "Informative offline Vietnamese error message returned");
 
-  const onlineCheck = simulateUpdateCheckWithNetwork(true, "1.0.1", "1.0.2");
+  const onlineCheck = simulateUpdateCheckWithNetwork(true, "1.1.0", "1.1.1");
   assert(onlineCheck.isOffline === false, "Online state correctly detected");
-  assert(onlineCheck.hasUpdate === true, "Update v1.0.2 detected when online");
+  assert(onlineCheck.hasUpdate === true, "Update v1.1.1 detected when online");
+
+  // 4. Semver Comparison for v1.1.0
+  assert(compareSemver("1.1.0", "1.0.1") === 1, "v1.1.0 is strictly newer than v1.0.1");
+  assert(compareSemver("1.0.1", "1.1.0") === -1, "v1.0.1 is older than v1.1.0");
+  assert(compareSemver("1.1.0", "1.1.0") === 0, "v1.1.0 matches v1.1.0");
 }
 
 console.log(`\n========================================`);

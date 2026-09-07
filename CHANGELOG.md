@@ -1,40 +1,54 @@
-# 📋 Changelog — Lumen Desktop Workspace
+# 📋 Lumen Release Notes & Changelog
 
-All notable changes to the **Lumen** spatial desktop companion will be documented in this file.
-The project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
-
----
-
-## [1.0.1] — 2026-09-07
-
-### 🚀 Major Highlights & Features
-
-#### 📅 Spatial Calendar & Agenda Module (Standalone Workspace)
-- **Decoupled Standalone Module:** Independent, expansive spatial calendar window (`Alt+C`), stripped completely of Settings modal embedding.
-- **Dual-Pane Layout & Corner Dock Widget:**
-  - **Expansive Dual-Pane Window:** 42-day interactive month grid (60% width) with category chips (`Work`, `Personal`, `Meeting`, `Reminder`, `Focus`) and daily agenda pane (40% width).
-  - **Corner-Docked Mini-Widget:** Floating compact agenda docked to screen corners (`top-right`, `top-left`, `bottom-right`, `bottom-left`) scoped strictly to Today's Agenda without grid clutter.
-- **Drag-to-Resize Canvas:** Dynamically scale calendar bounds with lower-right grip (minimum safe bounds: 680x480px).
-- **In-Place Embedded Form:** Add/Edit event forms render in-place directly in the right panel and compact widget, eliminating modal popup overlays, window clipping, and accidental data loss on outside clicks.
-- **Scope-Style Rotary Time Picker:** Tactical 24-hour barrel-wheel rotary time picker with custom mechanical audio click feedback.
-- **2-Way Sticky Note Linkage & iCalendar Sync:** Bi-directional note focus links and standard `.ics` import/export support.
-
-#### 🎁 Pro Upgrade Overhaul & 3-Day Trial Pass (`LUMENTRIAL3DAY`)
-- **Promotional 3-Day Trial Code:** Enter `LUMENTRIAL3DAY` to unlock 100% full Pro access for 72 hours with zero credit card requirements.
-- **Live Trial Countdown Engine:** Real-time countdown clock displayed in the Pro dashboard with graceful expiration handling.
-- **3-Tier Pricing & Comparison Cards:** Free Starter vs. 3-Day Trial Pass vs. Pro Lifetime Master.
-- **Visual Perk Matrix:** Detailed showcase for Unlimited Notes, Multi-Timers, VIP Themes, Exclusive Fox Skins, AI Clustering, and PIN Security.
-
-#### 🧹 Data Cleanse & Integrity
-- **Mock Data Cleanse:** Clean initial production state with automatic database migration (`version: 2`) stripping legacy seed events.
-- **Validation Engine:** Strict validation rules preventing past-date scheduling and backward time sequences.
+> **Version Control & Release Tracker:** All notable changes, spatial features, performance optimizations, and bug fixes across Lumen releases.
 
 ---
 
-## [1.0.0] — 2026-09-05
+## 🚀 [v1.1.0] — 2026-09-07 — In-App Update Engine & Spatial Calendar Evolution
 
-### Initial Stable Release
-- **Pip Virtual Desktop Pet:** 5 species (Fox, Cat, Shiba, Dragon, Cyber) with procedural gaits and interactive physics.
-- **Spatial Sticky Notes:** Draggable, rotatable, pastel/dark sticky notes with Word font sizing and PIN lock.
-- **Natural Language Smart Timers:** Multi-timer system supporting natural language prompt inputs (e.g. `Pomodoro 25p`, `COC 2h14m`).
-- **Local-First & Transparent Overlay:** Zero-flicker Windows DWM desktop pass-through with PGLite / SQLite storage.
+### ✨ What's New:
+- **🔄 Smart In-App Update Checker & Offline Guard:**
+  - On-demand update verification without startup network polling.
+  - Automatic offline detection via `navigator.onLine` with friendly warning notifications.
+  - Rich Update Notification Modal displaying release highlights, badges, and version comparison.
+  - Three distinct user actions: **"Cập nhật ngay (Update Now)"**, **"Bỏ qua bản này (Skip version)"**, and **"Nhắc tôi sau (Remind Later)"**.
+
+- **📅 Standalone Spatial Calendar & Planner (`Alt+C`):**
+  - Fully decoupled standalone calendar module with independent state management.
+  - Expansive dual-pane view with month matrix and date-specific agenda breakdown.
+  - Compact mini-capsule widget strictly scoped to **Today's Agenda** with 4-corner screen docking.
+  - Two-way interactive linkage between sticky notes and calendar events.
+
+- **🎯 24H Tactical Barrel-Wheel Scope Time Picker:**
+  - Precision rotary time selector with mechanical audio clicks and haptic-style auditory feedback.
+  - Infinite smooth wrapping for hours (`00-23`) and minutes (`00-59`).
+  - Fluid containment sub-modal design preventing layout overflow.
+
+- **🎁 3-Day Pro Trial Engine (Code: `LUMENTRIAL3DAY`):**
+  - Revamped luxury Pro upgrade modal with live plan status cards.
+  - Instant 3-day full Pro trial activation using pass code `LUMENTRIAL3DAY`.
+  - Real-time countdown timer tracking remaining trial days and hours.
+
+- **🛡️ Bug Fixes & UX Polish:**
+  - Fixed modal containment scaling to prevent form overflow.
+  - Form editing embedded in-place to prevent accidental data loss on outside clicks.
+  - 100% purged seed/mock placeholder data from local storage.
+
+---
+
+## 🌟 [v1.0.1] — 2026-09-07 — Pro Upgrade & Stability Pass
+
+### ✨ Highlights:
+- **👑 Pro License System:** Support for lifetime Pro activation and temporary trial periods.
+- **⚡ GPU Compositing Polish:** 60-120 FPS continuous rendering with optimized OS click-through IPC toggling.
+
+---
+
+## 🌟 [v1.0.0] — 2026-09-01 — Official Genesis Desktop Release
+
+### ✨ Core Features:
+- **🐾 Interactive Pip Companion:** 5 procedural pet species (Fox, Cat, Shiba Inu, Dragon, Cyber) with wardrobe studio, ball toy, and automated paper delivery.
+- **📝 Spatial Sticky Notes Canvas:** 360° continuous rotation with magnetic bezel snapping, Microsoft Word font sizing, and opacity adjustment.
+- **⏱️ Natural Language Smart Timers:** Parser for timer syntax (`"Pomodoro 25p"`, `"xây nhà trong COC 2h14p"`) with 4 procedural synthesized high-volume alarm melodies.
+- **🔍 Spotlight Search (`Alt+F`):** Real-time fuzzy query across notes, checklists, and clusters.
+
