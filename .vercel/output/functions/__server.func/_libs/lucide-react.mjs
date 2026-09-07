@@ -153,6 +153,34 @@ var Bell = createLucideIcon("bell", [["path", {
 * This source code is licensed under the ISC license.
 * See the LICENSE file in the root directory of this source tree.
 */
+var Calendar = createLucideIcon("calendar", [
+	["path", {
+		d: "M8 2v4",
+		key: "1cmpym"
+	}],
+	["path", {
+		d: "M16 2v4",
+		key: "4m81vk"
+	}],
+	["rect", {
+		width: "18",
+		height: "18",
+		x: "3",
+		y: "4",
+		rx: "2",
+		key: "1hopcy"
+	}],
+	["path", {
+		d: "M3 10h18",
+		key: "8toen8"
+	}]
+]);
+/**
+* @license lucide-react v0.510.0 - ISC
+*
+* This source code is licensed under the ISC license.
+* See the LICENSE file in the root directory of this source tree.
+*/
 var Check = createLucideIcon("check", [["path", {
 	d: "M20 6 9 17l-5-5",
 	key: "1gmf2c"
@@ -166,6 +194,26 @@ var Check = createLucideIcon("check", [["path", {
 var ChevronDown = createLucideIcon("chevron-down", [["path", {
 	d: "m6 9 6 6 6-6",
 	key: "qrunsl"
+}]]);
+/**
+* @license lucide-react v0.510.0 - ISC
+*
+* This source code is licensed under the ISC license.
+* See the LICENSE file in the root directory of this source tree.
+*/
+var ChevronLeft = createLucideIcon("chevron-left", [["path", {
+	d: "m15 18-6-6 6-6",
+	key: "1wnfg3"
+}]]);
+/**
+* @license lucide-react v0.510.0 - ISC
+*
+* This source code is licensed under the ISC license.
+* See the LICENSE file in the root directory of this source tree.
+*/
+var ChevronRight = createLucideIcon("chevron-right", [["path", {
+	d: "m9 18 6-6-6-6",
+	key: "mthhwq"
 }]]);
 /**
 * @license lucide-react v0.510.0 - ISC
@@ -315,6 +363,26 @@ var Ellipsis = createLucideIcon("ellipsis", [
 		cy: "12",
 		r: "1",
 		key: "1pcz8c"
+	}]
+]);
+/**
+* @license lucide-react v0.510.0 - ISC
+*
+* This source code is licensed under the ISC license.
+* See the LICENSE file in the root directory of this source tree.
+*/
+var ExternalLink = createLucideIcon("external-link", [
+	["path", {
+		d: "M15 3h6v6",
+		key: "1q9fwt"
+	}],
+	["path", {
+		d: "M10 14 21 3",
+		key: "gplh6r"
+	}],
+	["path", {
+		d: "M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6",
+		key: "a6xqqp"
 	}]
 ]);
 /**
@@ -755,6 +823,30 @@ var Plus = createLucideIcon("plus", [["path", {
 * This source code is licensed under the ISC license.
 * See the LICENSE file in the root directory of this source tree.
 */
+var Repeat = createLucideIcon("repeat", [
+	["path", {
+		d: "m17 2 4 4-4 4",
+		key: "nntrym"
+	}],
+	["path", {
+		d: "M3 11v-1a4 4 0 0 1 4-4h14",
+		key: "84bu3i"
+	}],
+	["path", {
+		d: "m7 22-4-4 4-4",
+		key: "1wqhfi"
+	}],
+	["path", {
+		d: "M21 13v1a4 4 0 0 1-4 4H3",
+		key: "1rx37r"
+	}]
+]);
+/**
+* @license lucide-react v0.510.0 - ISC
+*
+* This source code is licensed under the ISC license.
+* See the LICENSE file in the root directory of this source tree.
+*/
 var RotateCcw = createLucideIcon("rotate-ccw", [["path", {
 	d: "M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8",
 	key: "1357e3"
@@ -1100,4 +1192,4 @@ var Zap = createLucideIcon("zap", [["path", {
 	key: "1xq2db"
 }]]);
 //#endregion
-export { ALargeSmall as $, KeyRound as A, Ellipsis as B, Moon as C, LockOpen as D, Lock as E, FolderPlus as F, Cookie as G, Crown as H, FolderOpen as I, ChevronDown as J, Clock as K, FileText as L, HardDrive as M, GripHorizontal as N, LayoutGrid as O, Folder as P, Activity as Q, Eye as R, Palette as S, Maximize2 as T, CornerDownLeft as U, Download as V, Copy as W, Bell as X, Check as Y, BellRing as Z, RotateCw as _, Upload as a, Play as b, Sun as c, SquareCheckBig as d, Sparkles as f, Scaling as g, Search as h, Volume2 as i, Heart as j, Layers as k, StickyNote as l, Settings as m, X as n, TriangleAlert as o, Shield as p, ChevronUp as q, VolumeX as r, Trash2 as s, Zap as t, Square as u, RotateCcw as v, Minus as w, Pin as x, Plus as y, EyeOff as z };
+export { Check as $, Layers as A, EyeOff as B, Palette as C, Lock as D, Maximize2 as E, Folder as F, CornerDownLeft as G, Ellipsis as H, FolderPlus as I, Clock as J, Copy as K, FolderOpen as L, Heart as M, HardDrive as N, LockOpen as O, GripHorizontal as P, ChevronDown as Q, FileText as R, Pin as S, Minus as T, Download as U, ExternalLink as V, Crown as W, ChevronRight as X, ChevronUp as Y, ChevronLeft as Z, RotateCw as _, Upload as a, Plus as b, Sun as c, SquareCheckBig as d, Calendar as et, Sparkles as f, Scaling as g, Search as h, Volume2 as i, ALargeSmall as it, KeyRound as j, LayoutGrid as k, StickyNote as l, Settings as m, X as n, BellRing as nt, TriangleAlert as o, Shield as p, Cookie as q, VolumeX as r, Activity as rt, Trash2 as s, Zap as t, Bell as tt, Square as u, RotateCcw as v, Moon as w, Play as x, Repeat as y, Eye as z };

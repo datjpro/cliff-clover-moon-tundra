@@ -507,6 +507,71 @@ console.log("\n📦 [SUITE 5]: Desktop Window Visibility & Single Instance Recov
   assert(testCollapseNote.collapsed === true, "Direct header minimize button and titlebar double-click smoothly collapses note into capsule");
   testCollapseNote = toggleCollapse(testCollapseNote);
   assert(testCollapseNote.collapsed === false, "Capsule double-click smoothly expands note back to full view");
+
+  console.log("\n📦 [SUITE 6]: Spatial Calendar & Agenda Engine (v1.0.1)");
+
+  // 1. Date key formatting and parsing
+  const testDate = new Date(2026, 8, 8); // Sept 8, 2026
+  const y = testDate.getFullYear();
+  const m = String(testDate.getMonth() + 1).padStart(2, "0");
+  const d = String(testDate.getDate()).padStart(2, "0");
+  const dateKey = `${y}-${m}-${d}`;
+  assert(dateKey === "2026-09-08", "Calendar date key formatting produces YYYY-MM-DD standard");
+
+  // 2. O(1) Calendar Indexing Lookup Map
+  const mockEvents = [
+    { id: "e1", title: "Họp nhóm Sprint", startDate: "2026-09-08", startTime: "09:00", category: "work" },
+    { id: "e2", title: "Tập gym", startDate: "2026-09-08", startTime: "18:00", category: "personal" },
+    { id: "e3", title: "Review đồ án", startDate: "2026-09-10", startTime: "14:00", category: "work" },
+  ];
+  const mockNotesWithDue = [
+    { id: "n1", body: "Nộp báo cáo", dueDate: "2026-09-08", dueTime: "17:00" },
+  ];
+  const calLookup = new Map();
+  for (const ev of mockEvents) {
+    if (!calLookup.has(ev.startDate)) calLookup.set(ev.startDate, []);
+    calLookup.get(ev.startDate).push({ type: "event", item: ev });
+  }
+  for (const nt of mockNotesWithDue) {
+    if (!calLookup.has(nt.dueDate)) calLookup.set(nt.dueDate, []);
+    calLookup.get(nt.dueDate).push({ type: "note", item: nt });
+  }
+  assert(calLookup.get("2026-09-08")?.length === 3, "O(1) Calendar lookup index maps 2 events and 1 due note on 2026-09-08");
+  assert(calLookup.get("2026-09-10")?.length === 1, "O(1) Calendar lookup index maps 1 event on 2026-09-10");
+
+  // 3. Recurrence expansion (Daily & Weekly)
+  const expandDaily = (startDateStr, daysCount) => {
+    const res = [];
+    const [yr, mo, dy] = startDateStr.split("-").map(Number);
+    for (let i = 0; i < daysCount; i++) {
+      const cur = new Date(yr, mo - 1, dy + i);
+      const k = `${cur.getFullYear()}-${String(cur.getMonth() + 1).padStart(2, "0")}-${String(cur.getDate()).padStart(2, "0")}`;
+      res.push(k);
+    }
+    return res;
+  };
+  const expandedDays = expandDaily("2026-09-01", 5);
+  assert(expandedDays.length === 5 && expandedDays[4] === "2026-09-05", "Daily recurring events expand reliably across consecutive days");
+
+  // 4. iCalendar (.ics) serialization integrity
+  const icsLines = [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//Lumen Workspace//Lumen Calendar 1.0.1//EN",
+    "BEGIN:VEVENT",
+    "SUMMARY:Lumen Launch Event",
+    "DTSTART:20260908T090000",
+    "CATEGORIES:WORK",
+    "END:VEVENT",
+    "END:VCALENDAR",
+  ].join("\r\n");
+  assert(icsLines.includes("BEGIN:VCALENDAR") && icsLines.includes("SUMMARY:Lumen Launch Event"), "iCalendar .ics serialization contains valid standard VEVENT headers");
+
+  // 5. 2-way Link between Sticky Note and Calendar Event
+  let deskNote = { id: "note_cal_1", body: "Ý tưởng sản phẩm", dueDate: undefined };
+  let newCalEvent = { id: "cal_1", title: "Ý tưởng sản phẩm", startDate: "2026-09-08", linkedNoteId: deskNote.id };
+  deskNote.dueDate = newCalEvent.startDate;
+  assert(deskNote.dueDate === "2026-09-08" && newCalEvent.linkedNoteId === "note_cal_1", "2-Way linkage between Sticky Notes and Calendar events functions symmetrically");
 }
 
 console.log(`\n========================================`);

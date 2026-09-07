@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import {
+  Calendar,
   CheckSquare,
   CornerDownLeft,
   Folder,
@@ -12,7 +13,7 @@ import {
 } from "lucide-react";
 import { sounds } from "@/lib/audio";
 import { useLumen } from "@/lib/store";
-import type { Note } from "@/lib/types";
+import type { CalendarEvent, Note } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 export function SpotlightSearch() {
@@ -20,6 +21,9 @@ export function SpotlightSearch() {
   const setSearchOpen = useLumen((s) => s.setSearchOpen);
   const notes = useLumen((s) => s.notes);
   const trashNotes = useLumen((s) => s.trashNotes);
+  const calendarEvents = useLumen((s) => s.calendarEvents);
+  const setHubOpen = useLumen((s) => s.setHubOpen);
+  const setSelectedCalendarDate = useLumen((s) => s.setSelectedCalendarDate);
   const bringNote = useLumen((s) => s.bringNote);
   const updateNote = useLumen((s) => s.updateNote);
   const setHighlightNoteId = useLumen((s) => s.setHighlightNoteId);
@@ -79,6 +83,22 @@ export function SpotlightSearch() {
       })
     : [];
 
+  const filteredCalendarEvents = trimmed
+    ? calendarEvents.filter((ev) => {
+        const inTitle = ev.title.toLowerCase().includes(trimmed);
+        const inDesc = ev.description?.toLowerCase().includes(trimmed) ?? false;
+        const inDate = ev.startDate.includes(trimmed);
+        return inTitle || inDesc || inDate;
+      })
+    : [];
+
+  const handleSelectEvent = (event: CalendarEvent) => {
+    sounds.playChime();
+    setSelectedCalendarDate(event.startDate);
+    setSearchOpen(false);
+    setHubOpen(true);
+  };
+
   const handleSelectNote = (targetNote: Note, isTrash = false) => {
     sounds.playChime();
     setSearchOpen(false);
@@ -109,26 +129,31 @@ export function SpotlightSearch() {
     setTimeout(() => setHighlightNoteId(null), 3000);
   };
 
+  const totalResults = filteredCalendarEvents.length + filteredNotes.length + filteredTrash.length;
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Escape") {
       e.preventDefault();
       setSearchOpen(false);
     } else if (e.key === "ArrowDown") {
       e.preventDefault();
-      setSelectedIndex((prev) => (prev + 1) % Math.max(1, filteredNotes.length + filteredTrash.length));
+      setSelectedIndex((prev) => (prev + 1) % Math.max(1, totalResults));
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
-      setSelectedIndex((prev) =>
-        prev <= 0 ? Math.max(0, filteredNotes.length + filteredTrash.length - 1) : prev - 1,
-      );
+      setSelectedIndex((prev) => (prev <= 0 ? Math.max(0, totalResults - 1) : prev - 1));
     } else if (e.key === "Enter") {
       e.preventDefault();
-      if (filteredNotes.length > 0 && selectedIndex < filteredNotes.length) {
-        handleSelectNote(filteredNotes[selectedIndex]);
-      } else if (filteredTrash.length > 0 && selectedIndex >= filteredNotes.length) {
-        handleSelectNote(filteredTrash[selectedIndex - filteredNotes.length], true);
-      } else if (trimmed) {
-        handleCreateFromQuery();
+      if (filteredCalendarEvents.length > 0 && selectedIndex < filteredCalendarEvents.length) {
+        handleSelectEvent(filteredCalendarEvents[selectedIndex]);
+      } else {
+        const noteIdx = selectedIndex - filteredCalendarEvents.length;
+        if (filteredNotes.length > 0 && noteIdx >= 0 && noteIdx < filteredNotes.length) {
+          handleSelectNote(filteredNotes[noteIdx]);
+        } else if (filteredTrash.length > 0 && noteIdx >= filteredNotes.length) {
+          handleSelectNote(filteredTrash[noteIdx - filteredNotes.length], true);
+        } else if (trimmed) {
+          handleCreateFromQuery();
+        }
       }
     }
   };
@@ -175,10 +200,10 @@ export function SpotlightSearch() {
 
         {/* Results List */}
         <div className="max-h-[60vh] overflow-y-auto p-2 space-y-1 note-scrollbar">
-          {filteredNotes.length === 0 && filteredTrash.length === 0 && (
+          {totalResults === 0 && (
             <div className="py-8 px-4 text-center text-[#8B90A0] flex flex-col items-center gap-2">
               <Sparkles className="size-8 text-[#F5A623]/40" />
-              <p className="text-xs">Không tìm thấy ghi chú nào khớp với &quot;{query}&quot;</p>
+              <p className="text-xs">Không tìm thấy ghi chú hoặc lịch trình nào khớp với &quot;{query}&quot;</p>
               {trimmed && (
                 <button
                   type="button"
@@ -192,8 +217,52 @@ export function SpotlightSearch() {
             </div>
           )}
 
-          {filteredNotes.map((n, idx) => {
+          {/* Calendar Events Match Group */}
+          {filteredCalendarEvents.map((ev, idx) => {
             const isSelected = selectedIndex === idx;
+            return (
+              <div
+                key={ev.id}
+                onClick={() => handleSelectEvent(ev)}
+                onMouseEnter={() => setSelectedIndex(idx)}
+                className={cn(
+                  "flex items-start justify-between gap-3 p-3 rounded-xl cursor-pointer transition-all border",
+                  isSelected
+                    ? "bg-[#262A35] border-[#F5A623]/40 shadow-md text-white"
+                    : "bg-white/[0.02] border-transparent hover:bg-white/[0.05] text-[#F4F5F7]",
+                )}
+              >
+                <div className="flex items-start gap-2.5 min-w-0 flex-1">
+                  <div className="p-1.5 rounded-lg bg-[#F5A623]/20 text-[#F5A623] shrink-0 mt-0.5">
+                    <Calendar className="size-3.5" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-semibold leading-snug line-clamp-1">
+                      {ev.title}
+                    </p>
+                    {ev.description && (
+                      <p className="text-[11px] text-[#8B90A0] line-clamp-1 mt-0.5">{ev.description}</p>
+                    )}
+                    <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                      <span className="text-[10px] font-mono text-[#F5A623] bg-[#F5A623]/10 px-1.5 py-0.5 rounded border border-[#F5A623]/20">
+                        📅 {ev.startDate} {ev.startTime ? `@ ${ev.startTime}` : ""}
+                      </span>
+                      <span className="text-[10px] text-[#8B90A0] uppercase font-semibold">
+                        Lịch trình
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <kbd className="text-[10px] font-mono text-[#8B90A0] bg-white/5 px-1.5 py-0.5 rounded">
+                  ↵ Mở Lịch
+                </kbd>
+              </div>
+            );
+          })}
+
+          {filteredNotes.map((n, idx) => {
+            const itemIdx = idx + filteredCalendarEvents.length;
+            const isSelected = selectedIndex === itemIdx;
             const completedTodos = n.checkItems?.filter((t) => t.done).length || 0;
             const totalTodos = n.checkItems?.length || 0;
 

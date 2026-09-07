@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type PointerEvent } from "react";
-import { Clock, Crown, Eye, EyeOff, Folder, LayoutGrid, Plus, Search, Settings, Sparkles, X } from "lucide-react";
+import { Calendar, Clock, Crown, Eye, EyeOff, Folder, LayoutGrid, Plus, Search, Settings, Sparkles, X } from "lucide-react";
 import { sounds } from "@/lib/audio";
 import {
   closeOrQuitDesktopApp,
@@ -183,6 +183,22 @@ function FloatingTrayMenu() {
                 <span className="font-medium text-[#F4F5F7]">{isVi ? "Đặt giờ nhanh" : "Quick Timer"}</span>
               </div>
               <span className="text-[10px] text-[#8B90A0] font-mono">Alt+T</span>
+            </button>
+
+            {/* Spatial Calendar & Planner */}
+            <button
+              type="button"
+              onClick={() => {
+                setHubOpen(true);
+                setOpen(false);
+              }}
+              className="flex items-center justify-between px-2.5 h-9 rounded-xl hover:bg-[#262A35] transition-colors duration-120 text-left cursor-pointer group"
+            >
+              <div className="flex items-center gap-2.5">
+                <Calendar className="size-4.5 text-[#F5A623] group-hover:scale-110 transition-transform duration-120" />
+                <span className="font-medium text-[#F4F5F7]">{isVi ? "Lịch trình & Kế hoạch" : "Calendar & Planner"}</span>
+              </div>
+              <span className="text-[10px] text-[#8B90A0] font-mono">Alt+C</span>
             </button>
 
             {/* Spotlight Search */}
@@ -516,6 +532,11 @@ export function DesktopScene() {
       if (e.altKey && key === "t") {
         e.preventDefault();
         setQuickTimerOpen(!useLumen.getState().quickTimerOpen);
+      }
+      // Calendar Hub: Alt+C
+      if (e.altKey && key === "c") {
+        e.preventDefault();
+        setHubOpen(!useLumen.getState().hubOpen);
       }
       // Settings Hub: Alt+S, Alt+H
       if ((e.altKey && key === "s") || (e.altKey && key === "h")) {

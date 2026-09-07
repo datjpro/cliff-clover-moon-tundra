@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type PointerEvent } from "react";
 import {
   ALargeSmall,
+  Calendar,
   Check,
   CheckSquare,
   ChevronDown,
@@ -52,6 +53,7 @@ export function StickyNote({ note, stacked }: Props) {
   const toggleNotePin = useLumen((s) => s.toggleNotePin);
   const toggleNoteLock = useLumen((s) => s.toggleNoteLock);
   const highlightNoteId = useLumen((s) => s.highlightNoteId);
+  const createEventFromNote = useLumen((s) => s.createEventFromNote);
   const drag = useRef<{
     dx: number;
     dy: number;
@@ -80,6 +82,9 @@ export function StickyNote({ note, stacked }: Props) {
 
   const [colorPickerOpen, setColorPickerOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [schedulePickerOpen, setSchedulePickerOpen] = useState(false);
+  const [dueDateInput, setDueDateInput] = useState(note.dueDate || "");
+  const [dueTimeInput, setDueTimeInput] = useState(note.dueTime || "09:00");
   const [showOptions, setShowOptions] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [clusterPickerOpen, setClusterPickerOpen] = useState(false);
@@ -552,7 +557,7 @@ export function StickyNote({ note, stacked }: Props) {
           )}
         </div>
 
-        {/* Center: Cluster Pill Badge & Lock Indicator */}
+        {/* Center: Cluster Pill Badge, Due Date Pill & Lock Indicator */}
         <div className="flex items-center gap-1.5 min-w-0">
           {note.cluster && (
             <button
@@ -567,6 +572,22 @@ export function StickyNote({ note, stacked }: Props) {
             >
               <Folder className="size-2.5 shrink-0" />
               <span className="max-w-[75px] truncate">{note.cluster}</span>
+            </button>
+          )}
+
+          {note.dueDate && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                bringNote(note.id);
+                setSchedulePickerOpen(true);
+              }}
+              className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 text-[10px] font-semibold border border-emerald-500/30 transition-colors cursor-pointer shrink-0"
+              title={`Hạn chót: ${note.dueDate} ${note.dueTime || ""}`}
+            >
+              <Calendar className="size-2.5" />
+              <span>{note.dueDate.substring(5)}</span>
             </button>
           )}
 
@@ -716,7 +737,23 @@ export function StickyNote({ note, stacked }: Props) {
                   )}
                 </button>
 
-                {/* 3. Change Cluster / Group */}
+                {/* 3. Schedule / Due Date */}
+                <button
+                  type="button"
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    sounds.playPop(580);
+                    setSchedulePickerOpen(true);
+                    setMenuOpen(false);
+                  }}
+                  className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl text-[#F4F5F7] hover:bg-[#262A35] hover:text-white transition-colors text-left cursor-pointer"
+                >
+                  <Calendar className="size-3.5 text-[#F5A623]" />
+                  <span>{note.dueDate ? "Đổi Hạn chót / Lịch" : "Gắn Hạn chót / Lịch"}</span>
+                </button>
+
+                {/* 4. Change Cluster / Group */}
                 <button
                   type="button"
                   onPointerDown={(e) => e.stopPropagation()}
@@ -732,7 +769,7 @@ export function StickyNote({ note, stacked }: Props) {
                   <span>Đổi Cụm / Nhóm</span>
                 </button>
 
-                {/* 4. Rotation & Font Options */}
+                {/* 5. Rotation & Font Options */}
                 <button
                   type="button"
                   onPointerDown={(e) => e.stopPropagation()}
@@ -867,6 +904,81 @@ export function StickyNote({ note, stacked }: Props) {
               Lưu
             </button>
           </form>
+        </div>
+      )}
+
+      {/* Schedule / Due Date Popover */}
+      {schedulePickerOpen && (
+        <div
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={(e) => e.stopPropagation()}
+          className="interactive-el no-drag absolute inset-x-2 top-10 z-[90] p-3 rounded-2xl bg-[#1D2029]/98 text-[#F4F5F7] border border-white/15 shadow-[0_20px_45px_rgba(0,0,0,0.85)] backdrop-blur-2xl text-xs space-y-2.5 animate-in zoom-in-95 fade-in duration-120 select-none pointer-events-auto"
+        >
+          <div className="flex items-center justify-between pb-1.5 border-b border-white/10">
+            <span className="font-bold text-[11px] text-[#F5A623] uppercase flex items-center gap-1">
+              <Calendar className="size-3" />
+              <span>Hạn chót & Lịch trình</span>
+            </span>
+            <button
+              type="button"
+              onClick={() => setSchedulePickerOpen(false)}
+              className="size-5 rounded-md hover:bg-white/10 flex items-center justify-center text-[#8B90A0] hover:text-white"
+            >
+              ✕
+            </button>
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-[10px] text-[#8B90A0] font-semibold">Ngày hạn chót</label>
+            <input
+              type="date"
+              value={dueDateInput}
+              onChange={(e) => setDueDateInput(e.target.value)}
+              className="w-full bg-black/30 px-2 py-1 rounded-lg text-xs text-[#F4F5F7] outline-none border border-white/10 focus:border-[#F5A623]"
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-[10px] text-[#8B90A0] font-semibold">Giờ đến hạn</label>
+            <input
+              type="time"
+              value={dueTimeInput}
+              onChange={(e) => setDueTimeInput(e.target.value)}
+              className="w-full bg-black/30 px-2 py-1 rounded-lg text-xs text-[#F4F5F7] outline-none border border-white/10 focus:border-[#F5A623]"
+            />
+          </div>
+
+          <div className="flex items-center justify-between pt-1 border-t border-white/10">
+            {note.dueDate ? (
+              <button
+                type="button"
+                onClick={() => {
+                  updateNote(note.id, { dueDate: undefined, dueTime: undefined });
+                  setDueDateInput("");
+                  setSchedulePickerOpen(false);
+                  sounds.playPop(420);
+                }}
+                className="text-[10px] text-red-400 hover:underline cursor-pointer"
+              >
+                Gỡ hạn chót
+              </button>
+            ) : (
+              <span />
+            )}
+
+            <button
+              type="button"
+              onClick={() => {
+                if (dueDateInput) {
+                  createEventFromNote(note.id, dueDateInput, dueTimeInput);
+                }
+                setSchedulePickerOpen(false);
+              }}
+              className="px-2.5 py-1 rounded-lg bg-[#F5A623] hover:bg-[#D6871A] text-[#14161D] font-bold text-xs cursor-pointer transition-colors"
+            >
+              Lưu vào Lịch
+            </button>
+          </div>
         </div>
       )}
 

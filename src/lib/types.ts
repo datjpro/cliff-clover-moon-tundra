@@ -43,6 +43,38 @@ export type Note = {
   collapsed?: boolean;
   cluster?: string; // Tên cụm / nhóm ghi chú (VD: "Công việc", "Dự án Alpha", "Game")
   deletedAt?: number; // Thời gian chuyển vào thùng rác
+  dueDate?: string; // Hạn chót dạng YYYY-MM-DD
+  dueTime?: string; // Giờ hạn chót dạng HH:mm
+};
+
+export type CalendarEventCategory = "work" | "personal" | "meeting" | "reminder" | "focus";
+export type RecurrenceRule = "none" | "daily" | "weekly" | "monthly" | "weekdays";
+export type CalendarViewMode = "month" | "agenda" | "day";
+
+export type CalendarEvent = {
+  id: string;
+  title: string;
+  description?: string;
+  startDate: string; // YYYY-MM-DD
+  startTime?: string; // HH:mm (24h)
+  endDate?: string; // YYYY-MM-DD
+  endTime?: string; // HH:mm (24h)
+  allDay?: boolean;
+  category: CalendarEventCategory;
+  color?: string; // Custom color or theme color key
+  reminderMinutesBefore?: number; // 0, 5, 15, 30, 60...
+  alarmEnabled?: boolean; // Tự động phát chuông báo thức khi đến giờ
+  linkedNoteId?: string; // Liên kết 2 chiều với Sticky Note
+  recurrence?: RecurrenceRule;
+  completed?: boolean;
+  createdAt: number;
+  updatedAt?: number;
+};
+
+export type CalendarFilter = {
+  category?: CalendarEventCategory | "all";
+  searchQuery?: string;
+  showCompleted?: boolean;
 };
 
 export type Reminder = {

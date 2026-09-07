@@ -1,8 +1,25 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { sounds } from "./audio";
+import { exportToICalendar, formatDateKey } from "./calendar-utils";
 import { DICTIONARY } from "./i18n";
-import type { AlarmSettings, Language, LayoutMode, Note, NoteTint, PetSkin, PipState, ProFeatureId, ProLicense, Reminder, ThemeId, ToastItem } from "./types";
+import type {
+  AlarmSettings,
+  CalendarEvent,
+  CalendarFilter,
+  CalendarViewMode,
+  Language,
+  LayoutMode,
+  Note,
+  NoteTint,
+  PetSkin,
+  PipState,
+  ProFeatureId,
+  ProLicense,
+  Reminder,
+  ThemeId,
+  ToastItem,
+} from "./types";
 import { uid } from "./utils";
 
 export const FREE_MAX_NOTES = 5;
@@ -11,7 +28,7 @@ export const FREE_MAX_TIMERS = 1;
 const SEED_NOTES: Note[] = [
   {
     id: "seed-intro",
-    body: "Chào mừng bạn đến với Lumen! 🦊\n\nKhông gian ghi chú sống động cùng chú Cáo đồng hành trên Desktop.\n\n• Nhấp đúp vào màn hình để tạo note mới\n• Kéo thả tự do để sắp xếp ghi chú\n• Alt+N: Ghi chú nhanh | Alt+T: Hẹn giờ",
+    body: "Chào mừng bạn đến với Lumen v1.0.1! 🦊\n\nKhông gian ghi chú sống động cùng chú Cáo đồng hành & Lịch trình thông minh.\n\n• Nhấp đúp vào màn hình để tạo note mới\n• Kéo thả tự do để sắp xếp ghi chú\n• Alt+N: Ghi chú nhanh | Alt+T: Hẹn giờ | Alt+C: Lịch trình",
     x: 38,
     y: 25,
     rot: -0.5,
@@ -20,10 +37,43 @@ const SEED_NOTES: Note[] = [
     createdAt: Date.now(),
     collapsed: false,
     cluster: "Hướng dẫn",
+    dueDate: formatDateKey(new Date()),
+    dueTime: "10:00",
   },
 ];
 
 const SEED_TIMERS: Reminder[] = [];
+
+const SEED_CALENDAR_EVENTS: CalendarEvent[] = [
+  {
+    id: "seed-cal-1",
+    title: "Trải nghiệm module Lịch trình mới (v1.0.1)",
+    description: "Khám phá giao diện lịch không gian, gắn hạn chót cho ghi chú và lên kế hoạch làm việc hiệu quả.",
+    startDate: formatDateKey(new Date()),
+    startTime: "09:00",
+    endTime: "10:00",
+    allDay: false,
+    category: "work",
+    recurrence: "none",
+    completed: false,
+    alarmEnabled: true,
+    reminderMinutesBefore: 10,
+    createdAt: Date.now(),
+  },
+  {
+    id: "seed-cal-2",
+    title: "Giờ tập trung sáng tạo cùng Pip 🦊",
+    description: "Ghi chép ý tưởng nhanh và thư giãn cùng chú Cáo đồng hành.",
+    startDate: formatDateKey(new Date()),
+    startTime: "14:30",
+    endTime: "15:30",
+    allDay: false,
+    category: "focus",
+    recurrence: "daily",
+    completed: false,
+    createdAt: Date.now(),
+  },
+];
 
 type LumenState = {
   hydrated: boolean;
@@ -105,6 +155,21 @@ type LumenState = {
   setProModalOpen: (open: boolean, feature?: ProFeatureId | null) => void;
   activatePro: (licenseKey: string) => { success: boolean; message: string };
   deactivatePro: () => void;
+  calendarEvents: CalendarEvent[];
+  selectedCalendarDate: string;
+  calendarViewMode: CalendarViewMode;
+  calendarFilter: CalendarFilter;
+  addCalendarEvent: (event: Omit<CalendarEvent, "id" | "createdAt">) => string;
+  updateCalendarEvent: (id: string, patch: Partial<CalendarEvent>) => void;
+  deleteCalendarEvent: (id: string) => void;
+  toggleCalendarEventComplete: (id: string) => void;
+  setSelectedCalendarDate: (date: string) => void;
+  setCalendarViewMode: (mode: CalendarViewMode) => void;
+  setCalendarFilter: (filter: Partial<CalendarFilter>) => void;
+  importCalendarEvents: (events: Partial<CalendarEvent>[]) => number;
+  exportCalendarEventsICS: () => string;
+  createEventFromNote: (noteId: string, startDate: string, startTime?: string) => string;
+  createNoteFromEvent: (eventId: string) => string;
 };
 
 function emptyPip(): PipState {
@@ -151,6 +216,10 @@ export const useLumen = create<LumenState>()(
       onboarding: false,
       notes: SEED_NOTES,
       reminders: SEED_TIMERS,
+      calendarEvents: SEED_CALENDAR_EVENTS,
+      selectedCalendarDate: formatDateKey(new Date()),
+      calendarViewMode: "month",
+      calendarFilter: { category: "all", showCompleted: true },
       toasts: [],
       pip: emptyPip(),
       maxZ: 5,
@@ -589,6 +658,146 @@ export const useLumen = create<LumenState>()(
         const dict = DICTIONARY[get().lang];
         get().setPip({ mood: "fetch", speech: dict.toasts.onIt, carrying: false });
       },
+      addCalendarEvent: (eventData) => {
+        const id = uid();
+        const newEvent: CalendarEvent = {
+          ...eventData,
+          id,
+          createdAt: Date.now(),
+        };
+        sounds.playPop(620);
+        const dict = DICTIONARY[get().lang];
+        set((s) => ({
+          calendarEvents: [newEvent, ...s.calendarEvents],
+        }));
+        get().pushToast(dict.toasts.eventCreated, newEvent.title);
+        return id;
+      },
+      updateCalendarEvent: (id, patch) => {
+        sounds.playPop(520);
+        set((s) => ({
+          calendarEvents: s.calendarEvents.map((ev) =>
+            ev.id === id ? { ...ev, ...patch, updatedAt: Date.now() } : ev
+          ),
+        }));
+      },
+      deleteCalendarEvent: (id) => {
+        sounds.playPop(420);
+        const dict = DICTIONARY[get().lang];
+        set((s) => ({
+          calendarEvents: s.calendarEvents.filter((ev) => ev.id !== id),
+        }));
+        get().pushToast(dict.toasts.eventDeleted, "");
+      },
+      toggleCalendarEventComplete: (id) => {
+        const ev = get().calendarEvents.find((e) => e.id === id);
+        if (!ev) return;
+        const next = !ev.completed;
+        if (next) {
+          sounds.playChime();
+        } else {
+          sounds.playPop(480);
+        }
+        set((s) => ({
+          calendarEvents: s.calendarEvents.map((e) =>
+            e.id === id ? { ...e, completed: next, updatedAt: Date.now() } : e
+          ),
+        }));
+      },
+      setSelectedCalendarDate: (selectedCalendarDate) => {
+        sounds.playPop(540);
+        set({ selectedCalendarDate });
+      },
+      setCalendarViewMode: (calendarViewMode) => {
+        sounds.playPop(560);
+        set({ calendarViewMode });
+      },
+      setCalendarFilter: (filter) => {
+        set((s) => ({
+          calendarFilter: { ...s.calendarFilter, ...filter },
+        }));
+      },
+      importCalendarEvents: (incoming) => {
+        sounds.playChime();
+        const dict = DICTIONARY[get().lang];
+        const validEvents: CalendarEvent[] = incoming
+          .filter((e) => e.title && e.startDate)
+          .map((e) => ({
+            id: e.id || uid(),
+            title: e.title!,
+            description: e.description || "",
+            startDate: e.startDate!,
+            startTime: e.startTime,
+            endDate: e.endDate,
+            endTime: e.endTime,
+            allDay: e.allDay ?? false,
+            category: e.category || "work",
+            recurrence: e.recurrence || "none",
+            completed: false,
+            alarmEnabled: e.alarmEnabled ?? false,
+            reminderMinutesBefore: e.reminderMinutesBefore ?? 10,
+            createdAt: Date.now(),
+          }));
+
+        if (validEvents.length > 0) {
+          set((s) => ({
+            calendarEvents: [...validEvents, ...s.calendarEvents],
+          }));
+          get().pushToast(dict.toasts.icsImported, `${validEvents.length} events`);
+        }
+        return validEvents.length;
+      },
+      exportCalendarEventsICS: () => {
+        const ics = exportToICalendar(get().calendarEvents);
+        const dict = DICTIONARY[get().lang];
+        get().pushToast(dict.toasts.icsExported, "");
+        return ics;
+      },
+      createEventFromNote: (noteId, startDate, startTime) => {
+        const note = get().notes.find((n) => n.id === noteId);
+        if (!note) return "";
+        const title = note.title || note.body.split("\n")[0].substring(0, 40) || "Note Task";
+        const id = uid();
+        const newEvent: CalendarEvent = {
+          id,
+          title,
+          description: note.body,
+          startDate,
+          startTime: startTime || "09:00",
+          allDay: !startTime,
+          category: "work",
+          linkedNoteId: noteId,
+          recurrence: "none",
+          completed: false,
+          createdAt: Date.now(),
+        };
+        // Also update note due date
+        get().updateNote(noteId, { dueDate: startDate, dueTime: startTime });
+        sounds.playChime();
+        const dict = DICTIONARY[get().lang];
+        set((s) => ({
+          calendarEvents: [newEvent, ...s.calendarEvents],
+        }));
+        get().pushToast(dict.toasts.eventCreated, title);
+        return id;
+      },
+      createNoteFromEvent: (eventId) => {
+        const ev = get().calendarEvents.find((e) => e.id === eventId);
+        if (!ev) return "";
+        const noteId = get().addNote({
+          title: ev.title,
+          body: ev.description ? `${ev.title}\n\n${ev.description}` : ev.title,
+          dueDate: ev.startDate,
+          dueTime: ev.startTime,
+          tint: ev.category === "work" ? "mist" : ev.category === "focus" ? "sage" : "cream",
+        });
+        // Link event to note
+        get().updateCalendarEvent(eventId, { linkedNoteId: noteId });
+        sounds.playChime();
+        const dict = DICTIONARY[get().lang];
+        get().pushToast(dict.toasts.freshNote, ev.title);
+        return noteId;
+      },
       resetDemo: () =>
         set({
           lang: "vi",
@@ -601,6 +810,9 @@ export const useLumen = create<LumenState>()(
           onboarding: true,
           notes: SEED_NOTES,
           reminders: SEED_TIMERS,
+          calendarEvents: SEED_CALENDAR_EVENTS,
+          selectedCalendarDate: formatDateKey(new Date()),
+          calendarViewMode: "month",
           toasts: [],
           pip: emptyPip(),
           maxZ: 5,
@@ -618,7 +830,11 @@ export const useLumen = create<LumenState>()(
         onboarding: s.onboarding,
         notes: s.notes,
         reminders: s.reminders,
+        calendarEvents: s.calendarEvents,
+        selectedCalendarDate: s.selectedCalendarDate,
+        calendarViewMode: s.calendarViewMode,
         alarmSettings: s.alarmSettings,
+        pro: s.pro,
         pip: {
           ...s.pip,
           mood: "wander" as const,

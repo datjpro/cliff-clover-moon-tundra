@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type PointerEvent } from "react";
-import { Cookie, EyeOff, Heart, Moon, Sparkles, StickyNote as NoteIcon, Sun } from "lucide-react";
+import { Calendar, Cookie, EyeOff, Heart, Moon, Sparkles, StickyNote as NoteIcon, Sun } from "lucide-react";
 import { sounds } from "@/lib/audio";
 import { useLumen } from "@/lib/store";
 import type { PawPrint } from "@/lib/types";
@@ -388,6 +388,35 @@ export function Companion() {
               className="action-btn flex size-7 items-center justify-center rounded-full text-emerald-400 hover:bg-white/10 hover:scale-110 active:scale-95 transition-all cursor-pointer"
             >
               <NoteIcon className="size-3.5" />
+            </button>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                sounds.playChime();
+                const d = new Date();
+                const y = d.getFullYear();
+                const m = String(d.getMonth() + 1).padStart(2, "0");
+                const day = String(d.getDate()).padStart(2, "0");
+                const todayKey = `${y}-${m}-${day}`;
+                const eventsToday = useLumen.getState().calendarEvents.filter((ev) => ev.startDate === todayKey);
+                const notesToday = useLumen.getState().notes.filter((n) => n.dueDate === todayKey);
+                const count = eventsToday.length + notesToday.length;
+                const isVi = lang === "vi";
+                const msg = isVi
+                  ? count > 0
+                    ? `Hôm nay bạn có ${count} mục lịch trình & ghi chú cần làm! ✨`
+                    : "Hôm nay lịch trình thảnh thơi, hãy thư giãn nhé! 🦊"
+                  : count > 0
+                  ? `You have ${count} events & tasks today! ✨`
+                  : "Your calendar is clear today! Enjoy! 🦊";
+                setPip({ mood: "dance", speech: msg });
+                setMenuOpen(false);
+              }}
+              title="Xem Lịch hôm nay (Schedule Briefing)"
+              className="action-btn flex size-7 items-center justify-center rounded-full text-amber-400 hover:bg-white/10 hover:scale-110 active:scale-95 transition-all cursor-pointer"
+            >
+              <Calendar className="size-3.5" />
             </button>
             <button
               type="button"

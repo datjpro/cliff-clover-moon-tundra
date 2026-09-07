@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, type PointerEvent } from "react";
 import {
   Activity,
   Bell,
+  Calendar,
   Check,
   Clock,
   Cookie,
@@ -43,6 +44,7 @@ import { useLumen } from "@/lib/store";
 import type { AlarmSoundTone, PetBodyItem, PetHat, PetType, Reminder, ThemeId } from "@/lib/types";
 import { triggerThrowBall } from "./ball-toy";
 import { PipFigure } from "./pip";
+import { CalendarHub } from "./calendar-hub";
 import { cn } from "@/lib/utils";
 
 const PET_TYPES: { id: PetType; name: string; icon: string; desc: string }[] = [
@@ -558,7 +560,14 @@ export function Hub() {
         className="flex min-h-0 flex-1 flex-col"
       >
         <div className="px-3.5 pt-2.5 pb-2 bg-[#14161D]/30 border-b border-white/5">
-          <TabsList className="grid grid-cols-6 bg-[#14161D] p-1 rounded-xl h-10 border border-white/6 gap-1">
+          <TabsList className="grid grid-cols-7 bg-[#14161D] p-1 rounded-xl h-10 border border-white/6 gap-1">
+            <TabsTrigger
+              value="calendar"
+              className="text-[11px] font-semibold rounded-lg transition-all duration-180 data-[state=active]:bg-[#F5A623] data-[state=active]:text-[#14161D] data-[state=active]:shadow-sm flex items-center justify-center gap-1 text-[#8B90A0] px-1 py-1"
+            >
+              <span>📅</span>
+              <span className="truncate">{lang === "vi" ? "Lịch trình" : "Calendar"}</span>
+            </TabsTrigger>
             <TabsTrigger
               value="remind"
               className="text-[11px] font-semibold rounded-lg transition-all duration-180 data-[state=active]:bg-[#F5A623] data-[state=active]:text-[#14161D] data-[state=active]:shadow-sm flex items-center justify-center gap-1 text-[#8B90A0] px-1 py-1"
@@ -615,6 +624,11 @@ export function Hub() {
         </div>
 
         <div className="min-h-0 flex-1 overflow-y-auto px-3.5 py-3 space-y-3 custom-scrollbar">
+          {/* TAB 0: SPATIAL CALENDAR MODULE */}
+          <TabsContent value="calendar" className="space-y-3 mt-0">
+            <CalendarHub />
+          </TabsContent>
+
           {/* TAB 1: SMART TIMERS & COUNTDOWN */}
           <TabsContent value="remind" className="space-y-3 mt-0">
             {/* Quick Smart Input Box */}
