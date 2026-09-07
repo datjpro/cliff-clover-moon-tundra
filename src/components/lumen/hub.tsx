@@ -8,6 +8,8 @@ import {
   Heart,
   Maximize2,
   Play,
+  RefreshCw,
+  Rocket,
   Sliders,
   Sparkles,
   Trash2,
@@ -25,7 +27,9 @@ import { DICTIONARY } from "@/lib/i18n";
 import { sounds } from "@/lib/audio";
 import { THEMES } from "@/lib/themes";
 import { useLumen } from "@/lib/store";
-import type { AlarmSoundTone, CalendarDockPosition, PetBodyItem, PetHat, PetType, ThemeId } from "@/lib/types";
+import type { AlarmSoundTone, AppUpdateInfo, CalendarDockPosition, PetBodyItem, PetHat, PetType, ThemeId } from "@/lib/types";
+import { checkForAppUpdates, CURRENT_APP_VERSION } from "@/lib/updater";
+import { UpdateNotificationModal } from "./update-notification-modal";
 import { triggerThrowBall } from "./ball-toy";
 import { PipFigure } from "./pip";
 import { cn } from "@/lib/utils";
@@ -107,6 +111,12 @@ export function Hub() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [activeTab, setActiveTab] = useState<string>("look");
 
+  // In-App Update Checker state
+  const [checkingUpdate, setCheckingUpdate] = useState(false);
+  const [updateResultText, setUpdateResultText] = useState<string | null>(null);
+  const [updateModalInfo, setUpdateModalInfo] = useState<AppUpdateInfo | null>(null);
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
+
   const dict = DICTIONARY[lang];
 
   // Initialize position on open
@@ -120,6 +130,30 @@ export function Hub() {
   }, [open, pos]);
 
   if (!open) return null;
+
+  const handleCheckUpdateManual = async () => {
+    setCheckingUpdate(true);
+    setUpdateResultText(null);
+    sounds.playPop(520);
+    const res = await checkForAppUpdates(CURRENT_APP_VERSION);
+    setCheckingUpdate(false);
+    if (res.hasUpdate && res.updateInfo) {
+      setUpdateModalInfo(res.updateInfo);
+      setShowUpdateModal(true);
+      setUpdateResultText(
+        isVi
+          ? `Đã tìm thấy phiên bản mới v${res.updateInfo.version}!`
+          : `Found new version v${res.updateInfo.version}!`,
+      );
+    } else {
+      setUpdateResultText(
+        isVi
+          ? `Bạn đang sử dụng phiên bản mới nhất (v${CURRENT_APP_VERSION}).`
+          : `You are using the latest version (v${CURRENT_APP_VERSION}).`,
+      );
+      sounds.playPop(600);
+    }
+  };
 
   const handleAlwaysOnTopChange = (val: boolean) => {
     setAlwaysOnTop(val);
@@ -590,6 +624,49 @@ export function Hub() {
                 })}
               </div>
             </div>
+
+            {/* App Version & Auto-Update Card */}
+            <div className="rounded-2xl bg-[#262A35]/50 p-3 border border-white/6 space-y-2.5 shadow-xs">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-xs font-semibold text-[#F4F5F7]">
+                      {isVi ? "Phiên bản ứng dụng" : "Application Version"}
+                    </p>
+                    <span className="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded-md bg-[#F5A623]/15 text-[#F5A623] border border-[#F5A623]/30">
+                      v{CURRENT_APP_VERSION}
+                    </span>
+                  </div>
+                  <p className="text-[10px] text-[#8B90A0]">
+                    {isVi ? "Tự động kiểm tra phát hành mới từ GitHub Releases" : "Check for latest release on GitHub"}
+                  </p>
+                </div>
+
+                <Button
+                  size="sm"
+                  onClick={handleCheckUpdateManual}
+                  disabled={checkingUpdate}
+                  className="h-7 text-xs font-semibold bg-[#F5A623] hover:bg-[#D6871A] text-[#14161D] rounded-xl cursor-pointer gap-1 px-2.5 shadow-xs"
+                >
+                  <RefreshCw className={cn("size-3", checkingUpdate && "animate-spin")} />
+                  <span>
+                    {checkingUpdate
+                      ? isVi
+                        ? "Đang kiểm tra..."
+                        : "Checking..."
+                      : isVi
+                      ? "Kiểm tra cập nhật"
+                      : "Check Update"}
+                  </span>
+                </Button>
+              </div>
+
+              {updateResultText && (
+                <p className="text-[11px] text-amber-300 font-medium pt-1 border-t border-white/5 animate-in fade-in">
+                  ✨ {updateResultText}
+                </p>
+              )}
+            </div>
           </TabsContent>
 
           {/* TAB 3: VIRTUAL PET STUDIO & WARDROBE */}
@@ -951,6 +1028,13 @@ export function Hub() {
           </TabsContent>
         </div>
       </Tabs>
+
+      {/* Manual Update Notification Modal Sub-Dialog */}
+      <UpdateNotificationModal
+        updateInfo={updateModalInfo}
+        open={showUpdateModal}
+        onClose={() => setShowUpdateModal(false)}
+      />
     </section>
   );
 }

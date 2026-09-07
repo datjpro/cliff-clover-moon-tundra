@@ -780,6 +780,65 @@ console.log("\n📦 [SUITE 7]: Pro License & 3-Day Trial Engine (v1.0.1)");
   assert(remainingStr === "2d 12h", "Trial remaining time formatted accurately as '2d 12h'");
 }
 
+// TEST SUITE 8: IN-APP AUTO-UPDATE & SEMVER ENGINE (v1.0.1)
+console.log("\n📦 [SUITE 8]: In-App Auto-Update & Semver Engine");
+{
+  function compareSemver(v1, v2) {
+    const clean1 = (v1 || "").replace(/^v/i, "").trim();
+    const clean2 = (v2 || "").replace(/^v/i, "").trim();
+
+    const parts1 = clean1.split(".").map((n) => parseInt(n, 10) || 0);
+    const parts2 = clean2.split(".").map((n) => parseInt(n, 10) || 0);
+
+    const maxLen = Math.max(parts1.length, parts2.length, 3);
+    for (let i = 0; i < maxLen; i++) {
+      const p1 = parts1[i] ?? 0;
+      const p2 = parts2[i] ?? 0;
+      if (p1 > p2) return 1;
+      if (p1 < p2) return -1;
+    }
+    return 0;
+  }
+
+  // 1. Basic semver comparisons
+  assert(compareSemver("1.0.1", "1.0.0") === 1, "v1.0.1 is newer than v1.0.0");
+  assert(compareSemver("1.0.0", "1.0.1") === -1, "v1.0.0 is older than v1.0.1");
+  assert(compareSemver("1.0.1", "1.0.1") === 0, "Identical versions return 0");
+  assert(compareSemver("v1.2.0", "1.1.9") === 1, "v1.2.0 is newer than 1.1.9 with 'v' prefix");
+  assert(compareSemver("2.0.0", "1.99.99") === 1, "Major version bump (2.0.0 > 1.99.99)");
+  assert(compareSemver("1.0.10", "1.0.2") === 1, "Multi-digit minor bump (1.0.10 > 1.0.2)");
+
+  // 2. Mock Update Check Logic
+  function evaluateUpdateAvailable(currentVer, remoteTag, skippedVer = "") {
+    const remoteVer = (remoteTag || "").replace(/^v/i, "").trim();
+    if (!remoteVer) return { hasUpdate: false, version: currentVer };
+    const isNewer = compareSemver(remoteVer, currentVer) > 0;
+    const isSkipped = skippedVer === remoteVer;
+    return {
+      hasUpdate: isNewer && !isSkipped,
+      version: remoteVer,
+      skipped: isSkipped,
+    };
+  }
+
+  // Case: Running v1.0.0, Remote is v1.0.1
+  const check1 = evaluateUpdateAvailable("1.0.0", "v1.0.1");
+  assert(check1.hasUpdate === true, "Running v1.0.0 detects v1.0.1 update available");
+  assert(check1.version === "1.0.1", "Target update version parsed as '1.0.1'");
+
+  // Case: Running v1.0.1, Remote is v1.0.1
+  const check2 = evaluateUpdateAvailable("1.0.1", "v1.0.1");
+  assert(check2.hasUpdate === false, "Running v1.0.1 reports no update required");
+
+  // Case: User skipped v1.0.2
+  const checkSkipped = evaluateUpdateAvailable("1.0.1", "v1.0.2", "1.0.2");
+  assert(checkSkipped.hasUpdate === false && checkSkipped.skipped === true, "Skipped version v1.0.2 is ignored silently");
+
+  // Case: Subsequent v1.0.3 is available after skipping v1.0.2
+  const checkNext = evaluateUpdateAvailable("1.0.1", "v1.0.3", "1.0.2");
+  assert(checkNext.hasUpdate === true, "v1.0.3 triggers update even if v1.0.2 was previously skipped");
+}
+
 console.log(`\n========================================`);
 console.log(`📊 FINAL TEST REPORT: ${passed}/${total} Tests Passed (100% Success)`);
 console.log(`========================================\n`);

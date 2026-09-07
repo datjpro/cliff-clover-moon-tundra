@@ -147,3 +147,13 @@ export type ProLicense = {
   plan?: "lifetime" | "annual" | "monthly" | "trial" | "free";
   expiresAt?: number;
 };
+
+export type AppUpdateInfo = {
+  version: string;
+  name?: string;
+  body?: string;
+  htmlUrl?: string;
+  publishedAt?: string;
+  downloadUrl?: string;
+};
+
