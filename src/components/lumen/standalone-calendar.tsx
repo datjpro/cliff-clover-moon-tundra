@@ -159,6 +159,32 @@ export function StandaloneCalendar() {
     });
   }, [lookup, selectedDateKey, filter]);
 
+  // Filtered events strictly for today's agenda (used by Compact Mode)
+  const todayItems = useMemo(() => {
+    const rawItems = lookup.get(todayKey) ?? [];
+    return rawItems.filter((entry) => {
+      if (entry.type === "event") {
+        if (filter.category && filter.category !== "all" && entry.item.category !== filter.category) {
+          return false;
+        }
+        if (!filter.showCompleted && entry.item.completed) {
+          return false;
+        }
+      }
+      return true;
+    });
+  }, [lookup, todayKey, filter]);
+
+  // Formatted date string for Today's Header
+  const todayFormatted = useMemo(() => {
+    const d = new Date();
+    if (isVi) {
+      const daysVi = ["Chủ Nhật", "Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy"];
+      return `${daysVi[d.getDay()]}, ${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
+    }
+    return d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" });
+  }, [isVi]);
+
   // Calculate calculated duration between startTime and endTime
   const calculatedDuration = useMemo(() => {
     if (allDay) return isVi ? "Cả ngày" : "All day";
@@ -466,27 +492,34 @@ export function StandaloneCalendar() {
 
   if (!calendarOpen) return null;
 
-  // 1. MINIMIZED VIEW: CORNER-DOCKED FLOATING CAPSULE WIDGET
+  // 1. MINIMIZED VIEW: CORNER-DOCKED TODAY'S AGENDA FLOATING WIDGET
   if (isCompact) {
     const dockClass = DOCK_POSITION_CLASSES[dockPos] || "top-4 right-4";
     return (
       <aside
         role="region"
-        aria-label="Lumen Calendar Dock"
+        aria-label="Lumen Today Agenda Dock"
         className={cn(
-          "interactive-el fixed z-[88] flex flex-col w-84 rounded-3xl bg-[#181A22]/95 border border-white/12 text-[#F4F5F7] shadow-[0_20px_50px_rgba(0,0,0,0.75)] backdrop-blur-2xl select-none overflow-hidden animate-in fade-in zoom-in-95 duration-140",
+          "interactive-el fixed z-[88] flex flex-col w-84 sm:w-88 rounded-3xl bg-[#181A22]/98 border border-white/12 text-[#F4F5F7] shadow-[0_20px_50px_rgba(0,0,0,0.85)] backdrop-blur-2xl select-none overflow-hidden animate-in fade-in zoom-in-95 duration-140 max-h-[480px]",
           dockClass,
         )}
       >
-        {/* Compact Dock Header */}
-        <div className="flex items-center justify-between px-3.5 py-2.5 bg-[#14161D]/70 border-b border-white/8">
-          <div className="flex items-center gap-2 min-w-0">
-            <div className="size-6 rounded-lg bg-[#F5A623]/20 text-[#F5A623] flex items-center justify-center shrink-0 border border-[#F5A623]/30">
-              <CalendarIcon className="size-3.5" />
+        {/* Compact Dock Header: Today's Date & Actions */}
+        <div className="flex items-center justify-between px-3.5 py-3 bg-[#14161D]/80 border-b border-white/8">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="size-7 rounded-xl bg-[#F5A623]/20 text-[#F5A623] flex items-center justify-center shrink-0 border border-[#F5A623]/30">
+              <CalendarIcon className="size-4" />
             </div>
             <div className="min-w-0">
-              <span className="font-bold text-xs text-[#F4F5F7] truncate block">{monthName}</span>
-              <span className="text-[9px] font-mono text-[#8B90A0]">DOCK: {dockPos.toUpperCase()}</span>
+              <div className="flex items-center gap-1.5">
+                <span className="font-bold text-xs text-[#F4F5F7] truncate block">
+                  {isVi ? "Lịch Trình Hôm Nay" : "Today's Agenda"}
+                </span>
+                <span className="text-[9px] font-mono px-1.5 py-0.2 rounded-full bg-[#F5A623]/15 text-[#F5A623] border border-[#F5A623]/30">
+                  {todayItems.length}
+                </span>
+              </div>
+              <span className="text-[10px] text-[#8B90A0] block truncate">{todayFormatted}</span>
             </div>
           </div>
 
@@ -494,31 +527,24 @@ export function StandaloneCalendar() {
             <Button
               size="icon"
               variant="ghost"
-              onClick={handlePrevMonth}
-              className="size-6 rounded-md hover:bg-white/10 text-[#8B90A0]"
+              onClick={() => handleOpenCreateModal(todayKey)}
+              className="size-7 rounded-lg bg-[#F5A623]/10 hover:bg-[#F5A623]/20 text-[#F5A623] cursor-pointer"
+              title={isVi ? "Thêm việc hôm nay" : "Add event today"}
             >
-              <ChevronLeft className="size-3" />
-            </Button>
-            <Button
-              size="icon"
-              variant="ghost"
-              onClick={handleNextMonth}
-              className="size-6 rounded-md hover:bg-white/10 text-[#8B90A0]"
-            >
-              <ChevronRight className="size-3" />
+              <Plus className="size-3.5" />
             </Button>
             <button
               type="button"
               onClick={toggleCompact}
-              className="size-6 flex items-center justify-center rounded-lg hover:bg-white/10 text-[#8B90A0] hover:text-[#F5A623] transition-colors cursor-pointer"
-              title="Mở rộng giao diện lớn (Expansive Mode)"
+              className="size-7 flex items-center justify-center rounded-lg hover:bg-white/10 text-[#8B90A0] hover:text-[#F5A623] transition-colors cursor-pointer"
+              title={isVi ? "Mở rộng lịch lớn (Expansive Mode)" : "Maximize calendar"}
             >
               <Maximize2 className="size-3.5" />
             </button>
             <button
               type="button"
               onClick={() => setCalendarOpen(false)}
-              className="size-6 flex items-center justify-center rounded-lg hover:bg-white/10 text-[#8B90A0] hover:text-white transition-colors cursor-pointer"
+              className="size-7 flex items-center justify-center rounded-lg hover:bg-white/10 text-[#8B90A0] hover:text-white transition-colors cursor-pointer"
               title="Đóng (Escape)"
             >
               <X className="size-3.5" />
@@ -526,109 +552,139 @@ export function StandaloneCalendar() {
           </div>
         </div>
 
-        {/* 7-Day Mini Horizontal Rail Strip */}
-        <div className="p-2.5 space-y-2">
-          <div className="grid grid-cols-7 gap-1 text-center">
-            {weekHeaders.map((h, i) => (
-              <span key={i} className="text-[9px] font-bold text-[#8B90A0]">
-                {h}
-              </span>
-            ))}
-          </div>
-
-          {/* Mini Calendar 42-day matrix */}
-          <div className="grid grid-cols-7 grid-rows-6 gap-1 h-36">
-            {gridDays.map((date, idx) => {
-              const dateKey = formatDateKey(date);
-              const isCurrentMonth = date.getMonth() === currentMonthDate.getMonth();
-              const isToday = dateKey === todayKey;
-              const isSelected = dateKey === selectedDateKey;
-              const isPast = dateKey < todayKey;
-              const items = lookup.get(dateKey) ?? [];
-
-              return (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={() => {
-                    sounds.playPop(500);
-                    setSelectedDateKey(dateKey);
-                  }}
-                  className={cn(
-                    "relative flex flex-col items-center justify-center rounded-lg text-[10px] font-bold transition-all cursor-pointer",
-                    isSelected
-                      ? "bg-[#F5A623] text-[#14161D] shadow-xs"
-                      : isToday
-                      ? "bg-white/15 text-[#F5A623] border border-[#F5A623]/50"
-                      : isPast
-                      ? "text-[#8B90A0]/40 hover:bg-white/5"
-                      : isCurrentMonth
-                      ? "text-[#F4F5F7] hover:bg-white/10"
-                      : "text-[#8B90A0]/20",
-                  )}
-                >
-                  <span>{date.getDate()}</span>
-                  {items.length > 0 && !isSelected && (
-                    <span className="size-1 rounded-full bg-[#F5A623] absolute bottom-0.5" />
-                  )}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Selected Day Agenda Snippet or Clean Empty State */}
-          <div className="rounded-2xl bg-[#14161D]/80 border border-white/6 p-2.5 space-y-1.5 max-h-40 overflow-y-auto custom-scrollbar">
-            <div className="flex items-center justify-between pb-1 border-b border-white/5 text-[11px] font-bold text-[#F4F5F7]">
-              <span>{selectedDateKey} {selectedDateKey === todayKey && "(Hôm nay)"}</span>
-              <button
-                type="button"
-                onClick={() => handleOpenCreateModal(selectedDateKey)}
-                className="text-[10px] font-semibold text-[#F5A623] hover:underline flex items-center gap-1 cursor-pointer"
-              >
-                <Plus className="size-3" />
-                <span>Thêm việc</span>
-              </button>
-            </div>
-
-            {selectedDayItems.length === 0 ? (
-              <div className="py-3 flex flex-col items-center justify-center text-center text-[#8B90A0] space-y-1">
-                <CalendarIcon className="size-4 text-white/15" />
-                <p className="text-[10px]">{selectedDateKey < todayKey ? "Không có sự kiện quá khứ" : dict.calendar.noEvents}</p>
+        {/* Compact Body: Strictly Filtered to Today's Scheduled Events & Notes */}
+        <div className="p-3 space-y-2 overflow-y-auto max-h-[360px] custom-scrollbar flex-1 min-h-0">
+          {todayItems.length === 0 ? (
+            <div className="py-7 flex flex-col items-center justify-center text-center text-[#8B90A0] space-y-2">
+              <div className="size-10 rounded-2xl bg-white/5 border border-white/8 flex items-center justify-center text-white/25">
+                <CalendarIcon className="size-5" />
               </div>
-            ) : (
-              selectedDayItems.map((entry, idx) => {
-                if (entry.type === "event") {
-                  const ev = entry.item;
-                  return (
-                    <div
-                      key={ev.id || idx}
-                      className="flex items-center justify-between p-1.5 rounded-xl bg-white/[0.04] border border-white/5 text-xs"
-                    >
-                      <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                        <button
-                          type="button"
-                          onClick={() => toggleCalendarEventComplete(ev.id)}
-                          className={cn(
-                            "size-3 rounded border flex items-center justify-center cursor-pointer shrink-0",
-                            ev.completed ? "bg-emerald-500 border-emerald-500 text-white" : "border-white/30",
-                          )}
-                        >
-                          {ev.completed && <Check className="size-2" />}
-                        </button>
-                        <span className={cn("truncate text-[11px]", ev.completed && "line-through text-[#8B90A0]")}>
-                          {ev.title}
-                        </span>
+              <div className="space-y-0.5">
+                <p className="text-xs font-semibold text-[#F4F5F7]">
+                  {isVi ? "Hôm nay chưa có sự kiện nào" : "No events scheduled today"}
+                </p>
+                <p className="text-[10px] text-[#8B90A0] max-w-[210px]">
+                  {isVi ? "Tận hưởng ngày làm việc thảnh thơi hoặc lên lịch sự kiện mới!" : "Enjoy your focus time or create a new agenda item."}
+                </p>
+              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => handleOpenCreateModal(todayKey)}
+                className="mt-1 h-7 text-[11px] border-white/10 bg-white/5 hover:bg-[#F5A623]/20 hover:text-[#F5A623] text-[#8B90A0] rounded-xl cursor-pointer"
+              >
+                <Plus className="size-3 mr-1" />
+                <span>{isVi ? "Lên lịch hôm nay" : "Schedule today"}</span>
+              </Button>
+            </div>
+          ) : (
+            todayItems.map((entry, idx) => {
+              if (entry.type === "event") {
+                const ev = entry.item;
+                const meta = CATEGORY_META[ev.category];
+                return (
+                  <div
+                    key={ev.id || idx}
+                    className={cn(
+                      "flex items-center justify-between p-2 rounded-2xl border transition-all duration-120 group",
+                      ev.completed
+                        ? "bg-[#14161D]/40 border-white/5 opacity-60"
+                        : "bg-[#1D2029] border-white/10 hover:border-white/20",
+                    )}
+                  >
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <button
+                        type="button"
+                        onClick={() => toggleCalendarEventComplete(ev.id)}
+                        className={cn(
+                          "size-4 rounded-md border flex items-center justify-center cursor-pointer shrink-0 transition-colors",
+                          ev.completed
+                            ? "bg-emerald-500 border-emerald-500 text-white"
+                            : "border-white/20 hover:border-[#F5A623]",
+                        )}
+                      >
+                        {ev.completed && <Check className="size-3 stroke-[3]" />}
+                      </button>
+
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <p
+                            className={cn(
+                              "text-xs font-semibold tracking-tight text-[#F4F5F7] truncate",
+                              ev.completed && "line-through text-[#8B90A0]",
+                            )}
+                          >
+                            {ev.title}
+                          </p>
+                          <Badge className={cn("text-[8px] py-0 px-1 shrink-0", meta.colorClass)}>
+                            {isVi ? meta.labelVi : meta.labelEn}
+                          </Badge>
+                        </div>
+                        <div className="flex items-center gap-2 text-[10px] text-[#8B90A0]">
+                          <span className="flex items-center gap-1">
+                            <Clock className="size-2.5" />
+                            {ev.allDay ? dict.calendar.allDay : `${ev.startTime || "09:00"} - ${ev.endTime || "10:00"}`}
+                          </span>
+                          {ev.alarmEnabled && <Bell className="size-2.5 text-amber-400" />}
+                        </div>
                       </div>
-                      <span className="text-[9px] font-mono text-[#8B90A0] shrink-0 ml-1">
-                        {ev.startTime || "Cả ngày"}
-                      </span>
                     </div>
-                  );
-                }
-                return null;
-              })
-            )}
-          </div>
+
+                    <div className="flex items-center gap-0.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        type="button"
+                        onClick={() => handleOpenEditModal(ev)}
+                        className="p-1 rounded-md hover:bg-white/10 text-[#8B90A0] hover:text-white cursor-pointer"
+                        title="Sửa sự kiện"
+                      >
+                        <Sparkles className="size-3" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => deleteCalendarEvent(ev.id)}
+                        className="p-1 rounded-md hover:bg-red-500/20 text-[#8B90A0] hover:text-red-400 cursor-pointer"
+                        title="Xóa sự kiện"
+                      >
+                        <Trash2 className="size-3" />
+                      </button>
+                    </div>
+                  </div>
+                );
+              } else {
+                const note = entry.item;
+                return (
+                  <div
+                    key={`compact_note_${note.id}`}
+                    className="flex items-center justify-between p-2 rounded-2xl border border-amber-500/20 bg-amber-500/5 hover:border-amber-500/40 transition-all group"
+                  >
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <NoteIcon className="size-3.5 text-amber-400 shrink-0" />
+                      <div className="min-w-0">
+                        <p className="text-xs font-semibold text-[#F4F5F7] truncate">
+                          {note.title || (note.body.split("\n")[0] ?? "Sticky Note")}
+                        </p>
+                        <p className="text-[9px] text-amber-400/80">
+                          {note.dueTime ? `Hạn: ${note.dueTime}` : "Ghi chú hôm nay"}
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => {
+                        bringNote(note.id);
+                        setCalendarOpen(false);
+                      }}
+                      className="h-5 text-[9px] px-1.5 rounded-md bg-amber-500/10 hover:bg-amber-500/20 text-amber-300"
+                    >
+                      <ExternalLink className="size-2.5 mr-0.5" />
+                      {isVi ? "Xem" : "View"}
+                    </Button>
+                  </div>
+                );
+              }
+            })
+          )}
         </div>
 
         {/* Modal Event Creator when launched from Compact Mode */}
@@ -1147,19 +1203,30 @@ export function StandaloneCalendar() {
     </div>
   );
 
-  // REDESIGNED EVENT CREATOR MODAL WITH FLUID SCOPE TIME PICKER INTEGRATION & EXPLICIT CANCEL FLOW
+  // FLUID, PROPORTIONATELY SCALED EVENT CREATOR MODAL WITH PINNED ACTIONS & TACTICAL SCOPE SUB-MODAL
   function renderEventModal() {
     return (
-      <div className="fixed inset-0 z-[250] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-in fade-in duration-120">
-        <div className="w-full max-w-lg rounded-3xl bg-[#1D2029] border border-white/12 p-5 shadow-[0_30px_70px_rgba(0,0,0,0.9)] space-y-4 animate-in zoom-in-95 duration-140 relative max-h-[92vh] overflow-y-auto custom-scrollbar">
-          {/* Modal Header */}
-          <div className="flex items-center justify-between border-b border-white/8 pb-3">
-            <div className="flex items-center gap-2.5">
-              <div className="size-8 rounded-xl bg-[#F5A623]/20 text-[#F5A623] flex items-center justify-center border border-[#F5A623]/30">
+      <div
+        role="dialog"
+        aria-modal="true"
+        className="fixed inset-0 z-[250] flex items-center justify-center bg-black/75 backdrop-blur-sm p-3 sm:p-4 select-none animate-in fade-in duration-120"
+        onClick={() => {
+          setModalOpen(false);
+          setActiveScopePicker(null);
+        }}
+      >
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className="w-full max-w-lg max-h-[90vh] flex flex-col rounded-3xl bg-[#181A22] border border-white/15 shadow-[0_30px_70px_rgba(0,0,0,0.95)] text-[#F4F5F7] overflow-hidden animate-in zoom-in-95 duration-140"
+        >
+          {/* 1. Fixed Modal Header */}
+          <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/8 bg-[#14161D]/80 shrink-0">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="size-8 rounded-xl bg-[#F5A623]/20 text-[#F5A623] flex items-center justify-center border border-[#F5A623]/30 shrink-0">
                 <Target className="size-4" />
               </div>
-              <div>
-                <h3 className="text-sm font-bold text-[#F4F5F7]">
+              <div className="min-w-0">
+                <h3 className="text-sm font-bold text-[#F4F5F7] truncate">
                   {editingEventId
                     ? isVi
                       ? "Chỉnh sửa Sự kiện"
@@ -1168,8 +1235,8 @@ export function StandaloneCalendar() {
                     ? "Tạo Sự kiện Lịch mới"
                     : "Create New Event"}
                 </h3>
-                <p className="text-[10px] text-[#8B90A0]">
-                  {isVi ? "Thiết lập thông tin, danh mục và giờ hẹn chi tiết" : "Configure title, schedule, and category"}
+                <p className="text-[10px] text-[#8B90A0] truncate">
+                  {isVi ? "Lên lịch trình, danh mục và mốc thời gian chi tiết" : "Configure title, schedule, and category"}
                 </p>
               </div>
             </div>
@@ -1180,23 +1247,25 @@ export function StandaloneCalendar() {
                 setActiveScopePicker(null);
                 sounds.playPop(420);
               }}
-              className="size-7 rounded-xl hover:bg-white/10 flex items-center justify-center text-[#8B90A0] hover:text-white cursor-pointer transition-colors"
+              className="size-7 rounded-xl hover:bg-white/10 flex items-center justify-center text-[#8B90A0] hover:text-white cursor-pointer transition-colors shrink-0"
+              title="Đóng (Escape)"
             >
               <X className="size-4" />
             </button>
           </div>
 
-          {/* Validation Alert Banner */}
-          {validationError && (
-            <div className="flex items-center gap-2 p-2.5 rounded-xl bg-red-500/15 border border-red-500/30 text-red-300 text-xs animate-in fade-in">
-              <AlertCircle className="size-4 text-red-400 shrink-0" />
-              <span>{validationError}</span>
-            </div>
-          )}
+          {/* 2. Scrollable Modal Body */}
+          <form id="calendar-event-form" onSubmit={handleSaveEvent} className="flex-1 overflow-y-auto custom-scrollbar p-5 space-y-3.5 min-h-0 text-xs">
+            {/* Validation Alert Banner */}
+            {validationError && (
+              <div className="flex items-center gap-2 p-2.5 rounded-xl bg-red-500/15 border border-red-500/30 text-red-300 text-xs animate-in fade-in">
+                <AlertCircle className="size-4 text-red-400 shrink-0" />
+                <span>{validationError}</span>
+              </div>
+            )}
 
-          <form onSubmit={handleSaveEvent} className="space-y-4 text-xs">
-            {/* Title Input with Quick Chips */}
-            <div className="space-y-1.5">
+            {/* Title Input */}
+            <div className="space-y-1">
               <label className="text-[11px] font-bold text-[#F4F5F7] flex items-center justify-between">
                 <span>{dict.calendar.eventTitle} <span className="text-[#F5A623]">*</span></span>
                 <span className="text-[10px] text-[#8B90A0] font-mono">{title.length}/100</span>
@@ -1211,16 +1280,14 @@ export function StandaloneCalendar() {
                   setTitle(e.target.value);
                   if (validationError) setValidationError(null);
                 }}
-                className="bg-[#14161D] border-white/10 text-xs text-[#F4F5F7] focus:border-[#F5A623] h-9 rounded-xl shadow-inner"
+                className="bg-[#14161D] border-white/10 text-xs text-[#F4F5F7] focus:border-[#F5A623] h-9 rounded-xl shadow-inner w-full"
               />
             </div>
 
             {/* Quick Date Shortcuts */}
             <div className="space-y-1">
-              <div className="flex items-center justify-between text-[11px] text-[#8B90A0]">
-                <span>Phím chọn ngày nhanh:</span>
-              </div>
-              <div className="flex gap-1.5">
+              <span className="text-[10px] text-[#8B90A0] font-medium block">Phím chọn ngày nhanh:</span>
+              <div className="flex flex-wrap gap-1.5">
                 <button
                   type="button"
                   onClick={() => handleSetQuickDate(0)}
@@ -1245,7 +1312,7 @@ export function StandaloneCalendar() {
               </div>
             </div>
 
-            {/* Date Pickers */}
+            {/* Date Pickers Row */}
             <div className="grid grid-cols-2 gap-2.5">
               <div className="space-y-1">
                 <label className="text-[11px] font-semibold text-[#8B90A0]">
@@ -1261,13 +1328,13 @@ export function StandaloneCalendar() {
                     if (endDate < e.target.value) setEndDate(e.target.value);
                     if (validationError) setValidationError(null);
                   }}
-                  className="bg-[#14161D] border-white/10 text-xs text-[#F4F5F7] h-9 rounded-xl"
+                  className="bg-[#14161D] border-white/10 text-xs text-[#F4F5F7] h-9 rounded-xl w-full"
                 />
               </div>
 
               <div className="space-y-1">
                 <label className="text-[11px] font-semibold text-[#8B90A0]">
-                  Ngày kết thúc
+                  {dict.calendar.endDate}
                 </label>
                 <Input
                   type="date"
@@ -1277,12 +1344,12 @@ export function StandaloneCalendar() {
                     setEndDate(e.target.value);
                     if (validationError) setValidationError(null);
                   }}
-                  className="bg-[#14161D] border-white/10 text-xs text-[#F4F5F7] h-9 rounded-xl"
+                  className="bg-[#14161D] border-white/10 text-xs text-[#F4F5F7] h-9 rounded-xl w-full"
                 />
               </div>
             </div>
 
-            {/* All-Day Toggle & Time Controls */}
+            {/* Time Controls & Scope Rotary Trigger Box */}
             <div className="p-3 rounded-2xl bg-[#14161D]/70 border border-white/6 space-y-2.5">
               <div className="flex items-center justify-between">
                 <label className="text-xs font-semibold text-[#F4F5F7] flex items-center gap-2 cursor-pointer">
@@ -1291,12 +1358,12 @@ export function StandaloneCalendar() {
                 </label>
                 {!allDay && calculatedDuration && (
                   <span className="text-[10px] font-mono text-[#F5A623] bg-[#F5A623]/15 border border-[#F5A623]/30 px-2 py-0.5 rounded-full">
-                    ⏱️ Thời lượng: {calculatedDuration}
+                    ⏱️ {calculatedDuration}
                   </span>
                 )}
               </div>
 
-              {/* Tactical Scope Rotary Trigger Buttons */}
+              {/* Scope Time Triggers */}
               {!allDay && (
                 <div className="grid grid-cols-2 gap-2 pt-1 border-t border-white/5">
                   <div className="space-y-1">
@@ -1305,20 +1372,20 @@ export function StandaloneCalendar() {
                       type="button"
                       onClick={() => {
                         sounds.playMechanicalClick(1.0);
-                        setActiveScopePicker(activeScopePicker === "start" ? null : "start");
+                        setActiveScopePicker("start");
                       }}
                       className={cn(
-                        "w-full flex items-center justify-between px-3 h-9 rounded-xl border text-xs font-mono cursor-pointer transition-all",
+                        "w-full flex items-center justify-between px-2.5 h-9 rounded-xl border text-xs font-mono cursor-pointer transition-all",
                         activeScopePicker === "start"
                           ? "bg-[#262A35] border-[#F5A623] text-[#F5A623] shadow-md ring-1 ring-[#F5A623]/50"
                           : "bg-[#14161D] border-white/10 hover:border-[#F5A623]/60 text-[#F4F5F7]",
                       )}
                     >
-                      <span className="flex items-center gap-1.5 font-bold">
-                        <Crosshair className="size-3.5 text-[#F5A623]" />
+                      <span className="flex items-center gap-1.5 font-bold truncate">
+                        <Crosshair className="size-3.5 text-[#F5A623] shrink-0" />
                         <span>{startTime || "09:00"}</span>
                       </span>
-                      <span className="text-[10px] text-[#8B90A0]">Xoay 24H</span>
+                      <span className="text-[9px] text-[#8B90A0] shrink-0">Xoay 24H</span>
                     </button>
                   </div>
 
@@ -1328,52 +1395,30 @@ export function StandaloneCalendar() {
                       type="button"
                       onClick={() => {
                         sounds.playMechanicalClick(1.0);
-                        setActiveScopePicker(activeScopePicker === "end" ? null : "end");
+                        setActiveScopePicker("end");
                       }}
                       className={cn(
-                        "w-full flex items-center justify-between px-3 h-9 rounded-xl border text-xs font-mono cursor-pointer transition-all",
+                        "w-full flex items-center justify-between px-2.5 h-9 rounded-xl border text-xs font-mono cursor-pointer transition-all",
                         activeScopePicker === "end"
                           ? "bg-[#262A35] border-[#F5A623] text-[#F5A623] shadow-md ring-1 ring-[#F5A623]/50"
                           : "bg-[#14161D] border-white/10 hover:border-[#F5A623]/60 text-[#F4F5F7]",
                       )}
                     >
-                      <span className="flex items-center gap-1.5 font-bold">
-                        <Target className="size-3.5 text-[#F5A623]" />
+                      <span className="flex items-center gap-1.5 font-bold truncate">
+                        <Target className="size-3.5 text-[#F5A623] shrink-0" />
                         <span>{endTime || "10:00"}</span>
                       </span>
-                      <span className="text-[10px] text-[#8B90A0]">Xoay 24H</span>
+                      <span className="text-[9px] text-[#8B90A0] shrink-0">Xoay 24H</span>
                     </button>
                   </div>
                 </div>
               )}
             </div>
 
-            {/* Scope Rotary Time Picker Popover (Integrated without UI overlap) */}
-            {activeScopePicker && (
-              <div className="animate-in fade-in zoom-in-95 duration-100">
-                <ScopeRotaryTimePicker
-                  value={activeScopePicker === "start" ? startTime : endTime}
-                  onChange={(newT) => {
-                    if (activeScopePicker === "start") {
-                      setStartTime(newT);
-                    } else {
-                      setEndTime(newT);
-                    }
-                    setActiveScopePicker(null);
-                    if (validationError) setValidationError(null);
-                  }}
-                  isPastDisabled={!editingEventId && startDate === todayKey && activeScopePicker === "start"}
-                  minTime={currentTimeKey}
-                  onClose={() => setActiveScopePicker(null)}
-                  onCancel={() => setActiveScopePicker(null)}
-                />
-              </div>
-            )}
-
             {/* Category Selector Chips */}
             <div className="space-y-1.5">
               <label className="text-[11px] font-semibold text-[#8B90A0]">
-                Danh mục sự kiện
+                {dict.calendar.category}
               </label>
               <div className="grid grid-cols-5 gap-1.5">
                 {CATEGORY_OPTIONS.map((cat) => {
@@ -1388,14 +1433,14 @@ export function StandaloneCalendar() {
                         sounds.playPop(520);
                       }}
                       className={cn(
-                        "flex flex-col items-center justify-center py-2 px-1 rounded-xl border text-[10px] font-semibold cursor-pointer transition-all duration-120",
+                        "flex flex-col items-center justify-center py-1.5 px-1 rounded-xl border text-[10px] font-semibold cursor-pointer transition-all duration-120",
                         isSelected
                           ? cn("bg-[#262A35] shadow-xs ring-1 ring-white/20", cat.color)
                           : "bg-[#14161D]/70 border-white/5 hover:border-white/15 text-[#8B90A0]",
                       )}
                     >
-                      <Icon className="size-3.5 mb-1" />
-                      <span className="truncate">{isVi ? cat.nameVi : cat.nameEn}</span>
+                      <Icon className="size-3.5 mb-0.5" />
+                      <span className="truncate w-full text-center">{isVi ? cat.nameVi : cat.nameEn}</span>
                     </button>
                   );
                 })}
@@ -1444,30 +1489,58 @@ export function StandaloneCalendar() {
                 className="w-full bg-[#14161D] border border-white/10 rounded-xl p-2.5 text-xs text-[#F4F5F7] placeholder:text-[#8B90A0]/50 resize-none outline-none focus:border-[#F5A623]/60"
               />
             </div>
-
-            {/* Modal Actions: Explicit Cancel vs Save */}
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-white/8">
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => {
-                  setModalOpen(false);
-                  setActiveScopePicker(null);
-                  sounds.playPop(420);
-                }}
-                className="text-xs text-[#8B90A0] hover:text-white px-4 h-9 rounded-xl cursor-pointer"
-              >
-                {dict.cancel}
-              </Button>
-              <Button
-                type="submit"
-                className="bg-[#F5A623] hover:bg-[#D6871A] text-[#14161D] font-bold text-xs px-5 h-9 rounded-xl shadow-md cursor-pointer transition-transform active:scale-98"
-              >
-                {dict.save}
-              </Button>
-            </div>
           </form>
+
+          {/* 3. Pinned Modal Actions Footer */}
+          <div className="flex items-center justify-end gap-2 px-5 py-3 border-t border-white/8 bg-[#14161D]/90 shrink-0">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => {
+                setModalOpen(false);
+                setActiveScopePicker(null);
+                sounds.playPop(420);
+              }}
+              className="text-xs text-[#8B90A0] hover:text-white px-4 h-9 rounded-xl cursor-pointer"
+            >
+              {dict.cancel}
+            </Button>
+            <Button
+              type="submit"
+              form="calendar-event-form"
+              className="bg-[#F5A623] hover:bg-[#D6871A] text-[#14161D] font-bold text-xs px-5 h-9 rounded-xl shadow-md cursor-pointer transition-transform active:scale-98"
+            >
+              {dict.save}
+            </Button>
+          </div>
         </div>
+
+        {/* Tactical Scope Rotary Sub-Modal Overlay (Fluid & Perfectly Contained) */}
+        {activeScopePicker && (
+          <div
+            className="fixed inset-0 z-[280] flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-100"
+            onClick={() => setActiveScopePicker(null)}
+          >
+            <div onClick={(e) => e.stopPropagation()} className="animate-in zoom-in-95 duration-120">
+              <ScopeRotaryTimePicker
+                value={activeScopePicker === "start" ? startTime : endTime}
+                onChange={(newT) => {
+                  if (activeScopePicker === "start") {
+                    setStartTime(newT);
+                  } else {
+                    setEndTime(newT);
+                  }
+                  setActiveScopePicker(null);
+                  if (validationError) setValidationError(null);
+                }}
+                isPastDisabled={!editingEventId && startDate === todayKey && activeScopePicker === "start"}
+                minTime={currentTimeKey}
+                onClose={() => setActiveScopePicker(null)}
+                onCancel={() => setActiveScopePicker(null)}
+              />
+            </div>
+          </div>
+        )}
       </div>
     );
   }

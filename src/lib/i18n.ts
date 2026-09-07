@@ -186,7 +186,7 @@ export const DICTIONARY = {
       agendaView: "Lịch biểu",
       dayView: "Ngày",
       eventTitle: "Tiêu đề sự kiện",
-      eventTitlePlaceholder: "Họp nhóm, giờ tập trung, lịch hẹn bác sĩ…",
+      eventTitlePlaceholder: "Họp nhóm, báo cáo tiến độ, lịch hẹn quan trọng…",
       startDate: "Ngày bắt đầu",
       startTime: "Giờ bắt đầu",
       endDate: "Ngày kết thúc",

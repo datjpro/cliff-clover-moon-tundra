@@ -197,9 +197,9 @@ export function ScopeRotaryTimePicker({
     }
   };
 
-  // Visible slots for 3D barrel view
+  // Visible slots for 3D barrel view (3 slots for optimal compact containment)
   const getVisibleSlots = (current: number, max: number) => {
-    const slots = [-2, -1, 0, 1, 2];
+    const slots = [-1, 0, 1];
     return slots.map((offset) => {
       let val = (current + offset) % max;
       if (val < 0) val += max;
@@ -213,7 +213,7 @@ export function ScopeRotaryTimePicker({
   return (
     <div
       className={cn(
-        "rounded-2xl bg-[#14161D]/98 border border-[#F5A623]/40 p-3.5 text-[#F4F5F7] shadow-[0_25px_60px_rgba(0,0,0,0.9)] select-none backdrop-blur-2xl relative overflow-hidden ring-1 ring-[#F5A623]/20",
+        "w-full max-w-[280px] mx-auto rounded-2xl bg-[#14161D]/98 border border-[#F5A623]/40 p-2.5 text-[#F4F5F7] shadow-[0_20px_50px_rgba(0,0,0,0.85)] select-none backdrop-blur-2xl relative overflow-hidden ring-1 ring-[#F5A623]/20",
         className,
       )}
     >
@@ -221,34 +221,34 @@ export function ScopeRotaryTimePicker({
       <div className="absolute inset-0 pointer-events-none opacity-20">
         <div className="absolute top-1/2 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#F5A623] to-transparent" />
         <div className="absolute top-0 bottom-0 left-1/2 w-px bg-gradient-to-b from-transparent via-[#F5A623] to-transparent" />
-        <div className="absolute top-3 left-3 size-4 border-t-2 border-l-2 border-[#F5A623]" />
-        <div className="absolute top-3 right-3 size-4 border-t-2 border-r-2 border-[#F5A623]" />
-        <div className="absolute bottom-3 left-3 size-4 border-b-2 border-l-2 border-[#F5A623]" />
-        <div className="absolute bottom-3 right-3 size-4 border-b-2 border-r-2 border-[#F5A623]" />
+        <div className="absolute top-2 left-2 size-3 border-t-2 border-l-2 border-[#F5A623]" />
+        <div className="absolute top-2 right-2 size-3 border-t-2 border-r-2 border-[#F5A623]" />
+        <div className="absolute bottom-2 left-2 size-3 border-b-2 border-l-2 border-[#F5A623]" />
+        <div className="absolute bottom-2 right-2 size-3 border-b-2 border-r-2 border-[#F5A623]" />
       </div>
 
       {/* Tactical Scope Header */}
-      <div className="flex items-center justify-between pb-2 mb-2 border-b border-white/8 text-xs">
-        <div className="flex items-center gap-1.5 font-mono text-[11px] font-bold tracking-wider text-[#F5A623]">
-          <Crosshair className="size-3.5 animate-spin-slow text-[#F5A623]" />
+      <div className="flex items-center justify-between pb-1.5 mb-1.5 border-b border-white/8 text-xs">
+        <div className="flex items-center gap-1.5 font-mono text-[10px] font-bold tracking-wider text-[#F5A623]">
+          <Crosshair className="size-3 animate-spin-slow text-[#F5A623]" />
           <span>SCOPE ROTARY // {String(draftHour).padStart(2, "0")}:{String(draftMin).padStart(2, "0")}</span>
         </div>
         <button
           type="button"
           onClick={handleCancel}
-          className="size-6 rounded-lg hover:bg-white/10 flex items-center justify-center text-[#8B90A0] hover:text-white transition-colors cursor-pointer"
-          title="Hủy cấu hình giờ (Escape / Cancel)"
+          className="size-5 rounded-md hover:bg-white/10 flex items-center justify-center text-[#8B90A0] hover:text-white transition-colors cursor-pointer"
+          title="Hủy (Escape / Cancel)"
         >
-          <X className="size-3.5" />
+          <X className="size-3" />
         </button>
       </div>
 
       {/* Dual Barrel-Wheel Rotary Housing */}
-      <div className="relative flex items-center justify-center gap-3 py-2 px-1">
+      <div className="relative flex items-center justify-center gap-2 py-1 px-1">
         {/* Optical Center Scope Target Box */}
-        <div className="absolute inset-x-2 top-1/2 -translate-y-1/2 h-10 rounded-xl bg-[#F5A623]/10 border border-[#F5A623]/50 pointer-events-none shadow-[0_0_15px_rgba(245,166,35,0.15)] flex items-center justify-between px-3">
-          <div className="size-2 border-t-2 border-l-2 border-[#F5A623]" />
-          <div className="size-2 border-t-2 border-r-2 border-[#F5A623]" />
+        <div className="absolute inset-x-2 top-1/2 -translate-y-1/2 h-8 rounded-lg bg-[#F5A623]/10 border border-[#F5A623]/50 pointer-events-none shadow-[0_0_12px_rgba(245,166,35,0.15)] flex items-center justify-between px-2">
+          <div className="size-1.5 border-t-2 border-l-2 border-[#F5A623]" />
+          <div className="size-1.5 border-t-2 border-r-2 border-[#F5A623]" />
         </div>
 
         {/* 1. HOURS BARREL WHEEL */}
@@ -256,10 +256,10 @@ export function ScopeRotaryTimePicker({
           <button
             type="button"
             onClick={() => handleHourStep(-1)}
-            className="p-1 rounded-lg hover:bg-white/10 text-[#8B90A0] hover:text-[#F5A623] transition-colors cursor-pointer"
-            title="Tăng 1 giờ (Lăn chuột lên)"
+            className="p-0.5 rounded hover:bg-white/10 text-[#8B90A0] hover:text-[#F5A623] transition-colors cursor-pointer"
+            title="Tăng 1 giờ"
           >
-            <ChevronUp className="size-3.5" />
+            <ChevronUp className="size-3" />
           </button>
 
           <div
@@ -268,21 +268,21 @@ export function ScopeRotaryTimePicker({
             onPointerMove={handleHourPointerMove}
             onPointerUp={handleHourPointerUp}
             onPointerCancel={handleHourPointerUp}
-            className="relative w-18 h-32 flex flex-col items-center justify-center overflow-hidden cursor-ns-resize touch-none select-none rounded-xl bg-[#1D2029]/80 border border-white/6 shadow-inner"
+            className="relative w-14 h-22 flex flex-col items-center justify-center overflow-hidden cursor-ns-resize touch-none select-none rounded-lg bg-[#1D2029]/80 border border-white/6 shadow-inner"
             title="Lăn chuột hoặc kéo thả để xoay nấc giờ"
           >
             {/* Top / Bottom Gradient Fade */}
-            <div className="absolute inset-x-0 top-0 h-8 bg-gradient-to-b from-[#14161D] to-transparent pointer-events-none z-10" />
-            <div className="absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-[#14161D] to-transparent pointer-events-none z-10" />
+            <div className="absolute inset-x-0 top-0 h-5 bg-gradient-to-b from-[#14161D] to-transparent pointer-events-none z-10" />
+            <div className="absolute inset-x-0 bottom-0 h-5 bg-gradient-to-t from-[#14161D] to-transparent pointer-events-none z-10" />
 
             {visibleHours.map(({ val, offset }) => {
               const isCenter = offset === 0;
-              const scale = isCenter ? "scale-115 font-bold text-[#F5A623]" : Math.abs(offset) === 1 ? "scale-90 text-[#8B90A0] opacity-60" : "scale-75 text-[#8B90A0] opacity-25";
+              const scale = isCenter ? "scale-110 font-bold text-[#F5A623]" : "scale-80 text-[#8B90A0] opacity-40";
               return (
                 <div
                   key={`${val}-${offset}`}
                   className={cn(
-                    "h-6 flex items-center justify-center font-mono text-sm transition-all duration-75 tabular-nums",
+                    "h-6 flex items-center justify-center font-mono text-xs transition-all duration-75 tabular-nums",
                     scale,
                   )}
                 >
@@ -295,16 +295,16 @@ export function ScopeRotaryTimePicker({
           <button
             type="button"
             onClick={() => handleHourStep(1)}
-            className="p-1 rounded-lg hover:bg-white/10 text-[#8B90A0] hover:text-[#F5A623] transition-colors cursor-pointer"
-            title="Giảm 1 giờ (Lăn chuột xuống)"
+            className="p-0.5 rounded hover:bg-white/10 text-[#8B90A0] hover:text-[#F5A623] transition-colors cursor-pointer"
+            title="Giảm 1 giờ"
           >
-            <ChevronDown className="size-3.5" />
+            <ChevronDown className="size-3" />
           </button>
-          <span className="text-[10px] font-mono text-[#8B90A0] uppercase mt-0.5">Giờ (Hour)</span>
+          <span className="text-[9px] font-mono text-[#8B90A0] uppercase">Giờ</span>
         </div>
 
         {/* Separator Colon */}
-        <div className="flex flex-col items-center gap-1 text-[#F5A623] font-mono text-xl font-black shrink-0 px-0.5">
+        <div className="flex flex-col items-center text-[#F5A623] font-mono text-lg font-black shrink-0 px-0.5">
           <span className="animate-pulse">:</span>
         </div>
 
@@ -313,10 +313,10 @@ export function ScopeRotaryTimePicker({
           <button
             type="button"
             onClick={() => handleMinStep(-1)}
-            className="p-1 rounded-lg hover:bg-white/10 text-[#8B90A0] hover:text-[#F5A623] transition-colors cursor-pointer"
-            title="Tăng 1 phút (Lăn chuột lên)"
+            className="p-0.5 rounded hover:bg-white/10 text-[#8B90A0] hover:text-[#F5A623] transition-colors cursor-pointer"
+            title="Tăng 1 phút"
           >
-            <ChevronUp className="size-3.5" />
+            <ChevronUp className="size-3" />
           </button>
 
           <div
@@ -325,21 +325,21 @@ export function ScopeRotaryTimePicker({
             onPointerMove={handleMinPointerMove}
             onPointerUp={handleMinPointerUp}
             onPointerCancel={handleMinPointerUp}
-            className="relative w-18 h-32 flex flex-col items-center justify-center overflow-hidden cursor-ns-resize touch-none select-none rounded-xl bg-[#1D2029]/80 border border-white/6 shadow-inner"
+            className="relative w-14 h-22 flex flex-col items-center justify-center overflow-hidden cursor-ns-resize touch-none select-none rounded-lg bg-[#1D2029]/80 border border-white/6 shadow-inner"
             title="Lăn chuột hoặc kéo thả để xoay nấc phút"
           >
             {/* Top / Bottom Gradient Fade */}
-            <div className="absolute inset-x-0 top-0 h-8 bg-gradient-to-b from-[#14161D] to-transparent pointer-events-none z-10" />
-            <div className="absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-[#14161D] to-transparent pointer-events-none z-10" />
+            <div className="absolute inset-x-0 top-0 h-5 bg-gradient-to-b from-[#14161D] to-transparent pointer-events-none z-10" />
+            <div className="absolute inset-x-0 bottom-0 h-5 bg-gradient-to-t from-[#14161D] to-transparent pointer-events-none z-10" />
 
             {visibleMins.map(({ val, offset }) => {
               const isCenter = offset === 0;
-              const scale = isCenter ? "scale-115 font-bold text-[#F5A623]" : Math.abs(offset) === 1 ? "scale-90 text-[#8B90A0] opacity-60" : "scale-75 text-[#8B90A0] opacity-25";
+              const scale = isCenter ? "scale-110 font-bold text-[#F5A623]" : "scale-80 text-[#8B90A0] opacity-40";
               return (
                 <div
                   key={`${val}-${offset}`}
                   className={cn(
-                    "h-6 flex items-center justify-center font-mono text-sm transition-all duration-75 tabular-nums",
+                    "h-6 flex items-center justify-center font-mono text-xs transition-all duration-75 tabular-nums",
                     scale,
                   )}
                 >
@@ -352,23 +352,23 @@ export function ScopeRotaryTimePicker({
           <button
             type="button"
             onClick={() => handleMinStep(1)}
-            className="p-1 rounded-lg hover:bg-white/10 text-[#8B90A0] hover:text-[#F5A623] transition-colors cursor-pointer"
-            title="Giảm 1 phút (Lăn chuột xuống)"
+            className="p-0.5 rounded hover:bg-white/10 text-[#8B90A0] hover:text-[#F5A623] transition-colors cursor-pointer"
+            title="Giảm 1 phút"
           >
-            <ChevronDown className="size-3.5" />
+            <ChevronDown className="size-3" />
           </button>
-          <span className="text-[10px] font-mono text-[#8B90A0] uppercase mt-0.5">Phút (Min)</span>
+          <span className="text-[9px] font-mono text-[#8B90A0] uppercase">Phút</span>
         </div>
       </div>
 
       {/* Quick Tactical Preset Chips */}
-      <div className="flex flex-wrap items-center justify-center gap-1 pt-2 border-t border-white/6">
+      <div className="flex flex-wrap items-center justify-center gap-1 pt-1.5 border-t border-white/6">
         {QUICK_PRESETS.map((p) => (
           <button
             key={p.label}
             type="button"
             onClick={() => handlePresetClick(p)}
-            className="text-[10px] px-2 py-0.5 rounded-lg bg-[#262A35]/60 hover:bg-[#F5A623]/20 hover:text-[#F5A623] text-[#8B90A0] border border-white/5 hover:border-[#F5A623]/30 transition-all duration-120 cursor-pointer font-mono"
+            className="text-[9px] px-1.5 py-0.5 rounded bg-[#262A35]/60 hover:bg-[#F5A623]/20 hover:text-[#F5A623] text-[#8B90A0] border border-white/5 hover:border-[#F5A623]/30 transition-all cursor-pointer font-mono"
           >
             {p.label}
           </button>
@@ -376,22 +376,22 @@ export function ScopeRotaryTimePicker({
       </div>
 
       {/* Dual Explicit Action Buttons: Confirm vs Cancel */}
-      <div className="grid grid-cols-2 gap-2 pt-3 border-t border-white/6 mt-2">
+      <div className="grid grid-cols-2 gap-1.5 pt-2 border-t border-white/6 mt-1.5">
         <button
           type="button"
           onClick={handleCancel}
-          className="flex items-center justify-center gap-1.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-[#8B90A0] hover:text-white text-xs font-semibold border border-white/5 cursor-pointer transition-colors"
+          className="flex items-center justify-center gap-1 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-[#8B90A0] hover:text-white text-[11px] font-semibold border border-white/5 cursor-pointer transition-colors"
         >
-          <X className="size-3.5" />
-          <span>Hủy bỏ (Exit)</span>
+          <X className="size-3" />
+          <span>Hủy (Exit)</span>
         </button>
 
         <button
           type="button"
           onClick={handleConfirm}
-          className="flex items-center justify-center gap-1.5 py-1.5 rounded-xl bg-[#F5A623] hover:bg-[#D6871A] text-[#14161D] text-xs font-bold shadow-md cursor-pointer transition-transform active:scale-98"
+          className="flex items-center justify-center gap-1 py-1 rounded-lg bg-[#F5A623] hover:bg-[#D6871A] text-[#14161D] text-[11px] font-bold shadow-xs cursor-pointer transition-transform active:scale-98"
         >
-          <Target className="size-3.5" />
+          <Target className="size-3" />
           <span>Khóa & Áp dụng</span>
         </button>
       </div>
