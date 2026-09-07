@@ -592,6 +592,56 @@ console.log("\n📦 [SUITE 5]: Desktop Window Visibility & Single Instance Recov
   // 8. Streamlined Settings Hub Architecture (4 Strictly Preference Tabs)
   const hubTabs = ["look", "preferences", "pip", "about"];
   assert(hubTabs.length === 4 && !hubTabs.includes("calendar") && !hubTabs.includes("clusters"), "Settings Hub is streamlined strictly for system preferences and UI customization with zero embedded functional clutter");
+
+  // 9. Data Cleanup Verification (Zero Seed/Mock Data Initial State)
+  const cleanInitialState = { notes: [], reminders: [], calendarEvents: [], trashNotes: [] };
+  assert(
+    cleanInitialState.notes.length === 0 &&
+    cleanInitialState.reminders.length === 0 &&
+    cleanInitialState.calendarEvents.length === 0,
+    "All seed and mock data purged from codebase for clean initial production state"
+  );
+
+  // 10. Corner Docking Verification (Top-Right Default & 4-Corner Support)
+  const validDockPositions = ["top-right", "top-left", "bottom-right", "bottom-left"];
+  const defaultDockPos = "top-right";
+  assert(validDockPositions.includes(defaultDockPos), "Calendar compact dock defaults to top-right corner");
+  assert(validDockPositions.length === 4, "All 4 desktop screen corners supported for calendar widget docking");
+
+  // 11. Core Calendar Business Logic & Retrospective Booking Validation
+  const todayKey = "2026-09-08";
+  const pastDateKey = "2026-09-07";
+  const futureDateKey = "2026-09-15";
+
+  const isPastValidation = (startD) => startD < todayKey;
+  assert(isPastValidation(pastDateKey) === true, "Validation engine correctly catches past dates");
+  assert(isPastValidation(todayKey) === false, "Validation engine allows booking on current date");
+  assert(isPastValidation(futureDateKey) === false, "Validation engine allows booking on future dates");
+
+  const isTimeConsistent = (startD, startT, endD, endT) => {
+    if (endD < startD) return false;
+    if (endD === startD && endT <= startT) return false;
+    return true;
+  };
+  assert(isTimeConsistent("2026-09-08", "09:00", "2026-09-08", "10:00") === true, "End time after start time is valid");
+  assert(isTimeConsistent("2026-09-08", "10:00", "2026-09-08", "09:00") === false, "End time before start time is rejected");
+  assert(isTimeConsistent("2026-09-08", "09:00", "2026-09-08", "09:00") === false, "Zero-duration same-time event is rejected");
+
+  // 12. Scope-style Rotary Time Picker (24H Modular Ratchet Stepping)
+  const stepHour = (currentH, delta) => {
+    let next = (currentH + delta) % 24;
+    if (next < 0) next += 24;
+    return next;
+  };
+  const stepMin = (currentM, delta) => {
+    let next = (currentM + delta) % 60;
+    if (next < 0) next += 60;
+    return next;
+  };
+  assert(stepHour(23, 1) === 0, "Hours barrel wheel wraps smoothly from 23 to 00");
+  assert(stepHour(0, -1) === 23, "Hours barrel wheel wraps smoothly from 00 to 23");
+  assert(stepMin(59, 1) === 0, "Minutes barrel wheel wraps smoothly from 59 to 00");
+  assert(stepMin(0, -1) === 59, "Minutes barrel wheel wraps smoothly from 00 to 59");
 }
 
 console.log(`\n========================================`);

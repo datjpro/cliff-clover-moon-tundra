@@ -50,6 +50,7 @@ export type Note = {
 export type CalendarEventCategory = "work" | "personal" | "meeting" | "reminder" | "focus";
 export type RecurrenceRule = "none" | "daily" | "weekly" | "monthly" | "weekdays";
 export type CalendarViewMode = "month" | "agenda" | "day";
+export type CalendarDockPosition = "top-right" | "top-left" | "bottom-right" | "bottom-left";
 
 export type CalendarEvent = {
   id: string;

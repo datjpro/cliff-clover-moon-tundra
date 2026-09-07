@@ -5,6 +5,7 @@ import { exportToICalendar, formatDateKey } from "./calendar-utils";
 import { DICTIONARY } from "./i18n";
 import type {
   AlarmSettings,
+  CalendarDockPosition,
   CalendarEvent,
   CalendarFilter,
   CalendarViewMode,
@@ -25,56 +26,6 @@ import { uid } from "./utils";
 export const FREE_MAX_NOTES = 5;
 export const FREE_MAX_TIMERS = 1;
 
-const SEED_NOTES: Note[] = [
-  {
-    id: "seed-intro",
-    body: "Chào mừng bạn đến với Lumen v1.0.1! 🦊\n\nKhông gian ghi chú sống động cùng chú Cáo đồng hành & Lịch trình thông minh.\n\n• Nhấp đúp vào màn hình để tạo note mới\n• Kéo thả tự do để sắp xếp ghi chú\n• Alt+N: Ghi chú nhanh | Alt+T: Hẹn giờ | Alt+C: Lịch trình",
-    x: 38,
-    y: 25,
-    rot: -0.5,
-    tint: "cream",
-    z: 1,
-    createdAt: Date.now(),
-    collapsed: false,
-    cluster: "Hướng dẫn",
-    dueDate: formatDateKey(new Date()),
-    dueTime: "10:00",
-  },
-];
-
-const SEED_TIMERS: Reminder[] = [];
-
-const SEED_CALENDAR_EVENTS: CalendarEvent[] = [
-  {
-    id: "seed-cal-1",
-    title: "Trải nghiệm module Lịch trình mới (v1.0.1)",
-    description: "Khám phá giao diện lịch không gian, gắn hạn chót cho ghi chú và lên kế hoạch làm việc hiệu quả.",
-    startDate: formatDateKey(new Date()),
-    startTime: "09:00",
-    endTime: "10:00",
-    allDay: false,
-    category: "work",
-    recurrence: "none",
-    completed: false,
-    alarmEnabled: true,
-    reminderMinutesBefore: 10,
-    createdAt: Date.now(),
-  },
-  {
-    id: "seed-cal-2",
-    title: "Giờ tập trung sáng tạo cùng Pip 🦊",
-    description: "Ghi chép ý tưởng nhanh và thư giãn cùng chú Cáo đồng hành.",
-    startDate: formatDateKey(new Date()),
-    startTime: "14:30",
-    endTime: "15:30",
-    allDay: false,
-    category: "focus",
-    recurrence: "daily",
-    completed: false,
-    createdAt: Date.now(),
-  },
-];
-
 type LumenState = {
   hydrated: boolean;
   lang: Language;
@@ -87,6 +38,7 @@ type LumenState = {
   quickTimerOpen: boolean;
   calendarOpen: boolean;
   calendarCompact: boolean;
+  calendarDockPosition: CalendarDockPosition;
   onboarding: boolean;
   notes: Note[];
   reminders: Reminder[];
@@ -104,6 +56,7 @@ type LumenState = {
   setQuickTimerOpen: (open: boolean) => void;
   setCalendarOpen: (open: boolean) => void;
   setCalendarCompact: (compact: boolean) => void;
+  setCalendarDockPosition: (pos: CalendarDockPosition) => void;
   toggleCalendarCompact: () => void;
   dismissOnboarding: () => void;
   addNote: (partial?: Partial<Note>) => string;
@@ -220,10 +173,12 @@ export const useLumen = create<LumenState>()(
       quickTimerOpen: false,
       calendarOpen: false,
       calendarCompact: false,
+      calendarDockPosition: "top-right",
+      setCalendarDockPosition: (calendarDockPosition) => set({ calendarDockPosition }),
       onboarding: false,
-      notes: SEED_NOTES,
-      reminders: SEED_TIMERS,
-      calendarEvents: SEED_CALENDAR_EVENTS,
+      notes: [],
+      reminders: [],
+      calendarEvents: [],
       selectedCalendarDate: formatDateKey(new Date()),
       calendarViewMode: "month",
       calendarFilter: { category: "all", showCompleted: true },
@@ -837,10 +792,11 @@ export const useLumen = create<LumenState>()(
           quickTimerOpen: false,
           calendarOpen: false,
           calendarCompact: false,
+          calendarDockPosition: "top-right",
           onboarding: true,
-          notes: SEED_NOTES,
-          reminders: SEED_TIMERS,
-          calendarEvents: SEED_CALENDAR_EVENTS,
+          notes: [],
+          reminders: [],
+          calendarEvents: [],
           selectedCalendarDate: formatDateKey(new Date()),
           calendarViewMode: "month",
           toasts: [],
@@ -864,6 +820,7 @@ export const useLumen = create<LumenState>()(
         selectedCalendarDate: s.selectedCalendarDate,
         calendarViewMode: s.calendarViewMode,
         calendarCompact: s.calendarCompact,
+        calendarDockPosition: s.calendarDockPosition,
         alarmSettings: s.alarmSettings,
         pro: s.pro,
         pip: {

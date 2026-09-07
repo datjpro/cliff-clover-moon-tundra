@@ -58,6 +58,62 @@ class SoundEngine {
     }
   }
 
+  // Tactical mechanical click / ratchet sound for rotary barrel wheel & sniper scope dial
+  public playMechanicalClick(pitchFactor = 1.0) {
+    const ctx = this.getContext();
+    if (!ctx) return;
+    try {
+      const now = ctx.currentTime;
+      // High-precision metallic transient click
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const filter = ctx.createBiquadFilter();
+
+      filter.type = "bandpass";
+      filter.frequency.setValueAtTime(2800 * pitchFactor, now);
+      filter.Q.setValueAtTime(6, now);
+
+      osc.type = "sawtooth";
+      osc.frequency.setValueAtTime(1600 * pitchFactor, now);
+      osc.frequency.exponentialRampToValueAtTime(240 * pitchFactor, now + 0.018);
+
+      gain.gain.setValueAtTime(0.18, now);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.018);
+
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(now);
+      osc.stop(now + 0.02);
+    } catch {
+      // AudioContext might be blocked
+    }
+  }
+
+  // Sniper-scope target lock / selection confirm sound
+  public playScopeLock() {
+    const ctx = this.getContext();
+    if (!ctx) return;
+    try {
+      const now = ctx.currentTime;
+      [0, 0.05].forEach((offset, idx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "triangle";
+        osc.frequency.setValueAtTime(idx === 0 ? 1760 : 2637, now + offset);
+        gain.gain.setValueAtTime(0.1, now + offset);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + offset + 0.07);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now + offset);
+        osc.stop(now + offset + 0.07);
+      });
+    } catch {
+      // Ignored
+    }
+  }
+
   // Cheerful chime when Pip delivers a note
   public playChime() {
     const ctx = this.getContext();

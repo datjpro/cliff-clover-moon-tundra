@@ -25,7 +25,7 @@ import { DICTIONARY } from "@/lib/i18n";
 import { sounds } from "@/lib/audio";
 import { THEMES } from "@/lib/themes";
 import { useLumen } from "@/lib/store";
-import type { AlarmSoundTone, PetBodyItem, PetHat, PetType, ThemeId } from "@/lib/types";
+import type { AlarmSoundTone, CalendarDockPosition, PetBodyItem, PetHat, PetType, ThemeId } from "@/lib/types";
 import { triggerThrowBall } from "./ball-toy";
 import { PipFigure } from "./pip";
 import { cn } from "@/lib/utils";
@@ -83,6 +83,8 @@ export function Hub() {
   const introVideoEnabled = useLumen((s) => s.introVideoEnabled ?? true);
   const setIntroVideoEnabled = useLumen((s) => s.setIntroVideoEnabled);
   const setSetupWizardMode = useLumen((s) => s.setSetupWizardMode);
+  const calendarDockPosition = useLumen((s) => s.calendarDockPosition || "top-right");
+  const setCalendarDockPosition = useLumen((s) => s.setCalendarDockPosition);
   const pip = useLumen((s) => s.pip);
   const setPip = useLumen((s) => s.setPip);
   const setPipEnabled = useLumen((s) => s.setPipEnabled);
@@ -536,6 +538,53 @@ export function Hub() {
                       {isSelected ? (
                         <Check className="size-3 text-[#F5A623] shrink-0" />
                       ) : null}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Calendar Mini-Widget Corner Dock Position */}
+            <div className="rounded-2xl bg-[#262A35]/50 p-3 border border-white/6 space-y-2.5 shadow-xs">
+              <div>
+                <p className="text-xs font-semibold text-[#F4F5F7]">
+                  {isVi ? "Vị trí Dock Lịch thu gọn (Calendar Corner Dock)" : "Compact Calendar Corner Dock"}
+                </p>
+                <p className="text-[10px] text-[#8B90A0]">
+                  {isVi
+                    ? "Góc màn hình để ghim widget lịch khi ở chế độ thu gọn (Mặc định: Góc trên bên phải)"
+                    : "Screen corner to dock the mini calendar widget (Default: Top-Right)"}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { id: "top-left", name: isVi ? "Góc trên Trái (Top-Left)" : "Top-Left", icon: "↖️" },
+                  { id: "top-right", name: isVi ? "Góc trên Phải (Top-Right)" : "Top-Right", icon: "↗️" },
+                  { id: "bottom-left", name: isVi ? "Góc dưới Trái (Bottom-Left)" : "Bottom-Left", icon: "↙️" },
+                  { id: "bottom-right", name: isVi ? "Góc dưới Phải (Bottom-Right)" : "Bottom-Right", icon: "↘️" },
+                ].map((posOption) => {
+                  const isSelected = calendarDockPosition === posOption.id;
+                  return (
+                    <button
+                      key={posOption.id}
+                      type="button"
+                      onClick={() => {
+                        setCalendarDockPosition(posOption.id as CalendarDockPosition);
+                        sounds.playPop(560);
+                      }}
+                      className={cn(
+                        "flex items-center justify-between p-2.5 rounded-xl border text-xs font-medium cursor-pointer transition-all duration-120",
+                        isSelected
+                          ? "bg-[#F5A623]/20 border-[#F5A623] text-[#F5A623]"
+                          : "bg-[#14161D]/70 border-white/5 hover:border-white/15 text-[#8B90A0]",
+                      )}
+                    >
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-sm">{posOption.icon}</span>
+                        <span className="text-[11px] font-semibold">{posOption.name}</span>
+                      </div>
+                      {isSelected && <Check className="size-3 text-[#F5A623] shrink-0" />}
                     </button>
                   );
                 })}
