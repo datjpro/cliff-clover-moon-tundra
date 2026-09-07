@@ -1,6 +1,6 @@
 [package]
 name = "lumen-desktop"
-version = "1.0.0"
+version = "1.0.1"
 description = "Lumen — Artisanal Desktop Spatial Companion & Workspace"
 authors = ["Lumen Desktop Engineering Team"]
 edition = "2021"
