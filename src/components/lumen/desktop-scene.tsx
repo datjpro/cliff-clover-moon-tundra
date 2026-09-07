@@ -412,7 +412,22 @@ export function DesktopScene() {
   const fireReminder = useLumen((s) => s.fireReminder);
 
   useEffect(() => {
-    void Promise.resolve(useLumen.persist.rehydrate()).then(() => markHydrated());
+    void Promise.resolve(useLumen.persist.rehydrate()).then(() => {
+      // Cleanse any legacy seed calendar events cached in user's localStorage
+      const events = useLumen.getState().calendarEvents;
+      if (Array.isArray(events) && events.length > 0) {
+        const cleaned = events.filter(
+          (e) =>
+            !e.id?.startsWith("seed-") &&
+            !e.title?.toLowerCase().includes("sáng tạo cùng pip") &&
+            !e.title?.toLowerCase().includes("tập trung sáng tạo")
+        );
+        if (cleaned.length !== events.length) {
+          useLumen.setState({ calendarEvents: cleaned });
+        }
+      }
+      markHydrated();
+    });
   }, [markHydrated]);
 
   const isAnyModalOpen = captureOpen || quickTimerOpen || calendarOpen || hubOpen || searchOpen;

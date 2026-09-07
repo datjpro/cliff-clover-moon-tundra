@@ -806,7 +806,32 @@ export const useLumen = create<LumenState>()(
     }),
     {
       name: "lumen-demo-v1",
+      version: 2,
       skipHydration: true,
+      migrate: (persistedState: any) => {
+        if (persistedState && Array.isArray(persistedState.calendarEvents)) {
+          persistedState.calendarEvents = persistedState.calendarEvents.filter(
+            (ev: any) =>
+              !ev.id?.startsWith("seed-") &&
+              !ev.title?.toLowerCase().includes("sáng tạo cùng pip") &&
+              !ev.title?.toLowerCase().includes("tập trung sáng tạo")
+          );
+        }
+        return persistedState;
+      },
+      onRehydrateStorage: () => (state) => {
+        if (state && Array.isArray(state.calendarEvents)) {
+          const cleaned = state.calendarEvents.filter(
+            (ev) =>
+              !ev.id?.startsWith("seed-") &&
+              !ev.title?.toLowerCase().includes("sáng tạo cùng pip") &&
+              !ev.title?.toLowerCase().includes("tập trung sáng tạo")
+          );
+          if (cleaned.length !== state.calendarEvents.length) {
+            state.calendarEvents = cleaned;
+          }
+        }
+      },
       partialize: (s) => ({
         lang: s.lang,
         theme: s.theme,
