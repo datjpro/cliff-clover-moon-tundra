@@ -32,23 +32,53 @@ export type UpdateCheckResult = {
   currentVersion: string;
   latestVersion: string;
   updateInfo: AppUpdateInfo | null;
+  isOffline?: boolean;
   error?: string;
 };
 
 /**
- * Check GitHub repository for newer releases / tags.
+ * Check if client currently has active network connectivity.
+ */
+export function isOnline(): boolean {
+  if (typeof navigator !== "undefined" && typeof navigator.onLine === "boolean") {
+    return navigator.onLine;
+  }
+  return true;
+}
+
+/**
+ * Check GitHub repository for newer releases / tags with offline guard & timeout.
  */
 export async function checkForAppUpdates(
   currentVersion: string = CURRENT_APP_VERSION,
+  timeoutMs: number = 6000,
 ): Promise<UpdateCheckResult> {
+  // 1. Immediate offline detection via navigator.onLine
+  if (!isOnline()) {
+    return {
+      hasUpdate: false,
+      currentVersion,
+      latestVersion: currentVersion,
+      updateInfo: null,
+      isOffline: true,
+      error: "Không có kết nối Internet. Vui lòng kiểm tra lại mạng của bạn để cập nhật Lumen.",
+    };
+  }
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+
   try {
-    // 1. Try fetching latest release from GitHub API
+    // 2. Try fetching latest release from GitHub API
     const releaseRes = await fetch(
       `https://api.github.com/repos/${GITHUB_REPO}/releases/latest`,
       {
+        signal: controller.signal,
         headers: { Accept: "application/vnd.github.v3+json" },
       },
     );
+
+    clearTimeout(timer);
 
     if (releaseRes.ok) {
       const data = await releaseRes.json();
@@ -82,7 +112,7 @@ export async function checkForAppUpdates(
       }
     }
 
-    // 2. Fallback: query tags API if release is not published yet
+    // 3. Fallback: query tags API if release is not published yet
     const tagsRes = await fetch(
       `https://api.github.com/repos/${GITHUB_REPO}/tags?per_page=5`,
       {
@@ -125,12 +155,21 @@ export async function checkForAppUpdates(
       updateInfo: null,
     };
   } catch (err: any) {
+    clearTimeout(timer);
+    const isOfflineError =
+      !isOnline() ||
+      err?.name === "AbortError" ||
+      /network|offline|failed to fetch|enotfound|econnrefused/i.test(err?.message || "");
+
     return {
       hasUpdate: false,
       currentVersion,
       latestVersion: currentVersion,
       updateInfo: null,
-      error: err?.message || "Không thể kết nối đến máy chủ cập nhật",
+      isOffline: isOfflineError,
+      error: isOfflineError
+        ? "Không có kết nối Internet hoặc mạng chập chờn. Vui lòng kiểm tra lại kết nối mạng của bạn."
+        : err?.message || "Không thể kết nối đến máy chủ cập nhật",
     };
   }
 }

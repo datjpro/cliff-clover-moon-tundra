@@ -26,10 +26,7 @@ import { SpotlightSearch } from "./spotlight-search";
 import { StickyNote } from "./sticky-note";
 import { SetupWizardModal } from "./installer-wizard";
 import { StandaloneCalendar } from "./standalone-calendar";
-import { UpdateNotificationModal } from "./update-notification-modal";
 import { ToastStack } from "./toasts";
-import { checkForAppUpdates, CURRENT_APP_VERSION } from "@/lib/updater";
-import type { AppUpdateInfo } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 // Floating Quick Tray Menu & Hover-Revealed Paper Well Dock (Supports Direct Drag to Canvas)
@@ -414,44 +411,6 @@ export function DesktopScene() {
   const undoDeleteNote = useLumen((s) => s.undoDeleteNote);
   const fireReminder = useLumen((s) => s.fireReminder);
 
-  // In-app update state
-  const [availableUpdate, setAvailableUpdate] = useState<AppUpdateInfo | null>(null);
-  const [updateModalOpen, setUpdateModalOpen] = useState(false);
-  const [skippedVersion, setSkippedVersion] = useState<string>(() => {
-    try {
-      return localStorage.getItem("lumen_skipped_update_version") || "";
-    } catch {
-      return "";
-    }
-  });
-
-  // Non-blocking background check for app updates 3.5s after app load
-  useEffect(() => {
-    if (!appLoaded) return;
-    const timer = window.setTimeout(async () => {
-      try {
-        const result = await checkForAppUpdates(CURRENT_APP_VERSION);
-        if (result.hasUpdate && result.updateInfo) {
-          if (result.updateInfo.version !== skippedVersion) {
-            setAvailableUpdate(result.updateInfo);
-            setUpdateModalOpen(true);
-          }
-        }
-      } catch {
-        // Silently catch background network errors
-      }
-    }, 3500);
-
-    return () => window.clearTimeout(timer);
-  }, [appLoaded, skippedVersion]);
-
-  const handleSkipVersion = (v: string) => {
-    setSkippedVersion(v);
-    try {
-      localStorage.setItem("lumen_skipped_update_version", v);
-    } catch {}
-  };
-
   useEffect(() => {
     void Promise.resolve(useLumen.persist.rehydrate()).then(() => {
       // Cleanse any legacy seed calendar events cached in user's localStorage
@@ -472,7 +431,7 @@ export function DesktopScene() {
   }, [markHydrated]);
 
   const isAnyModalOpen =
-    captureOpen || quickTimerOpen || calendarOpen || hubOpen || searchOpen || updateModalOpen;
+    captureOpen || quickTimerOpen || calendarOpen || hubOpen || searchOpen;
 
   // Dynamic Click-Through: mousemove-based setIgnoreMouseEvents toggling + Tauri hit-rects sync
   //
@@ -809,12 +768,6 @@ export function DesktopScene() {
       <Hub />
       <ProUpgradeModal />
       <SetupWizardModal />
-      <UpdateNotificationModal
-        updateInfo={availableUpdate}
-        open={updateModalOpen}
-        onClose={() => setUpdateModalOpen(false)}
-        onSkipVersion={handleSkipVersion}
-      />
       {appLoaded && <Onboarding />}
       {appLoaded && <FloatingTrayMenu />}
       <AppStartupLoading />

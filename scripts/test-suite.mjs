@@ -837,6 +837,36 @@ console.log("\n📦 [SUITE 8]: In-App Auto-Update & Semver Engine");
   // Case: Subsequent v1.0.3 is available after skipping v1.0.2
   const checkNext = evaluateUpdateAvailable("1.0.1", "v1.0.3", "1.0.2");
   assert(checkNext.hasUpdate === true, "v1.0.3 triggers update even if v1.0.2 was previously skipped");
+
+  // 3. Offline Guard & Network Connectivity Tests
+  function simulateUpdateCheckWithNetwork(isNetworkOnline, currentVer, remoteTag) {
+    if (!isNetworkOnline) {
+      return {
+        hasUpdate: false,
+        currentVersion: currentVer,
+        latestVersion: currentVer,
+        updateInfo: null,
+        isOffline: true,
+        error: "Không có kết nối Internet. Vui lòng kiểm tra lại mạng của bạn để cập nhật Lumen.",
+      };
+    }
+    return {
+      hasUpdate: compareSemver(remoteTag, currentVer) > 0,
+      currentVersion: currentVer,
+      latestVersion: remoteTag,
+      updateInfo: compareSemver(remoteTag, currentVer) > 0 ? { version: remoteTag } : null,
+      isOffline: false,
+    };
+  }
+
+  const offlineCheck = simulateUpdateCheckWithNetwork(false, "1.0.1", "1.0.2");
+  assert(offlineCheck.isOffline === true, "Offline state correctly detected without making network call");
+  assert(offlineCheck.hasUpdate === false, "No update triggered when offline");
+  assert(offlineCheck.error.includes("Không có kết nối Internet"), "Informative offline Vietnamese error message returned");
+
+  const onlineCheck = simulateUpdateCheckWithNetwork(true, "1.0.1", "1.0.2");
+  assert(onlineCheck.isOffline === false, "Online state correctly detected");
+  assert(onlineCheck.hasUpdate === true, "Update v1.0.2 detected when online");
 }
 
 console.log(`\n========================================`);

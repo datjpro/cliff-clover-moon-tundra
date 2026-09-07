@@ -137,21 +137,58 @@ export function Hub() {
     sounds.playPop(520);
     const res = await checkForAppUpdates(CURRENT_APP_VERSION);
     setCheckingUpdate(false);
+
+    if (res.isOffline) {
+      sounds.playPop(300);
+      setUpdateResultText(
+        isVi
+          ? "⚠️ Không có kết nối Internet. Vui lòng kiểm tra lại mạng của bạn."
+          : "⚠️ No Internet connection. Please check your network.",
+      );
+      pushToast(
+        isVi ? "Mất kết nối Internet" : "No Internet Connection",
+        isVi
+          ? "Không thể kiểm tra bản cập nhật khi ngoại tuyến. Vui lòng kết nối mạng để thử lại."
+          : "Cannot check for updates offline. Please reconnect to the Internet.",
+      );
+      return;
+    }
+
     if (res.hasUpdate && res.updateInfo) {
+      sounds.playChime();
       setUpdateModalInfo(res.updateInfo);
       setShowUpdateModal(true);
       setUpdateResultText(
         isVi
-          ? `Đã tìm thấy phiên bản mới v${res.updateInfo.version}!`
-          : `Found new version v${res.updateInfo.version}!`,
+          ? `🎉 Đã tìm thấy phiên bản mới v${res.updateInfo.version}!`
+          : `🎉 Found new version v${res.updateInfo.version}!`,
+      );
+      pushToast(
+        isVi ? "Đã có bản cập nhật mới!" : "New Update Available!",
+        isVi
+          ? `Lumen v${res.updateInfo.version} đã sẵn sàng tải về.`
+          : `Lumen v${res.updateInfo.version} is ready to download.`,
+      );
+    } else if (res.error) {
+      sounds.playPop(350);
+      setUpdateResultText(`⚠️ ${res.error}`);
+      pushToast(
+        isVi ? "Kiểm tra cập nhật thất bại" : "Update Check Failed",
+        res.error,
       );
     } else {
+      sounds.playPop(700);
       setUpdateResultText(
         isVi
-          ? `Bạn đang sử dụng phiên bản mới nhất (v${CURRENT_APP_VERSION}).`
-          : `You are using the latest version (v${CURRENT_APP_VERSION}).`,
+          ? `✨ Bạn đang sử dụng phiên bản mới nhất (v${CURRENT_APP_VERSION}).`
+          : `✨ You are using the latest version (v${CURRENT_APP_VERSION}).`,
       );
-      sounds.playPop(600);
+      pushToast(
+        isVi ? "Lumen Đã Ở Bản Mới Nhất" : "Up To Date",
+        isVi
+          ? `Phiên bản hiện tại v${CURRENT_APP_VERSION} là phiên bản mới nhất.`
+          : `Current version v${CURRENT_APP_VERSION} is up to date.`,
+      );
     }
   };
 
