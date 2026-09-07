@@ -337,17 +337,8 @@ export function StandaloneCalendar() {
 
     setStartDate(targetDate);
     setEndDate(targetDate);
-
-    // Calculate smart upcoming time (next 15m slot)
-    const now = new Date();
-    const nextSlotMin = Math.ceil(now.getMinutes() / 15) * 15;
-    now.setMinutes(nextSlotMin);
-    const initialStart = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes() % 60).padStart(2, "0")}`;
-    const nextHour = (now.getHours() + 1) % 24;
-    const initialEnd = `${String(nextHour).padStart(2, "0")}:${String(now.getMinutes() % 60).padStart(2, "0")}`;
-
-    setStartTime(initialStart);
-    setEndTime(initialEnd);
+    setStartTime("09:00");
+    setEndTime("10:00");
     setAllDay(false);
     setCategory("work");
     setRecurrence("none");
