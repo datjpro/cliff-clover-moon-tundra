@@ -21,6 +21,11 @@ import {
   X,
   Target,
   Crosshair,
+  Briefcase,
+  User,
+  Users,
+  Focus,
+  Zap,
 } from "lucide-react";
 import { useLumen } from "@/lib/store";
 import { DICTIONARY } from "@/lib/i18n";
@@ -49,6 +54,14 @@ const DOCK_POSITION_CLASSES: Record<CalendarDockPosition, string> = {
   "bottom-left": "bottom-6 left-4",
 };
 
+const CATEGORY_OPTIONS: { id: CalendarEventCategory; nameVi: string; nameEn: string; icon: any; color: string }[] = [
+  { id: "work", nameVi: "Công việc", nameEn: "Work", icon: Briefcase, color: "bg-sky-500/20 text-sky-400 border-sky-500/40" },
+  { id: "personal", nameVi: "Cá nhân", nameEn: "Personal", icon: User, color: "bg-emerald-500/20 text-emerald-400 border-emerald-500/40" },
+  { id: "meeting", nameVi: "Cuộc họp", nameEn: "Meeting", icon: Users, color: "bg-indigo-500/20 text-indigo-400 border-indigo-500/40" },
+  { id: "reminder", nameVi: "Nhắc nhở", nameEn: "Reminder", icon: Bell, color: "bg-amber-500/20 text-amber-400 border-amber-500/40" },
+  { id: "focus", nameVi: "Tập trung", nameEn: "Focus", icon: Focus, color: "bg-purple-500/20 text-purple-400 border-purple-500/40" },
+];
+
 export function StandaloneCalendar() {
   const calendarOpen = useLumen((s) => s.calendarOpen);
   const setCalendarOpen = useLumen((s) => s.setCalendarOpen);
@@ -75,18 +88,23 @@ export function StandaloneCalendar() {
   const dict = DICTIONARY[lang];
   const isVi = lang === "vi";
 
-  // Draggable window state (for expansive mode)
+  // Position & Dynamic Resizing State for Expansive Mode
   const [pos, setPos] = useState({ x: 0, y: 0 });
   const [hasCustomPos, setHasCustomPos] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const dragStart = useRef({ x: 0, y: 0, initialX: 0, initialY: 0 });
+
+  // Resizing state
+  const [dimensions, setDimensions] = useState<{ width: number; height: number }>({ width: 860, height: 640 });
+  const [isResizing, setIsResizing] = useState(false);
+  const resizeStart = useRef<{ startX: number; startY: number; initW: number; initH: number } | null>(null);
 
   // Navigation & Modal State
   const [currentMonthDate, setCurrentMonthDate] = useState<Date>(() => parseDateKey(selectedDateKey));
   const [modalOpen, setModalOpen] = useState(false);
   const [editingEventId, setEditingEventId] = useState<string | null>(null);
 
-  // Time Picker Popovers
+  // Active Scope Time Picker popover: "start" | "end" | null
   const [activeScopePicker, setActiveScopePicker] = useState<"start" | "end" | null>(null);
 
   // Form State & Validation
@@ -141,7 +159,26 @@ export function StandaloneCalendar() {
     });
   }, [lookup, selectedDateKey, filter]);
 
-  // Escape key handler
+  // Calculate calculated duration between startTime and endTime
+  const calculatedDuration = useMemo(() => {
+    if (allDay) return isVi ? "Cả ngày" : "All day";
+    const [sh, sm] = startTime.split(":").map(Number);
+    const [eh, em] = endTime.split(":").map(Number);
+    if (isNaN(sh) || isNaN(sm) || isNaN(eh) || isNaN(em)) return "";
+    let diffMinutes = (eh * 60 + em) - (sh * 60 + sm);
+    if (startDate !== endDate) {
+      // Multi-day duration
+      return isVi ? "Nhiều ngày" : "Multi-day";
+    }
+    if (diffMinutes <= 0) return isVi ? "Không hợp lệ" : "Invalid duration";
+    const hours = Math.floor(diffMinutes / 60);
+    const mins = diffMinutes % 60;
+    if (hours > 0 && mins > 0) return `${hours}g ${mins}p`;
+    if (hours > 0) return `${hours} giờ`;
+    return `${mins} phút`;
+  }, [startTime, endTime, allDay, startDate, endDate, isVi]);
+
+  // Global escape key handler
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!calendarOpen) return;
@@ -159,7 +196,7 @@ export function StandaloneCalendar() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [calendarOpen, modalOpen, activeScopePicker, setCalendarOpen]);
 
-  // Drag Handlers for Expansive Mode
+  // Drag Handlers for Expansive Window
   const handlePointerDownHeader = (e: PointerEvent<HTMLElement>) => {
     if ((e.target as HTMLElement).closest("button") || (e.target as HTMLElement).closest("input") || (e.target as HTMLElement).closest(".no-drag")) {
       return;
@@ -189,8 +226,41 @@ export function StandaloneCalendar() {
     setIsDragging(false);
   };
 
+  // Dynamic Corner/Edge Resizing Handlers
+  const handleResizePointerDown = (e: PointerEvent<HTMLDivElement>) => {
+    e.stopPropagation();
+    e.currentTarget.setPointerCapture(e.pointerId);
+    setIsResizing(true);
+    resizeStart.current = {
+      startX: e.clientX,
+      startY: e.clientY,
+      initW: dimensions.width,
+      initH: dimensions.height,
+    };
+  };
+
+  const handleResizePointerMove = (e: PointerEvent<HTMLDivElement>) => {
+    if (!isResizing || !resizeStart.current) return;
+    const dw = e.clientX - resizeStart.current.startX;
+    const dh = e.clientY - resizeStart.current.startY;
+
+    const maxW = typeof window !== "undefined" ? window.innerWidth - 32 : 1200;
+    const maxH = typeof window !== "undefined" ? window.innerHeight - 32 : 800;
+
+    const newW = Math.max(680, Math.min(maxW, resizeStart.current.initW + dw));
+    const newH = Math.max(480, Math.min(maxH, resizeStart.current.initH + dh));
+
+    setDimensions({ width: newW, height: newH });
+  };
+
+  const handleResizePointerUp = () => {
+    setIsResizing(false);
+    resizeStart.current = null;
+  };
+
   const handleResetPosition = () => {
     setPos({ x: 0, y: 0 });
+    setDimensions({ width: 860, height: 640 });
     setHasCustomPos(false);
     sounds.playPop(520);
   };
@@ -213,6 +283,17 @@ export function StandaloneCalendar() {
     setSelectedDateKey(todayKey);
   };
 
+  // Quick Preset Date Helpers
+  const handleSetQuickDate = (offsetDays: number) => {
+    sounds.playPop(550);
+    const target = new Date();
+    target.setDate(target.getDate() + offsetDays);
+    const formatted = formatDateKey(target);
+    setStartDate(formatted);
+    setEndDate(formatted);
+    if (validationError) setValidationError(null);
+  };
+
   // Open modal for new event with strict past-date validation
   const handleOpenCreateModal = (presetDate?: string) => {
     sounds.playPop(580);
@@ -220,6 +301,7 @@ export function StandaloneCalendar() {
     setTitle("");
     setDescription("");
     setValidationError(null);
+    setActiveScopePicker(null);
 
     // Enforce future / present date for new events
     let targetDate = presetDate || selectedDateKey;
@@ -264,6 +346,7 @@ export function StandaloneCalendar() {
     setAlarmEnabled(event.alarmEnabled ?? false);
     setReminderMinutesBefore(event.reminderMinutesBefore ?? 10);
     setValidationError(null);
+    setActiveScopePicker(null);
     setModalOpen(true);
   };
 
@@ -493,7 +576,7 @@ export function StandaloneCalendar() {
             })}
           </div>
 
-          {/* Quick Selected Day Agenda Snippet */}
+          {/* Selected Day Agenda Snippet or Clean Empty State */}
           <div className="rounded-2xl bg-[#14161D]/80 border border-white/6 p-2.5 space-y-1.5 max-h-40 overflow-y-auto custom-scrollbar">
             <div className="flex items-center justify-between pb-1 border-b border-white/5 text-[11px] font-bold text-[#F4F5F7]">
               <span>{selectedDateKey} {selectedDateKey === todayKey && "(Hôm nay)"}</span>
@@ -508,9 +591,10 @@ export function StandaloneCalendar() {
             </div>
 
             {selectedDayItems.length === 0 ? (
-              <p className="text-[10px] text-[#8B90A0] text-center py-2">
-                {selectedDateKey < todayKey ? "Không có sự kiện quá khứ" : dict.calendar.noEvents}
-              </p>
+              <div className="py-3 flex flex-col items-center justify-center text-center text-[#8B90A0] space-y-1">
+                <CalendarIcon className="size-4 text-white/15" />
+                <p className="text-[10px]">{selectedDateKey < todayKey ? "Không có sự kiện quá khứ" : dict.calendar.noEvents}</p>
+              </div>
             ) : (
               selectedDayItems.map((entry, idx) => {
                 if (entry.type === "event") {
@@ -553,7 +637,7 @@ export function StandaloneCalendar() {
     );
   }
 
-  // 2. EXPANSIVE FULL DUAL-PANE CALENDAR MODE
+  // 2. EXPANSIVE FULL DUAL-PANE RESIZABLE CALENDAR WINDOW
   return (
     <div
       role="dialog"
@@ -572,10 +656,15 @@ export function StandaloneCalendar() {
 
       <div
         style={{
+          width: `${dimensions.width}px`,
+          height: `${dimensions.height}px`,
           transform: hasCustomPos ? `translate3d(${pos.x}px, ${pos.y}px, 0)` : undefined,
         }}
         onClick={(e) => e.stopPropagation()}
-        className="relative flex flex-col rounded-3xl bg-[#181A22]/98 border border-white/12 shadow-[0_25px_60px_rgba(0,0,0,0.85)] text-[#F4F5F7] backdrop-blur-2xl overflow-hidden w-[840px] max-w-[95vw] h-[640px] max-h-[92vh] transition-all duration-200"
+        className={cn(
+          "relative flex flex-col rounded-3xl bg-[#181A22]/98 border border-white/12 shadow-[0_25px_60px_rgba(0,0,0,0.85)] text-[#F4F5F7] backdrop-blur-2xl overflow-hidden transition-shadow duration-140 select-none",
+          isResizing && "ring-2 ring-[#F5A623]/60 shadow-[0_30px_70px_rgba(0,0,0,0.95)]",
+        )}
       >
         {/* Sleek Draggable Header */}
         <header
@@ -583,7 +672,7 @@ export function StandaloneCalendar() {
           onPointerMove={handlePointerMoveHeader}
           onPointerUp={handlePointerUpHeader}
           className={cn(
-            "flex items-center justify-between px-4 py-3 border-b border-white/8 bg-[#14161D]/60 cursor-grab active:cursor-grabbing select-none",
+            "flex items-center justify-between px-4 py-3 border-b border-white/8 bg-[#14161D]/60 cursor-grab active:cursor-grabbing select-none shrink-0",
             isDragging && "bg-[#14161D]/90",
           )}
           title="Kéo thả để di chuyển bảng lịch"
@@ -628,13 +717,13 @@ export function StandaloneCalendar() {
               <Minimize2 className="size-3.5" />
             </button>
 
-            {/* Reset Position */}
+            {/* Reset Position & Size */}
             {hasCustomPos && (
               <button
                 type="button"
                 onClick={handleResetPosition}
                 className="size-7 flex items-center justify-center rounded-lg hover:bg-white/10 text-[#8B90A0] hover:text-white transition-colors cursor-pointer"
-                title="Đưa về giữa màn hình"
+                title="Đưa về kích thước & vị trí mặc định"
               >
                 <RotateCcw className="size-3.5" />
               </button>
@@ -652,7 +741,7 @@ export function StandaloneCalendar() {
           </div>
         </header>
 
-        {/* Full Dual-Pane Body */}
+        {/* Full Dual-Pane Resizable Body */}
         <div className="flex flex-1 min-h-0 overflow-hidden">
           {/* LEFT PANE: Month Grid & Category Filters (60% width) */}
           <div className="flex flex-col flex-[1.3] min-w-0 p-3.5 space-y-2.5 border-r border-white/8">
@@ -881,23 +970,34 @@ export function StandaloneCalendar() {
               </Button>
             </div>
 
-            {/* Agenda Items List */}
+            {/* Agenda Items List or Clean Empty State */}
             <div className="flex-1 min-h-0 space-y-2 overflow-y-auto custom-scrollbar pr-1">
               {selectedDayItems.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center text-center p-6 text-[#8B90A0] space-y-2">
-                  <div className="size-10 rounded-2xl bg-white/5 flex items-center justify-center">
-                    <CalendarIcon className="size-5 text-white/20" />
+                  <div className="size-12 rounded-3xl bg-white/5 flex items-center justify-center text-white/20 border border-white/5">
+                    <CalendarIcon className="size-6" />
                   </div>
-                  <p className="text-xs font-medium">{dict.calendar.noEvents}</p>
-                  <p className="text-[10px] text-[#8B90A0]/60 max-w-[200px]">
+                  <p className="text-xs font-medium text-[#F4F5F7]">{dict.calendar.noEvents}</p>
+                  <p className="text-[11px] text-[#8B90A0]/70 max-w-[220px]">
                     {selectedDateKey < todayKey
                       ? isVi
-                        ? "Không có sự kiện được ghi nhận trong ngày này."
+                        ? "Không có sự kiện được lên lịch trong ngày đã qua."
                         : "No events recorded for this past date."
                       : isVi
-                      ? "Nhấp '+ Thêm việc' để lên lịch trình công việc cho ngày này."
-                      : "Click '+ Add' to plan your agenda for this day."}
+                      ? "Chưa có sự kiện nào. Bấm '+ Thêm việc' để lên lịch trình mới!"
+                      : "No events scheduled yet. Click '+ Add' to plan your agenda!"}
                   </p>
+                  {selectedDateKey >= todayKey && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleOpenCreateModal(selectedDateKey)}
+                      className="mt-1 h-7 text-xs border-white/10 bg-white/5 hover:bg-[#F5A623]/20 hover:text-[#F5A623] text-[#8B90A0] rounded-xl cursor-pointer"
+                    >
+                      <Plus className="size-3.5 mr-1" />
+                      <span>{isVi ? "Lên lịch trình ngay" : "Schedule now"}</span>
+                    </Button>
+                  )}
                 </div>
               ) : (
                 selectedDayItems.map((entry, idx) => {
@@ -1029,73 +1129,124 @@ export function StandaloneCalendar() {
           </div>
         </div>
 
+        {/* Drag-to-Resize Handle (Bottom-Right Corner) */}
+        <div
+          onPointerDown={handleResizePointerDown}
+          onPointerMove={handleResizePointerMove}
+          onPointerUp={handleResizePointerUp}
+          onPointerCancel={handleResizePointerUp}
+          className="absolute bottom-1 right-1 size-5 flex items-center justify-center cursor-nwse-resize text-[#8B90A0] hover:text-[#F5A623] transition-colors select-none z-30 group"
+          title="Kéo thả để thay đổi kích thước cửa sổ lịch"
+        >
+          <div className="size-2 border-r-2 border-b-2 border-current group-hover:scale-110 transition-transform" />
+        </div>
+
         {/* CREATE / EDIT EVENT MODAL */}
         {modalOpen && renderEventModal()}
       </div>
     </div>
   );
 
-  // Helper render for Event Creator Modal with Scope Rotary Time Picker Integration
+  // REDESIGNED EVENT CREATOR MODAL WITH FLUID SCOPE TIME PICKER INTEGRATION & EXPLICIT CANCEL FLOW
   function renderEventModal() {
     return (
-      <div className="fixed inset-0 z-[250] flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
-        <div className="w-full max-w-md rounded-2xl bg-[#1A1C24] border border-white/10 p-4 shadow-2xl space-y-3 animate-in fade-in zoom-in-95 duration-140 relative">
-          <div className="flex items-center justify-between border-b border-white/6 pb-2">
-            <div className="flex items-center gap-2">
-              <div className="size-6 rounded-lg bg-[#F5A623]/20 text-[#F5A623] flex items-center justify-center">
-                <Target className="size-3.5" />
+      <div className="fixed inset-0 z-[250] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-in fade-in duration-120">
+        <div className="w-full max-w-lg rounded-3xl bg-[#1D2029] border border-white/12 p-5 shadow-[0_30px_70px_rgba(0,0,0,0.9)] space-y-4 animate-in zoom-in-95 duration-140 relative max-h-[92vh] overflow-y-auto custom-scrollbar">
+          {/* Modal Header */}
+          <div className="flex items-center justify-between border-b border-white/8 pb-3">
+            <div className="flex items-center gap-2.5">
+              <div className="size-8 rounded-xl bg-[#F5A623]/20 text-[#F5A623] flex items-center justify-center border border-[#F5A623]/30">
+                <Target className="size-4" />
               </div>
-              <h3 className="text-sm font-bold text-[#F4F5F7]">
-                {editingEventId
-                  ? isVi
-                    ? "Chỉnh sửa Sự kiện"
-                    : "Edit Event"
-                  : isVi
-                  ? "Tạo Sự kiện Lịch mới"
-                  : "Create New Event"}
-              </h3>
+              <div>
+                <h3 className="text-sm font-bold text-[#F4F5F7]">
+                  {editingEventId
+                    ? isVi
+                      ? "Chỉnh sửa Sự kiện"
+                      : "Edit Event"
+                    : isVi
+                    ? "Tạo Sự kiện Lịch mới"
+                    : "Create New Event"}
+                </h3>
+                <p className="text-[10px] text-[#8B90A0]">
+                  {isVi ? "Thiết lập thông tin, danh mục và giờ hẹn chi tiết" : "Configure title, schedule, and category"}
+                </p>
+              </div>
             </div>
             <button
               type="button"
               onClick={() => {
                 setModalOpen(false);
                 setActiveScopePicker(null);
+                sounds.playPop(420);
               }}
-              className="size-6 rounded-lg hover:bg-white/10 flex items-center justify-center text-[#8B90A0] hover:text-white cursor-pointer"
+              className="size-7 rounded-xl hover:bg-white/10 flex items-center justify-center text-[#8B90A0] hover:text-white cursor-pointer transition-colors"
             >
-              ✕
+              <X className="size-4" />
             </button>
           </div>
 
           {/* Validation Alert Banner */}
           {validationError && (
-            <div className="flex items-center gap-2 p-2 rounded-xl bg-red-500/15 border border-red-500/30 text-red-300 text-xs animate-in fade-in">
+            <div className="flex items-center gap-2 p-2.5 rounded-xl bg-red-500/15 border border-red-500/30 text-red-300 text-xs animate-in fade-in">
               <AlertCircle className="size-4 text-red-400 shrink-0" />
               <span>{validationError}</span>
             </div>
           )}
 
-          <form onSubmit={handleSaveEvent} className="space-y-3 text-xs">
-            {/* Title */}
-            <div className="space-y-1">
-              <label className="text-[11px] font-semibold text-[#8B90A0]">
-                {dict.calendar.eventTitle} <span className="text-red-400">*</span>
+          <form onSubmit={handleSaveEvent} className="space-y-4 text-xs">
+            {/* Title Input with Quick Chips */}
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-bold text-[#F4F5F7] flex items-center justify-between">
+                <span>{dict.calendar.eventTitle} <span className="text-[#F5A623]">*</span></span>
+                <span className="text-[10px] text-[#8B90A0] font-mono">{title.length}/100</span>
               </label>
               <Input
                 autoFocus
                 required
+                maxLength={100}
                 placeholder={dict.calendar.eventTitlePlaceholder}
                 value={title}
                 onChange={(e) => {
                   setTitle(e.target.value);
                   if (validationError) setValidationError(null);
                 }}
-                className="bg-[#14161D] border-white/10 text-xs text-[#F4F5F7] focus:border-[#F5A623]"
+                className="bg-[#14161D] border-white/10 text-xs text-[#F4F5F7] focus:border-[#F5A623] h-9 rounded-xl shadow-inner"
               />
             </div>
 
-            {/* Date & Rotary Time Pickers */}
-            <div className="grid grid-cols-2 gap-2">
+            {/* Quick Date Shortcuts */}
+            <div className="space-y-1">
+              <div className="flex items-center justify-between text-[11px] text-[#8B90A0]">
+                <span>Phím chọn ngày nhanh:</span>
+              </div>
+              <div className="flex gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => handleSetQuickDate(0)}
+                  className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-[#F5A623]/20 hover:text-[#F5A623] text-[#8B90A0] text-[10px] font-semibold border border-white/5 cursor-pointer transition-colors"
+                >
+                  📅 Hôm nay
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleSetQuickDate(1)}
+                  className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-[#F5A623]/20 hover:text-[#F5A623] text-[#8B90A0] text-[10px] font-semibold border border-white/5 cursor-pointer transition-colors"
+                >
+                  ⚡ Ngày mai (+1)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleSetQuickDate(7)}
+                  className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-[#F5A623]/20 hover:text-[#F5A623] text-[#8B90A0] text-[10px] font-semibold border border-white/5 cursor-pointer transition-colors"
+                >
+                  🗓️ Tuần sau (+7)
+                </button>
+              </div>
+            </div>
+
+            {/* Date Pickers */}
+            <div className="grid grid-cols-2 gap-2.5">
               <div className="space-y-1">
                 <label className="text-[11px] font-semibold text-[#8B90A0]">
                   {dict.calendar.startDate}
@@ -1110,135 +1261,149 @@ export function StandaloneCalendar() {
                     if (endDate < e.target.value) setEndDate(e.target.value);
                     if (validationError) setValidationError(null);
                   }}
-                  className="bg-[#14161D] border-white/10 text-xs text-[#F4F5F7]"
+                  className="bg-[#14161D] border-white/10 text-xs text-[#F4F5F7] h-9 rounded-xl"
                 />
               </div>
 
-              {!allDay ? (
-                <div className="space-y-1">
-                  <label className="text-[11px] font-semibold text-[#8B90A0] flex items-center justify-between">
-                    <span>{dict.calendar.startTime}</span>
-                    <span className="text-[9px] text-[#F5A623] font-mono">SCOPE ROTARY</span>
-                  </label>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      sounds.playMechanicalClick(1.0);
-                      setActiveScopePicker(activeScopePicker === "start" ? null : "start");
-                    }}
-                    className="w-full flex items-center justify-between px-2.5 h-8.5 rounded-xl bg-[#14161D] border border-white/10 hover:border-[#F5A623]/60 text-xs text-[#F4F5F7] font-mono cursor-pointer transition-all"
-                  >
-                    <span className="flex items-center gap-1.5">
-                      <Crosshair className="size-3.5 text-[#F5A623]" />
-                      <span>{startTime || "09:00"}</span>
-                    </span>
-                    <span className="text-[10px] text-[#8B90A0]">Xoay 24H</span>
-                  </button>
-                </div>
-              ) : (
-                <div className="space-y-1">
-                  <label className="text-[11px] font-semibold text-[#8B90A0]">Ngày kết thúc</label>
-                  <Input
-                    type="date"
-                    min={startDate}
-                    value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
-                    className="bg-[#14161D] border-white/10 text-xs text-[#F4F5F7]"
-                  />
+              <div className="space-y-1">
+                <label className="text-[11px] font-semibold text-[#8B90A0]">
+                  Ngày kết thúc
+                </label>
+                <Input
+                  type="date"
+                  min={startDate}
+                  value={endDate}
+                  onChange={(e) => {
+                    setEndDate(e.target.value);
+                    if (validationError) setValidationError(null);
+                  }}
+                  className="bg-[#14161D] border-white/10 text-xs text-[#F4F5F7] h-9 rounded-xl"
+                />
+              </div>
+            </div>
+
+            {/* All-Day Toggle & Time Controls */}
+            <div className="p-3 rounded-2xl bg-[#14161D]/70 border border-white/6 space-y-2.5">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-semibold text-[#F4F5F7] flex items-center gap-2 cursor-pointer">
+                  <Switch checked={allDay} onCheckedChange={setAllDay} />
+                  <span>{dict.calendar.allDay}</span>
+                </label>
+                {!allDay && calculatedDuration && (
+                  <span className="text-[10px] font-mono text-[#F5A623] bg-[#F5A623]/15 border border-[#F5A623]/30 px-2 py-0.5 rounded-full">
+                    ⏱️ Thời lượng: {calculatedDuration}
+                  </span>
+                )}
+              </div>
+
+              {/* Tactical Scope Rotary Trigger Buttons */}
+              {!allDay && (
+                <div className="grid grid-cols-2 gap-2 pt-1 border-t border-white/5">
+                  <div className="space-y-1">
+                    <span className="text-[10px] text-[#8B90A0] font-mono uppercase">Giờ bắt đầu</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        sounds.playMechanicalClick(1.0);
+                        setActiveScopePicker(activeScopePicker === "start" ? null : "start");
+                      }}
+                      className={cn(
+                        "w-full flex items-center justify-between px-3 h-9 rounded-xl border text-xs font-mono cursor-pointer transition-all",
+                        activeScopePicker === "start"
+                          ? "bg-[#262A35] border-[#F5A623] text-[#F5A623] shadow-md ring-1 ring-[#F5A623]/50"
+                          : "bg-[#14161D] border-white/10 hover:border-[#F5A623]/60 text-[#F4F5F7]",
+                      )}
+                    >
+                      <span className="flex items-center gap-1.5 font-bold">
+                        <Crosshair className="size-3.5 text-[#F5A623]" />
+                        <span>{startTime || "09:00"}</span>
+                      </span>
+                      <span className="text-[10px] text-[#8B90A0]">Xoay 24H</span>
+                    </button>
+                  </div>
+
+                  <div className="space-y-1">
+                    <span className="text-[10px] text-[#8B90A0] font-mono uppercase">Giờ kết thúc</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        sounds.playMechanicalClick(1.0);
+                        setActiveScopePicker(activeScopePicker === "end" ? null : "end");
+                      }}
+                      className={cn(
+                        "w-full flex items-center justify-between px-3 h-9 rounded-xl border text-xs font-mono cursor-pointer transition-all",
+                        activeScopePicker === "end"
+                          ? "bg-[#262A35] border-[#F5A623] text-[#F5A623] shadow-md ring-1 ring-[#F5A623]/50"
+                          : "bg-[#14161D] border-white/10 hover:border-[#F5A623]/60 text-[#F4F5F7]",
+                      )}
+                    >
+                      <span className="flex items-center gap-1.5 font-bold">
+                        <Target className="size-3.5 text-[#F5A623]" />
+                        <span>{endTime || "10:00"}</span>
+                      </span>
+                      <span className="text-[10px] text-[#8B90A0]">Xoay 24H</span>
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
 
-            {/* Scope Rotary Time Picker Popover for Start Time */}
-            {activeScopePicker === "start" && (
+            {/* Scope Rotary Time Picker Popover (Integrated without UI overlap) */}
+            {activeScopePicker && (
               <div className="animate-in fade-in zoom-in-95 duration-100">
                 <ScopeRotaryTimePicker
-                  value={startTime}
+                  value={activeScopePicker === "start" ? startTime : endTime}
                   onChange={(newT) => {
-                    setStartTime(newT);
+                    if (activeScopePicker === "start") {
+                      setStartTime(newT);
+                    } else {
+                      setEndTime(newT);
+                    }
+                    setActiveScopePicker(null);
                     if (validationError) setValidationError(null);
                   }}
-                  isPastDisabled={!editingEventId && startDate === todayKey}
+                  isPastDisabled={!editingEventId && startDate === todayKey && activeScopePicker === "start"}
                   minTime={currentTimeKey}
                   onClose={() => setActiveScopePicker(null)}
+                  onCancel={() => setActiveScopePicker(null)}
                 />
               </div>
             )}
 
-            {/* End Time Selector with Scope Rotary */}
-            {!allDay && (
-              <div className="grid grid-cols-2 gap-2">
-                <div className="space-y-1">
-                  <label className="text-[11px] font-semibold text-[#8B90A0]">Ngày kết thúc</label>
-                  <Input
-                    type="date"
-                    min={startDate}
-                    value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
-                    className="bg-[#14161D] border-white/10 text-xs text-[#F4F5F7]"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-[11px] font-semibold text-[#8B90A0] flex items-center justify-between">
-                    <span>Giờ kết thúc</span>
-                    <span className="text-[9px] text-[#F5A623] font-mono">SCOPE ROTARY</span>
-                  </label>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      sounds.playMechanicalClick(1.0);
-                      setActiveScopePicker(activeScopePicker === "end" ? null : "end");
-                    }}
-                    className="w-full flex items-center justify-between px-2.5 h-8.5 rounded-xl bg-[#14161D] border border-white/10 hover:border-[#F5A623]/60 text-xs text-[#F4F5F7] font-mono cursor-pointer transition-all"
-                  >
-                    <span className="flex items-center gap-1.5">
-                      <Target className="size-3.5 text-[#F5A623]" />
-                      <span>{endTime || "10:00"}</span>
-                    </span>
-                    <span className="text-[10px] text-[#8B90A0]">Xoay 24H</span>
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Scope Rotary Time Picker Popover for End Time */}
-            {activeScopePicker === "end" && (
-              <div className="animate-in fade-in zoom-in-95 duration-100">
-                <ScopeRotaryTimePicker
-                  value={endTime}
-                  onChange={(newT) => {
-                    setEndTime(newT);
-                    if (validationError) setValidationError(null);
-                  }}
-                  isPastDisabled={false}
-                  onClose={() => setActiveScopePicker(null)}
-                />
-              </div>
-            )}
-
-            {/* All-day & Category Selector */}
-            <div className="flex items-center justify-between gap-2 p-2 rounded-xl bg-[#14161D]/50 border border-white/5">
-              <label className="text-[11px] font-medium text-[#F4F5F7] flex items-center gap-2 cursor-pointer">
-                <Switch checked={allDay} onCheckedChange={setAllDay} />
-                <span>{dict.calendar.allDay}</span>
+            {/* Category Selector Chips */}
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-semibold text-[#8B90A0]">
+                Danh mục sự kiện
               </label>
-
-              <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value as CalendarEventCategory)}
-                className="bg-[#1A1C24] text-[#F4F5F7] text-[11px] font-medium rounded-lg border border-white/10 px-2 py-1 outline-none cursor-pointer"
-              >
-                <option value="work">{dict.calendar.categories.work}</option>
-                <option value="personal">{dict.calendar.categories.personal}</option>
-                <option value="meeting">{dict.calendar.categories.meeting}</option>
-                <option value="reminder">{dict.calendar.categories.reminder}</option>
-                <option value="focus">{dict.calendar.categories.focus}</option>
-              </select>
+              <div className="grid grid-cols-5 gap-1.5">
+                {CATEGORY_OPTIONS.map((cat) => {
+                  const isSelected = category === cat.id;
+                  const Icon = cat.icon;
+                  return (
+                    <button
+                      key={cat.id}
+                      type="button"
+                      onClick={() => {
+                        setCategory(cat.id);
+                        sounds.playPop(520);
+                      }}
+                      className={cn(
+                        "flex flex-col items-center justify-center py-2 px-1 rounded-xl border text-[10px] font-semibold cursor-pointer transition-all duration-120",
+                        isSelected
+                          ? cn("bg-[#262A35] shadow-xs ring-1 ring-white/20", cat.color)
+                          : "bg-[#14161D]/70 border-white/5 hover:border-white/15 text-[#8B90A0]",
+                      )}
+                    >
+                      <Icon className="size-3.5 mb-1" />
+                      <span className="truncate">{isVi ? cat.nameVi : cat.nameEn}</span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
-            {/* Recurrence & Alarm Notification */}
-            <div className="grid grid-cols-2 gap-2">
+            {/* Recurrence & Alarm Toggle */}
+            <div className="grid grid-cols-2 gap-2.5">
               <div className="space-y-1">
                 <label className="text-[11px] font-semibold text-[#8B90A0]">
                   {dict.calendar.recurrence}
@@ -1246,7 +1411,7 @@ export function StandaloneCalendar() {
                 <select
                   value={recurrence}
                   onChange={(e) => setRecurrence(e.target.value as RecurrenceRule)}
-                  className="w-full bg-[#14161D] text-[#F4F5F7] text-[11px] font-medium rounded-lg border border-white/10 px-2 py-1.5 outline-none cursor-pointer"
+                  className="w-full bg-[#14161D] text-[#F4F5F7] text-[11px] font-medium rounded-xl border border-white/10 px-2.5 h-9 outline-none cursor-pointer"
                 >
                   <option value="none">{dict.calendar.recurrences.none}</option>
                   <option value="daily">{dict.calendar.recurrences.daily}</option>
@@ -1257,43 +1422,46 @@ export function StandaloneCalendar() {
               </div>
 
               <div className="flex flex-col justify-end">
-                <label className="flex items-center gap-1.5 text-[11px] font-medium text-[#F4F5F7] cursor-pointer pb-1.5">
-                  <Switch checked={alarmEnabled} onCheckedChange={setAlarmEnabled} />
-                  <span className="truncate">{dict.calendar.alarmEnabled}</span>
-                </label>
+                <div className="flex items-center justify-between h-9 px-3 rounded-xl bg-[#14161D] border border-white/10">
+                  <label className="flex items-center gap-2 text-[11px] font-medium text-[#F4F5F7] cursor-pointer">
+                    <Switch checked={alarmEnabled} onCheckedChange={setAlarmEnabled} />
+                    <span className="truncate">{dict.calendar.alarmEnabled}</span>
+                  </label>
+                </div>
               </div>
             </div>
 
-            {/* Description */}
+            {/* Description Textarea */}
             <div className="space-y-1">
               <label className="text-[11px] font-semibold text-[#8B90A0]">
-                {isVi ? "Ghi chú thêm" : "Description / Notes"}
+                {isVi ? "Ghi chú thêm & Chi tiết" : "Description / Notes"}
               </label>
               <textarea
                 rows={2}
-                placeholder={isVi ? "Chi tiết nội dung sự kiện…" : "Add notes, zoom links, agenda…"}
+                placeholder={isVi ? "Thêm ghi chú, liên kết cuộc họp Zoom, danh sách việc cần làm…" : "Add notes, Zoom links, agenda…"}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="w-full bg-[#14161D] border border-white/10 rounded-xl p-2 text-xs text-[#F4F5F7] placeholder:text-[#8B90A0]/60 resize-none outline-none focus:border-[#F5A623]/60"
+                className="w-full bg-[#14161D] border border-white/10 rounded-xl p-2.5 text-xs text-[#F4F5F7] placeholder:text-[#8B90A0]/50 resize-none outline-none focus:border-[#F5A623]/60"
               />
             </div>
 
-            {/* Modal Actions */}
-            <div className="flex justify-end gap-2 pt-1 border-t border-white/6">
+            {/* Modal Actions: Explicit Cancel vs Save */}
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-white/8">
               <Button
                 type="button"
                 variant="ghost"
                 onClick={() => {
                   setModalOpen(false);
                   setActiveScopePicker(null);
+                  sounds.playPop(420);
                 }}
-                className="text-xs text-[#8B90A0] hover:text-white cursor-pointer"
+                className="text-xs text-[#8B90A0] hover:text-white px-4 h-9 rounded-xl cursor-pointer"
               >
                 {dict.cancel}
               </Button>
               <Button
                 type="submit"
-                className="bg-[#F5A623] hover:bg-[#D6871A] text-[#14161D] font-bold text-xs px-4 rounded-xl cursor-pointer"
+                className="bg-[#F5A623] hover:bg-[#D6871A] text-[#14161D] font-bold text-xs px-5 h-9 rounded-xl shadow-md cursor-pointer transition-transform active:scale-98"
               >
                 {dict.save}
               </Button>
