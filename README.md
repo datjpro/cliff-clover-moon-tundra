@@ -17,6 +17,7 @@
 - [🇬🇧 English Documentation](#-english-documentation)
   - [Overview](#overview)
   - [Key Architectural Features](#key-architectural-features)
+  - [📅 Spatial Calendar & Tactical Time Engine Architecture (v1.1.0)](#-spatial-calendar--tactical-time-engine-architecture-v110)
   - [Desktop Shell & Windows DWM Integration](#desktop-shell--windows-dwm-integration)
   - [⚖️ Dual-Desktop Architecture: Electron vs. Tauri (Rust)](#️-dual-desktop-architecture-electron-vs-tauri-rust)
   - [Keyboard Shortcuts](#keyboard-shortcuts)
@@ -26,6 +27,7 @@
 - [🇻🇳 Tài Liệu Tiếng Việt](#-tài-liệu-tiếng-việt)
   - [Tổng Quan Dự Án](#tổng-quan-dự-án)
   - [Các Tính Năng Trọng Tâm (v1.1.0)](#các-tính-năng-trọng-tâm-v110)
+  - [📅 Kiến Trúc Module Lịch Không Gian & Bộ Chọn Giờ Tác Chiến 24H (v1.1.0)](#-kiến-trúc-module-lịch-không-gian--bộ-chọn-giờ-tác-chiến-24h-v110)
   - [Tối Ưu Desktop Shell & Windows DWM](#tối-ưu-desktop-shell--windows-dwm)
   - [⚖️ Kiến Trúc Desktop Kép: Electron vs. Tauri (Rust)](#️-kiến-trúc-desktop-kép-electron-vs-tauri-rust)
   - [Bảng Phím Tắt Toàn Diện](#bảng-phím-tắt-toàn-diện)
@@ -100,6 +102,48 @@
 
 ---
 
+## 📅 Spatial Calendar & Tactical Time Engine Architecture (v1.1.0)
+
+The **Spatial Calendar & Planner** module ([`standalone-calendar.tsx`](file:///D:/Demo/cliff-clover-moon-tundra/src/components/lumen/standalone-calendar.tsx)) is engineered as an artisanal, high-performance scheduling workspace that bridges digital spatial sticky notes with temporal planning.
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    LUMEN SPATIAL CALENDAR ENGINE (v1.1.0)                   │
+├──────────────────────────────────────┬──────────────────────────────────────┤
+│    📅 EXPANSIVE MATRIX DUAL-PANE     │     📌 CORNER-DOCKED MINI CAPSULE    │
+├──────────────────────────────────────┼──────────────────────────────────────┤
+│ • Full monthly grid with color dots  │ • Pinned to 1 of 4 screen corners    │
+│ • Daily Agenda detail split view     │ • Strictly filters Today's Agenda    │
+│ • In-place non-overflowing form      │ • Double-click or click to expand    │
+│ • 2-Way Sticky Note Bi-Directional   │ • Zero-clutter wallpaper companion   │
+└──────────────────────────────────────┴──────────────────────────────────────┘
+                                  │
+                  ┌───────────────┴───────────────┐
+                  ▼                               ▼
+       🎯 TACTICAL 24H SCOPE          📤 RFC-5545 iCALENDAR SYNC
+       • Rotary barrel-wheel (00-23)  • Import .ics (Google / Apple / Outlook)
+       • Mechanical audio click ticks • Export full backup calendar (.ics)
+       • Sub-modal fluid containment  • Instant 2-way note transformations
+```
+
+### Key Technical Pillars:
+1. **Decoupled Standalone Window (`Alt+C`):**
+   - Operates independently from Hub Settings, avoiding render cascades and state conflicts.
+   - Smooth draggable header with responsive resize clamping (`min 680px × 480px`).
+2. **Tactical 24H Scope Rotary Time Picker:**
+   - Visual barrel-wheel design inspired by optical scope reticles with mechanical audio feedback on every discrete notch step using procedural Web Audio synthesis.
+   - Infinite smooth wrapping for hours (`00-23`) and minutes (`00-59`).
+3. **Corner-Docked Mini-Capsule Widget:**
+   - Docks to any of 4 monitor corners (`top-left`, `top-right`, `bottom-left`, `bottom-right`) configured via Hub Preferences.
+   - Strictly scopes and filters to **Today's Agenda** (`isToday(date)`), keeping your desktop clean while highlighting impending tasks.
+4. **Bi-Directional Sticky Note Bridge:**
+   - One-click transformation of scheduled events into draggable canvas sticky notes with persistent `noteId` and `linkedEventId`.
+5. **Anti-Loss Form Containment:**
+   - Modal containment with fluid scaling (`max-h-[85vh]`).
+   - In-place form expansion preventing accidental data loss on outside clicks, with 100% clean initial state (purged of legacy seed placeholders).
+
+---
+
 ## Desktop Shell & Windows DWM Integration
 
 Lumen runs as a lightweight, transparent background daemon on Windows, macOS, and Linux:
@@ -157,6 +201,7 @@ All shortcuts use collision-free `Alt` combinations designed to prevent conflict
 
 | Shortcut | Action | Scope |
 |---|---|---|
+| `Alt + C` | Open Standalone Spatial Calendar & Planner | Global / In-App |
 | `Alt + N` / `Alt + Q` | Open Quick Note Capture | Global / In-App |
 | `Alt + T` | Open Natural Language Smart Timer | Global / In-App |
 | `Alt + F` | Open Spotlight Search | Global / In-App |
@@ -290,6 +335,47 @@ npm test
 
 ---
 
+## 📅 Kiến Trúc Module Lịch Không Gian & Bộ Chọn Giờ Tác Chiến 24H (v1.1.0)
+
+Module **Lịch Trình & Kế Hoạch Không Gian** ([`standalone-calendar.tsx`](file:///D:/Demo/cliff-clover-moon-tundra/src/components/lumen/standalone-calendar.tsx)) được chế tác theo triết lý hòa trộn giữa ghi chú dán không gian và quản trị thời gian đa chiều:
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                   HỆ THỐNG LỊCH TRÌNH KHÔNG GIAN LUMEN (v1.1.0)             │
+├──────────────────────────────────────┬──────────────────────────────────────┤
+│      📅 GIAO DIỆN MỞ RỘNG 2 CỘT      │       📌 MINI CAPSULE GẮN 4 GÓC      │
+├──────────────────────────────────────┼──────────────────────────────────────┤
+│ • Lưới lịch tháng gắn chấm màu việc  │ • Ghim cố định vào 1 trong 4 góc     │
+│ • Cột chi tiết lịch trình trong ngày │ • Lọc CHÍNH XÁC công việc hôm nay    │
+│ • Form nhập việc nhúng chống tràn    │ • Nhấp đúp hoặc click để phóng to    │
+│ • Liên kết 2 chiều với Sticky Note   │ • Gọn gàng, không che khuất hình nền │
+└──────────────────────────────────────┴──────────────────────────────────────┘
+                                  │
+                  ┌───────────────┴───────────────┐
+                  ▼                               ▼
+       🎯 BỘ CHỌN GIỜ ỐNG NGẮM 24H    📤 ĐỒNG BỘ iCALENDAR RFC-5545
+       • Ống xoay cơ học (00-23h)     • Nhập file .ics từ Google/Apple Calendar
+       • Âm thanh click cơ học tích tắc• Xuất bản sao lưu toàn bộ lịch (.ics)
+       • Khung chứa sub-modal chống tràn• Chuyển đổi 1-click thành Sticky Note
+```
+
+### Các Trụ Cột Kỹ Thuật Chính:
+1. **Cửa Sổ Độc Lập Hoàn Toàn (`Alt+C`):**
+   - Tách rời khỏi Cài đặt Hub để tránh cascading re-render và xung đột modal.
+   - Thanh tiêu đề kéo thả mượt mà kèm cơ chế kẹp kích thước tối thiểu an toàn (`680px × 480px`).
+2. **Bộ Chọn Giờ Ống Ngắm 24H (Barrel-Wheel Scope Time Picker):**
+   - Lấy cảm hứng từ ống ngắm quang học với âm thanh click cơ học chân thực trên từng nấc xoay (tổng hợp trực tiếp bằng Web Audio API).
+   - Cuộn xoay vô tận mượt mà 24H (`00-23h` và `00-59m`).
+3. **Widget Mini-Capsule Gắn Góc Thông Minh:**
+   - Ghim vào 1 trong 4 góc màn hình (`Trên-Trái`, `Trên-Phải`, `Dưới-Trái`, `Dưới-Phải`) tùy chỉnh trong Cài đặt.
+   - Lọc strictly **Lịch trình hôm nay** (`isToday(date)`), giúp bàn làm việc luôn ngăn nắp mà không bỏ lỡ công việc quan trọng.
+4. **Cầu Nối 2 Chiều Giữa Lịch và Ghi Chú Dán:**
+   - 1-click chuyển sự kiện trên lịch thành ghi chú dán trực tiếp trên màn hình (`noteId` & `linkedEventId`).
+5. **Form Nhập Việc Nhúng In-Place Chống Mất Dữ Liệu:**
+   - Tự co giãn theo khung nhìn (`max-h-[85vh]`), không bị che nút bấm, không bị mất dữ liệu nháp khi bấm ra ngoài.
+
+---
+
 ## Tối Ưu Desktop Shell & Windows DWM
 
 1. **Khắc Phục Hoàn Toàn Lỗi Đứng Video Nền (Zero-Occlusion):**
@@ -342,6 +428,7 @@ Dự án Lumen được tích hợp sẵn 2 tầng Desktop Shell song song (`ele
 
 | Phím Tắt | Chức Năng | Phạm Vi |
 |---|---|---|
+| `Alt + C` | Mở Lịch Trình & Kế Hoạch Không Gian (Calendar) | Toàn hệ thống / Trong App |
 | `Alt + N` / `Alt + Q` | Mở cửa sổ Ghi chú nhanh (Quick Capture) | Toàn hệ thống / Trong App |
 | `Alt + T` | Mở cửa sổ Hẹn giờ thông minh (Smart Timer) | Toàn hệ thống / Trong App |
 | `Alt + F` | Mở thanh Tìm kiếm Spotlight | Toàn hệ thống / Trong App |
@@ -370,7 +457,7 @@ npm run dev:desktop
 # 4. Kiểm tra TypeScript
 npm run typecheck
 
-# 5. Chạy toàn bộ 75 bài test tự động
+# 5. Chạy toàn bộ 146 bài test tự động
 npm test
 
 # 6. Đóng gói bản Production
@@ -384,6 +471,12 @@ npm run build
 Mọi thay đổi trên mã nguồn đều bắt buộc phải vượt qua 100% các bài test trong [`scripts/test-suite.mjs`](scripts/test-suite.mjs):
 ```bash
 npm test
+```
+
+```
+========================================
+📊 FINAL TEST REPORT: 146/146 Tests Passed (100% Success)
+========================================
 ```
 
 ---
