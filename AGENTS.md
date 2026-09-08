@@ -184,3 +184,37 @@ When collaborating in multi-agent environments, agents must assume clear, specia
 - **Preserve Existing Architecture:** Do not rip out pre-configured database adapters (`lib/db.ts`) or auth stubs unless explicitly scheduled for migration.
 - **Never Hardcode Absolute Paths:** All assets and storage paths must resolve dynamically relative to app root or OS user-data directories.
 - **Security First:** Sanitize all markdown or note inputs against XSS attacks before rendering rich text.
+
+---
+
+## 8. 🏷️ Quy Chuẩn Đánh Số Phiên Bản & Phát Hành (Semantic Versioning & Release Protocol)
+
+Mọi thay đổi phát hành đều phải tuân thủ chuẩn định dạng `MAJOR.MINOR.PATCH` (X.Y.Z) theo quy tắc sau:
+
+```
+                            ┌───────────────────────────────┐
+                            │      X   .   Y   .   Z        │
+                            │   MAJOR . MINOR . PATCH       │
+                            └───────┬───────┬───────┬───────┘
+                                    │       │       │
+      ┌─────────────────────────────┘       │       └─────────────────────────────┐
+      ▼                                     ▼                                     ▼
+┌───────────────────────────┐ ┌───────────────────────────┐ ┌───────────────────────────┐
+│ 1. BẢN CẬP NHẬT LỚN (BIG) │ │ 2. BẢN TÍNH NĂNG (FEAT)   │ │ 3. BẢN VÁ LỖI (FIX/PATCH) │
+│ • Tăng số ĐẦU TIÊN (X)    │ │ • Tăng số THỨ HAI (Y)     │ │ • Tăng số THỨ BA (Z)      │
+│ • Reset Y=0, Z=0          │ │ • Reset Z=0               │ │ • Giữ nguyên X, Y         │
+│ • Ví dụ: 1.1.0 ➔ 2.0.0    │ │ • Ví dụ: 1.1.0 ➔ 1.2.0    │ │ • Ví dụ: 1.1.0 ➔ 1.1.1    │
+│ • Khi thay đổi kiến trúc  │ │ • Khi thêm tính năng mới, │ │ • Khi sửa lỗi (bugfix),   │
+│   cốt lõi, breaking change│ │   module mới, game mới    │ │   tinh chỉnh UI, hotfix   │
+└───────────────────────────┘ └───────────────────────────┘ └───────────────────────────┘
+```
+
+### 8.1 Danh Sách File Bắt Buộc Đồng Bộ Khi Nâng Phiên Bản:
+Khi nâng version (ví dụ từ `1.1.0` lên `1.1.1`), **BẮT BUỘC** phải cập nhật đồng thời ở các file:
+1. `package.json` (`"version": "X.Y.Z"`)
+2. `src-tauri/tauri.conf.json` (`"version": "X.Y.Z"`)
+3. `src-tauri/Cargo.toml` (`version = "X.Y.Z"`)
+4. `src/lib/updater.ts` (`export const CURRENT_APP_VERSION = "X.Y.Z";`)
+5. `CHANGELOG.md` (Thêm mục ghi chú phát hành `## 🚀 [vX.Y.Z]`)
+6. `README.md` (Cập nhật badge `Version-vX.Y.Z`)
+

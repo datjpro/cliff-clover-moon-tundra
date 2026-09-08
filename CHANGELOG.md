@@ -4,6 +4,23 @@
 
 ---
 
+## 🚀 [v1.1.1] — 2026-09-08 — Streamlined Today's Agenda, Collapsible Mini-Pill & Click-Through Fix
+
+### 🛠️ Bug Fixes & UX Optimizations:
+- **📅 Streamlined Today's Agenda Widget:**
+  - Slimmed compact calendar width to `w-64 sm:w-68` with ultra-clean single-line items (checkbox + title + time range).
+  - Purged redundant cards, descriptions, and visual clutter to keep desktop footprint minimal.
+  - Added streamlined empty state with quick `+ Thêm` action.
+- **💊 Collapsible Mini-Pill & Hide Action:**
+  - Added `-` (Minus) button to collapse Today's Agenda into an ultra-minimal floating capsule pill (`[ 📅 Hôm nay • N ]`).
+  - Added `👁️‍🗨️` (EyeOff) button and `Escape` key shortcut to hide the Agenda entirely.
+  - Added dedicated System Tray menu item (`📅 Calendar & Agenda (Alt+C)`) in Tauri to easily reopen at any time.
+- **🖱️ Native Desktop Transparent Click-Through Fix:**
+  - Resolved transparent background hit-testing across Electron and Tauri shells.
+  - Non-modal regions allow 100% click-through to underlying OS and desktop apps without interference.
+
+---
+
 ## 🚀 [v1.1.0] — 2026-09-07 — In-App Update Engine & Spatial Calendar Evolution
 
 ### ✨ What's New:

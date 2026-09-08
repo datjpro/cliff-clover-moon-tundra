@@ -899,10 +899,12 @@ console.log("\n📦 [SUITE 8]: In-App Auto-Update & Semver Engine");
   assert(onlineCheck.isOffline === false, "Online state correctly detected");
   assert(onlineCheck.hasUpdate === true, "Update v1.1.1 detected when online");
 
-  // 4. Semver Comparison for v1.1.0
+  // 4. Semver Comparison for v1.1.0 and v1.1.1
   assert(compareSemver("1.1.0", "1.0.1") === 1, "v1.1.0 is strictly newer than v1.0.1");
   assert(compareSemver("1.0.1", "1.1.0") === -1, "v1.0.1 is older than v1.1.0");
   assert(compareSemver("1.1.0", "1.1.0") === 0, "v1.1.0 matches v1.1.0");
+  assert(compareSemver("1.1.1", "1.1.0") === 1, "v1.1.1 is strictly newer than v1.1.0 (Patch/Fix bump)");
+  assert(compareSemver("1.1.1", "1.1.1") === 0, "v1.1.1 matches v1.1.1");
 }
 
 console.log(`\n========================================`);
