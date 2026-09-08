@@ -580,6 +580,23 @@ console.log("\n📦 [SUITE 5]: Desktop Window Visibility & Single Instance Recov
   toggleCompact();
   assert(calendarCompact === true, "Standalone Calendar smoothly switches to Collapsible Compact Mini-Capsule mode");
 
+  // 6b. Click-through & Modal Evaluation (Compact Calendar must NOT block background)
+  const calcIsAnyModalOpen = (capture, timer, cal, compact, hub, search) =>
+    Boolean(capture || timer || (cal && !compact) || hub || search);
+
+  assert(
+    calcIsAnyModalOpen(false, false, true, true, false, false) === false,
+    "isAnyModalOpen evaluates to false when calendar is minimized to compact mode"
+  );
+  assert(
+    calcIsAnyModalOpen(false, false, true, false, false, false) === true,
+    "isAnyModalOpen evaluates to true when calendar is in full expansive modal mode"
+  );
+  assert(
+    calcIsAnyModalOpen(false, false, false, false, false, false) === false,
+    "Background click-through remains active and transparent when no modal is blocking"
+  );
+
   // 7. Decoupled Alt+C and Escape Keyboard Navigation
   let calOpen = false;
   const onAltC = () => { calOpen = !calOpen; };

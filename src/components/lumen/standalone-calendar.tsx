@@ -491,7 +491,7 @@ export function StandaloneCalendar() {
         role="region"
         aria-label="Lumen Today Agenda Dock"
         className={cn(
-          "interactive-el fixed z-[88] flex flex-col w-84 sm:w-88 rounded-3xl bg-[#181A22]/98 border border-white/12 text-[#F4F5F7] shadow-[0_20px_50px_rgba(0,0,0,0.85)] backdrop-blur-2xl select-none overflow-hidden animate-in fade-in zoom-in-95 duration-140 max-h-[500px]",
+          "interactive-el pointer-events-auto fixed z-[88] flex flex-col w-84 sm:w-88 rounded-3xl bg-[#181A22]/98 border border-white/12 text-[#F4F5F7] shadow-[0_20px_50px_rgba(0,0,0,0.85)] backdrop-blur-2xl select-none overflow-hidden animate-in fade-in zoom-in-95 duration-140 max-h-[500px]",
           dockClass,
         )}
       >

@@ -404,6 +404,7 @@ export function DesktopScene() {
   const setQuickTimerOpen = useLumen((s) => s.setQuickTimerOpen);
   const calendarOpen = useLumen((s) => s.calendarOpen);
   const setCalendarOpen = useLumen((s) => s.setCalendarOpen);
+  const calendarCompact = useLumen((s) => s.calendarCompact);
   const hubOpen = useLumen((s) => s.hubOpen);
   const setHubOpen = useLumen((s) => s.setHubOpen);
   const searchOpen = useLumen((s) => s.searchOpen);
@@ -431,7 +432,7 @@ export function DesktopScene() {
   }, [markHydrated]);
 
   const isAnyModalOpen =
-    captureOpen || quickTimerOpen || calendarOpen || hubOpen || searchOpen;
+    captureOpen || quickTimerOpen || (calendarOpen && !calendarCompact) || hubOpen || searchOpen;
 
   // Dynamic Click-Through: mousemove-based setIgnoreMouseEvents toggling + Tauri hit-rects sync
   //
@@ -450,7 +451,7 @@ export function DesktopScene() {
     let lastIsInteractive: boolean | null = null;
     const INTERACTIVE_SELECTOR =
       "article, .interactive-el, button, input, textarea, " +
-      "section[role='dialog'], [role='dialog'], form, select, [data-interactive], a";
+      "section[role='dialog'], [role='dialog'], [role='region'], aside, form, select, [data-interactive], a";
 
     const throttledHandler = (e: MouseEvent) => {
       const target = e.target as HTMLElement | null;
@@ -520,7 +521,7 @@ export function DesktopScene() {
       // Restore to fully interactive mode on cleanup (component unmount)
       setIgnoreMouseEvents(false);
     };
-  }, [isAnyModalOpen, notes, layout, appLoaded]);
+  }, [isAnyModalOpen, notes, layout, appLoaded, calendarOpen, calendarCompact]);
 
   // Global & In-App Keyboard Shortcuts
   useEffect(() => {
