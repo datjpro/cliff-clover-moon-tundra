@@ -184,9 +184,10 @@ pub fn run() {
             let show_i = MenuItem::with_id(app, "show", "🌟 Show / Hide Lumen (Alt+L)", true, None::<&str>)?;
             let capture_i = MenuItem::with_id(app, "capture", "📝 Quick Note (Alt+N)", true, None::<&str>)?;
             let timer_i = MenuItem::with_id(app, "timer", "⏰ Quick Timer (Alt+T)", true, None::<&str>)?;
+            let calendar_i = MenuItem::with_id(app, "calendar", "📅 Calendar & Agenda (Alt+C)", true, None::<&str>)?;
             let hub_i = MenuItem::with_id(app, "hub", "⚙️ Settings Hub (Alt+S)", true, None::<&str>)?;
             let quit_i = MenuItem::with_id(app, "quit", "✕ Quit Lumen", true, None::<&str>)?;
-            let menu = Menu::with_items(app, &[&show_i, &capture_i, &timer_i, &hub_i, &quit_i])?;
+            let menu = Menu::with_items(app, &[&show_i, &capture_i, &timer_i, &calendar_i, &hub_i, &quit_i])?;
 
             let mut tray_builder = TrayIconBuilder::with_id("lumen-tray-icon")
                 .menu(&menu)
@@ -221,6 +222,16 @@ pub fn run() {
                             let _ = window.show();
                             let _ = window.set_focus();
                             let _ = window.emit("open-quick-timer", ());
+                        }
+                    }
+                    "calendar" => {
+                        if let Some(window) = app.get_webview_window("main") {
+                            if window.is_minimized().unwrap_or(false) {
+                                let _ = window.unminimize();
+                            }
+                            let _ = window.show();
+                            let _ = window.set_focus();
+                            let _ = window.emit("open-calendar", ());
                         }
                     }
                     "hub" => {
