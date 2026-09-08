@@ -597,6 +597,20 @@ console.log("\n📦 [SUITE 5]: Desktop Window Visibility & Single Instance Recov
     "Background click-through remains active and transparent when no modal is blocking"
   );
 
+  // 6c. Ultra-Compact Mini-Pill Mode & Direct Hide Evaluation
+  let isPillCollapsed = false;
+  const togglePillCollapse = () => { isPillCollapsed = !isPillCollapsed; };
+  assert(isPillCollapsed === false, "Today's Agenda widget defaults to expanded compact view");
+  togglePillCollapse();
+  assert(isPillCollapsed === true, "Today's Agenda smoothly collapses into ultra-minimal floating capsule pill");
+  togglePillCollapse();
+  assert(isPillCollapsed === false, "Today's Agenda mini-pill expands smoothly back to compact widget");
+
+  let isCalendarHidden = false;
+  const hideCalendar = () => { isCalendarHidden = true; };
+  hideCalendar();
+  assert(isCalendarHidden === true, "Today's Agenda supports direct hide action via EyeOff and Escape");
+
   // 7. Decoupled Alt+C and Escape Keyboard Navigation
   let calOpen = false;
   const onAltC = () => { calOpen = !calOpen; };

@@ -18,6 +18,9 @@ import {
   GripHorizontal,
   Maximize2,
   Minimize2,
+  Minus,
+  EyeOff,
+  ChevronDown,
   X,
   Target,
   Crosshair,
@@ -103,6 +106,7 @@ export function StandaloneCalendar() {
   const [currentMonthDate, setCurrentMonthDate] = useState<Date>(() => parseDateKey(selectedDateKey));
   const [modalOpen, setModalOpen] = useState(false);
   const [editingEventId, setEditingEventId] = useState<string | null>(null);
+  const [isPillCollapsed, setIsPillCollapsed] = useState(false);
 
   // Active Scope Time Picker popover: "start" | "end" | null
   const [activeScopePicker, setActiveScopePicker] = useState<"start" | "end" | null>(null);
@@ -486,144 +490,173 @@ export function StandaloneCalendar() {
   // 1. MINIMIZED VIEW: CORNER-DOCKED TODAY'S AGENDA FLOATING WIDGET
   if (isCompact) {
     const dockClass = DOCK_POSITION_CLASSES[dockPos] || "top-4 right-4";
+
+    // 1a. Ultra-Minimal Floating Capsule Pill Mode
+    if (isPillCollapsed) {
+      return (
+        <aside
+          role="region"
+          aria-label="Lumen Today Agenda Pill"
+          onClick={() => {
+            sounds.playPop(520);
+            setIsPillCollapsed(false);
+          }}
+          className={cn(
+            "interactive-el pointer-events-auto fixed z-[88] flex items-center gap-2 rounded-2xl px-3 py-1.5 bg-[#14161D]/92 hover:bg-[#1D2029]/98 border border-white/12 text-[#F4F5F7] shadow-[0_12px_32px_rgba(0,0,0,0.75)] backdrop-blur-xl select-none cursor-pointer transition-all duration-140 hover:scale-105 active:scale-95 group",
+            dockClass,
+          )}
+          title={isVi ? "Bấm để mở rộng Lịch trình hôm nay" : "Click to expand Today's Agenda"}
+        >
+          <CalendarIcon className="size-3.5 text-[#F5A623] shrink-0" />
+          <span className="text-xs font-semibold text-[#F4F5F7]">
+            {isVi ? "Hôm nay" : "Today"}
+          </span>
+          <span className="text-[10px] font-mono px-1.5 py-0.2 rounded-full bg-[#F5A623]/20 text-[#F5A623] font-bold">
+            {todayItems.length}
+          </span>
+          <ChevronDown className="size-3 text-[#8B90A0] group-hover:text-white transition-transform group-hover:translate-y-0.5 duration-140" />
+        </aside>
+      );
+    }
+
+    // 1b. Streamlined Essentials-Only Agenda Widget
     return (
       <aside
         role="region"
         aria-label="Lumen Today Agenda Dock"
         className={cn(
-          "interactive-el pointer-events-auto fixed z-[88] flex flex-col w-84 sm:w-88 rounded-3xl bg-[#181A22]/98 border border-white/12 text-[#F4F5F7] shadow-[0_20px_50px_rgba(0,0,0,0.85)] backdrop-blur-2xl select-none overflow-hidden animate-in fade-in zoom-in-95 duration-140 max-h-[500px]",
+          "interactive-el pointer-events-auto fixed z-[88] flex flex-col w-64 sm:w-68 rounded-2xl bg-[#181A22]/98 border border-white/12 text-[#F4F5F7] shadow-[0_16px_40px_rgba(0,0,0,0.85)] backdrop-blur-2xl select-none overflow-hidden animate-in fade-in zoom-in-95 duration-140 max-h-[400px]",
           dockClass,
         )}
       >
         {modalOpen ? (
-          <div className="p-3.5 h-[460px] flex flex-col">
+          <div className="p-3 h-[420px] flex flex-col">
             {renderEmbeddedEventForm(true)}
           </div>
         ) : (
           <>
-            {/* Compact Dock Header: Today's Date & Actions */}
-            <div className="flex items-center justify-between px-3.5 py-3 bg-[#14161D]/80 border-b border-white/8">
-              <div className="flex items-center gap-2.5 min-w-0">
-                <div className="size-7 rounded-xl bg-[#F5A623]/20 text-[#F5A623] flex items-center justify-center shrink-0 border border-[#F5A623]/30">
-                  <CalendarIcon className="size-4" />
+            {/* Sleek Compact Header: Date, Count & Actions */}
+            <div className="flex items-center justify-between px-3 py-2 bg-[#14161D]/80 border-b border-white/8">
+              <div className="flex items-center gap-1.5 min-w-0">
+                <div className="size-5 rounded-md bg-[#F5A623]/20 text-[#F5A623] flex items-center justify-center shrink-0 border border-[#F5A623]/30">
+                  <CalendarIcon className="size-3" />
                 </div>
-                <div className="min-w-0">
-                  <div className="flex items-center gap-1.5">
-                    <span className="font-bold text-xs text-[#F4F5F7] truncate block">
-                      {isVi ? "Lịch Trình Hôm Nay" : "Today's Agenda"}
-                    </span>
-                    <span className="text-[9px] font-mono px-1.5 py-0.2 rounded-full bg-[#F5A623]/15 text-[#F5A623] border border-[#F5A623]/30">
-                      {todayItems.length}
-                    </span>
-                  </div>
-                  <span className="text-[10px] text-[#8B90A0] block truncate">{todayFormatted}</span>
+                <div className="flex items-center gap-1 min-w-0">
+                  <span className="font-bold text-xs text-[#F4F5F7] truncate">
+                    {isVi ? "Hôm nay" : "Today"}
+                  </span>
+                  <span className="text-[9px] font-mono px-1 py-0.2 rounded-full bg-[#F5A623]/15 text-[#F5A623] font-bold shrink-0">
+                    {todayItems.length}
+                  </span>
                 </div>
               </div>
 
-              <div className="flex items-center gap-1 shrink-0">
-                <Button
-                  size="icon"
-                  variant="ghost"
+              <div className="flex items-center gap-0.5 shrink-0">
+                {/* Add Today's Event */}
+                <button
+                  type="button"
                   onClick={() => handleOpenCreateModal(todayKey)}
-                  className="size-7 rounded-lg bg-[#F5A623]/10 hover:bg-[#F5A623]/20 text-[#F5A623] cursor-pointer"
+                  className="size-6 flex items-center justify-center rounded-md bg-[#F5A623]/10 hover:bg-[#F5A623]/25 text-[#F5A623] transition-colors cursor-pointer"
                   title={isVi ? "Thêm việc hôm nay" : "Add event today"}
                 >
-                  <Plus className="size-3.5" />
-                </Button>
+                  <Plus className="size-3" />
+                </button>
+                {/* Collapse into Mini-Pill */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    sounds.playPop(480);
+                    setIsPillCollapsed(true);
+                  }}
+                  className="size-6 flex items-center justify-center rounded-md hover:bg-white/10 text-[#8B90A0] hover:text-white transition-colors cursor-pointer"
+                  title={isVi ? "Thu nhỏ thành thẻ (Collapse to pill)" : "Collapse to pill"}
+                >
+                  <Minus className="size-3" />
+                </button>
+                {/* Maximize to Expansive Mode */}
                 <button
                   type="button"
                   onClick={toggleCompact}
-                  className="size-7 flex items-center justify-center rounded-lg hover:bg-white/10 text-[#8B90A0] hover:text-[#F5A623] transition-colors cursor-pointer"
+                  className="size-6 flex items-center justify-center rounded-md hover:bg-white/10 text-[#8B90A0] hover:text-[#F5A623] transition-colors cursor-pointer"
                   title={isVi ? "Mở rộng lịch lớn (Expansive Mode)" : "Maximize calendar"}
                 >
-                  <Maximize2 className="size-3.5" />
+                  <Maximize2 className="size-3" />
                 </button>
+                {/* Hide / Close Agenda */}
                 <button
                   type="button"
-                  onClick={() => setCalendarOpen(false)}
-                  className="size-7 flex items-center justify-center rounded-lg hover:bg-white/10 text-[#8B90A0] hover:text-white transition-colors cursor-pointer"
-                  title="Đóng (Escape)"
+                  onClick={() => {
+                    sounds.playPop(450);
+                    setCalendarOpen(false);
+                  }}
+                  className="size-6 flex items-center justify-center rounded-md hover:bg-red-500/20 text-[#8B90A0] hover:text-red-400 transition-colors cursor-pointer"
+                  title={isVi ? "Ẩn lịch trình hôm nay (Escape / Alt+C)" : "Hide today's agenda (Escape / Alt+C)"}
                 >
-                  <X className="size-3.5" />
+                  <EyeOff className="size-3" />
                 </button>
               </div>
             </div>
 
-            {/* Compact Body: Strictly Filtered to Today's Scheduled Events & Notes */}
-            <div className="p-3 space-y-2 overflow-y-auto max-h-[360px] custom-scrollbar flex-1 min-h-0">
+            {/* Streamlined Essentials-Only Body List */}
+            <div className="p-2 space-y-1.5 overflow-y-auto max-h-[300px] custom-scrollbar flex-1 min-h-0">
               {todayItems.length === 0 ? (
-                <div className="py-7 flex flex-col items-center justify-center text-center text-[#8B90A0] space-y-2">
-                  <div className="size-10 rounded-2xl bg-white/5 border border-white/8 flex items-center justify-center text-white/25">
-                    <CalendarIcon className="size-5" />
-                  </div>
-                  <div className="space-y-0.5">
-                    <p className="text-xs font-semibold text-[#F4F5F7]">
-                      {isVi ? "Hôm nay chưa có sự kiện nào" : "No events scheduled today"}
-                    </p>
-                    <p className="text-[10px] text-[#8B90A0] max-w-[210px]">
-                      {isVi ? "Tận hưởng ngày làm việc thảnh thơi hoặc lên lịch sự kiện mới!" : "Enjoy your focus time or create a new agenda item."}
-                    </p>
+                <div className="py-3 px-2 flex items-center justify-between rounded-xl bg-white/5 border border-white/5 text-[#8B90A0]">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <CalendarIcon className="size-3.5 text-[#F5A623]/70 shrink-0" />
+                    <span className="text-[11px] text-[#8B90A0] truncate">
+                      {isVi ? "Hôm nay trống lịch" : "No events today"}
+                    </span>
                   </div>
                   <Button
                     size="sm"
-                    variant="outline"
+                    variant="ghost"
                     onClick={() => handleOpenCreateModal(todayKey)}
-                    className="mt-1 h-7 text-[11px] border-white/10 bg-white/5 hover:bg-[#F5A623]/20 hover:text-[#F5A623] text-[#8B90A0] rounded-xl cursor-pointer"
+                    className="h-5 text-[10px] px-1.5 text-[#F5A623] hover:bg-[#F5A623]/20 rounded-md cursor-pointer shrink-0"
                   >
-                    <Plus className="size-3 mr-1" />
-                    <span>{isVi ? "Lên lịch hôm nay" : "Schedule today"}</span>
+                    <Plus className="size-2.5 mr-0.5" />
+                    <span>{isVi ? "Thêm" : "Add"}</span>
                   </Button>
                 </div>
               ) : (
                 todayItems.map((entry, idx) => {
                   if (entry.type === "event") {
                     const ev = entry.item;
-                    const meta = CATEGORY_META[ev.category];
                     return (
                       <div
                         key={ev.id || idx}
                         className={cn(
-                          "flex items-center justify-between p-2 rounded-2xl border transition-all duration-120 group",
+                          "flex items-center justify-between p-1.5 rounded-xl border transition-all duration-120 group",
                           ev.completed
                             ? "bg-[#14161D]/40 border-white/5 opacity-60"
                             : "bg-[#1D2029] border-white/10 hover:border-white/20",
                         )}
                       >
-                        <div className="flex items-center gap-2 min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5 min-w-0 flex-1">
                           <button
                             type="button"
                             onClick={() => toggleCalendarEventComplete(ev.id)}
                             className={cn(
-                              "size-4 rounded-md border flex items-center justify-center cursor-pointer shrink-0 transition-colors",
+                              "size-3.5 rounded border flex items-center justify-center cursor-pointer shrink-0 transition-colors",
                               ev.completed
                                 ? "bg-emerald-500 border-emerald-500 text-white"
                                 : "border-white/20 hover:border-[#F5A623]",
                             )}
                           >
-                            {ev.completed && <Check className="size-3 stroke-[3]" />}
+                            {ev.completed && <Check className="size-2.5 stroke-[3]" />}
                           </button>
 
                           <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-1.5 flex-wrap">
-                              <p
-                                className={cn(
-                                  "text-xs font-semibold tracking-tight text-[#F4F5F7] truncate",
-                                  ev.completed && "line-through text-[#8B90A0]",
-                                )}
-                              >
-                                {ev.title}
-                              </p>
-                              <Badge className={cn("text-[8px] py-0 px-1 shrink-0", meta.colorClass)}>
-                                {isVi ? meta.labelVi : meta.labelEn}
-                              </Badge>
-                            </div>
-                            <div className="flex items-center gap-2 text-[10px] text-[#8B90A0]">
-                              <span className="flex items-center gap-1">
-                                <Clock className="size-2.5" />
-                                {ev.allDay ? dict.calendar.allDay : `${ev.startTime || "09:00"} - ${ev.endTime || "10:00"}`}
-                              </span>
-                              {ev.alarmEnabled && <Bell className="size-2.5 text-amber-400" />}
-                            </div>
+                            <p
+                              className={cn(
+                                "text-[11px] font-medium text-[#F4F5F7] truncate leading-snug",
+                                ev.completed && "line-through text-[#8B90A0]",
+                              )}
+                            >
+                              {ev.title}
+                            </p>
+                            <p className="text-[9px] text-[#8B90A0] font-mono leading-none mt-0.5">
+                              {ev.allDay ? dict.calendar.allDay : `${ev.startTime || "09:00"} - ${ev.endTime || "10:00"}`}
+                            </p>
                           </div>
                         </div>
 
@@ -631,18 +664,18 @@ export function StandaloneCalendar() {
                           <button
                             type="button"
                             onClick={() => handleOpenEditModal(ev)}
-                            className="p-1 rounded-md hover:bg-white/10 text-[#8B90A0] hover:text-white cursor-pointer"
-                            title="Sửa sự kiện"
+                            className="p-1 rounded hover:bg-white/10 text-[#8B90A0] hover:text-white cursor-pointer"
+                            title="Sửa"
                           >
-                            <Sparkles className="size-3" />
+                            <Sparkles className="size-2.5" />
                           </button>
                           <button
                             type="button"
                             onClick={() => deleteCalendarEvent(ev.id)}
-                            className="p-1 rounded-md hover:bg-red-500/20 text-[#8B90A0] hover:text-red-400 cursor-pointer"
-                            title="Xóa sự kiện"
+                            className="p-1 rounded hover:bg-red-500/20 text-[#8B90A0] hover:text-red-400 cursor-pointer"
+                            title="Xóa"
                           >
-                            <Trash2 className="size-3" />
+                            <Trash2 className="size-2.5" />
                           </button>
                         </div>
                       </div>
@@ -652,15 +685,15 @@ export function StandaloneCalendar() {
                     return (
                       <div
                         key={`compact_note_${note.id}`}
-                        className="flex items-center justify-between p-2 rounded-2xl border border-amber-500/20 bg-amber-500/5 hover:border-amber-500/40 transition-all group"
+                        className="flex items-center justify-between p-1.5 rounded-xl border border-amber-500/20 bg-amber-500/5 hover:border-amber-500/40 transition-all group"
                       >
-                        <div className="flex items-center gap-2 min-w-0 flex-1">
-                          <NoteIcon className="size-3.5 text-amber-400 shrink-0" />
+                        <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                          <NoteIcon className="size-3 text-amber-400 shrink-0" />
                           <div className="min-w-0">
-                            <p className="text-xs font-semibold text-[#F4F5F7] truncate">
+                            <p className="text-[11px] font-medium text-[#F4F5F7] truncate leading-snug">
                               {note.title || (note.body.split("\n")[0] ?? "Sticky Note")}
                             </p>
-                            <p className="text-[9px] text-amber-400/80">
+                            <p className="text-[9px] text-amber-400/80 font-mono leading-none mt-0.5">
                               {note.dueTime ? `Hạn: ${note.dueTime}` : "Ghi chú hôm nay"}
                             </p>
                           </div>
@@ -672,7 +705,7 @@ export function StandaloneCalendar() {
                             bringNote(note.id);
                             setCalendarOpen(false);
                           }}
-                          className="h-5 text-[9px] px-1.5 rounded-md bg-amber-500/10 hover:bg-amber-500/20 text-amber-300"
+                          className="h-5 text-[9px] px-1.5 rounded-md bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 shrink-0"
                         >
                           <ExternalLink className="size-2.5 mr-0.5" />
                           {isVi ? "Xem" : "View"}
